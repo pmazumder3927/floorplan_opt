@@ -2048,6 +2048,85 @@ function itemGlyph(kind: FurnitureKind, k: LocalCtx, wallMounted: boolean): stri
       p.push(ln(0, -hd + bar, 0, hd, { opacity: 0.7 }));
       break;
     }
+    case 'projection_screen': {
+      // The picture, in plan: a heavy bar on the wall face (the local -y edge,
+      // since a screen's front looks into the room) with a light wash behind it
+      // for the frame depth. Drawn heavier than 'art' because this is the thing
+      // the whole seating group is aimed at.
+      const bar = Math.min(ft(0.18), d * 0.8);
+      p.push(band(-hw, -hd, w, d, { 'fill-opacity': 0.08 }));
+      p.push(
+        tag('rect', {
+          x: -hw,
+          y: -hd,
+          width: w,
+          height: bar,
+          fill: k.detail,
+          stroke: 'none',
+        }),
+      );
+      // Tick the image edges so the viewable width reads separately from the frame.
+      const bez = Math.min(ft(0.2), w * 0.06);
+      for (const sx of [-1, 1]) {
+        p.push(ln(sx * (hw - bez), -hd + bar, sx * (hw - bez), hd, { 'stroke-opacity': 0.85 }));
+      }
+      break;
+    }
+    case 'projector': {
+      // Body + lens + throw direction. The wedge points at the FRONT (+y), which
+      // is the orientation contract: a long-throw faces its screen. An
+      // ultra-short-throw is placed with its front to the room and throws back
+      // over itself, which the layout note has to say — a plan symbol cannot.
+      p.push(
+        tag('rect', {
+          x: -hw + ft(0.05),
+          y: -hd + ft(0.05),
+          width: Math.max(ft(0.1), w - ft(0.1)),
+          height: Math.max(ft(0.1), d - ft(0.1)),
+          rx: ft(0.06),
+          fill: 'none',
+          stroke: k.detail,
+          'stroke-width': STROKE.furnitureDetail,
+        }),
+      );
+      const r = Math.min(ft(0.22), Math.min(w, d) * 0.22);
+      p.push(tag('circle', { cx: 0, cy: hd - r - ft(0.06), r, fill: 'none', stroke: k.detail, 'stroke-width': STROKE.furnitureDetail }));
+      p.push(ln(-hw * 0.5, hd, -hw * 0.9, hd + ft(0.45), { 'stroke-dasharray': '3 2', 'stroke-opacity': 0.7 }));
+      p.push(ln(hw * 0.5, hd, hw * 0.9, hd + ft(0.45), { 'stroke-dasharray': '3 2', 'stroke-opacity': 0.7 }));
+      break;
+    }
+    case 'speaker': {
+      // Cabinet outline with one driver circle. A soundbar is wide and shallow,
+      // so the circle is clamped to the depth and lands as a slot, which is
+      // exactly what a soundbar looks like in plan.
+      p.push(
+        tag('rect', {
+          x: -hw + ft(0.04),
+          y: -hd + ft(0.04),
+          width: Math.max(ft(0.08), w - ft(0.08)),
+          height: Math.max(ft(0.08), d - ft(0.08)),
+          fill: 'none',
+          stroke: k.detail,
+          'stroke-width': STROKE.furnitureDetail,
+        }),
+      );
+      const r = Math.max(ft(0.06), Math.min(ft(0.28), Math.min(w, d) * 0.3));
+      p.push(tag('circle', { cx: 0, cy: hd - r - ft(0.07), r, fill: k.detail, 'fill-opacity': 0.35, stroke: k.detail, 'stroke-width': STROKE.furnitureDetail }));
+      break;
+    }
+    case 'shade': {
+      // A blind in a reveal: the head cassette as a solid bar on the wall face,
+      // then a run of short strokes for the fabric. Deliberately light — a shade
+      // is above the cut plane and must not compete with the glazing it sits in.
+      const bar = Math.min(ft(0.12), d * 0.8);
+      p.push(tag('rect', { x: -hw, y: -hd, width: w, height: bar, fill: k.detail, 'fill-opacity': 0.8, stroke: 'none' }));
+      const n = Math.max(2, Math.round(w / ft(0.5)));
+      for (let i = 0; i <= n; i++) {
+        const x = -hw + (w / n) * i;
+        p.push(ln(x, -hd + bar, x, hd, { 'stroke-opacity': 0.45 }));
+      }
+      break;
+    }
     case 'mirror':
     case 'art': {
       const bar = Math.min(ft(0.16), d * 0.7);

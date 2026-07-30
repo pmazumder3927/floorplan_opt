@@ -118,8 +118,25 @@ export function matFor(colorHex: string, opts: MatOpts = {}): THREE.MeshStandard
  * there is exactly one place to audit a colour.
  */
 export const PALETTE = {
-  /** #6a4632 — dark walnut plank. Photo floor diffuse (unreflected 15th pct, y>480) samples #6b5a4c under full window bounce; the plank's own colour is a warm dark brown, NOT the pale oak we had. */
-  floor: '#6a4632',
+  /**
+   * #6d5847 — dark walnut plank. Photo floor diffuse (unreflected 15th pct,
+   * y>480) samples #6b5a4c under full window bounce; the plank's own colour is a
+   * warm dark brown, NOT the pale oak we had.
+   *
+   * MIRRORED from #6a4632 to match `floor-walnut` in scripts/blender/materials.py,
+   * which was lifted and desaturated in the same fidelity pass that lifted
+   * `concrete`, `frameDark` and `cabinetUpper` here — this one was simply missed.
+   * The Cycles reason (quoted from that file): "#664c3a was still reading a little
+   * dark and a little red". Note that the stated MOTIVE for the lift over there —
+   * throwing a warmer bounce onto the walls — was measured and REFUTED; see the
+   * `wall-paint` note. It is kept on both sides because the colour is
+   * independently right, not because it did what it was supposed to.
+   *
+   * This value only drives the WebGL preview: `floor-walnut` is not a
+   * keep_glb_color surface, so the path tracer overrides the glb's base colour
+   * with its own recipe.
+   */
+  floor: '#6d5847',
   /** #a8a5a0 — hazy mid-rise rooftops in the middle distance, seen over the sill line. Not grass: this is a high floor. */
   ground: '#a8a5a0',
   /** #f3f1ed — flat smooth white, barely warm. Photo wall planes read neutral-to-cool where lit and #85887f in shade; there is no cream/beige cast. */
@@ -128,21 +145,107 @@ export const PALETTE = {
   wallCut: '#b4b6b5',
   /** #b9bcbc — exterior face of the envelope: same cool concrete family as the soffit, a step darker so the outside of the box separates from the inside. */
   wallOuter: '#b9bcbc',
-  /** #9ba1a3 — EXPOSED CONCRETE soffit. Photo ceiling samples #7c8587 (deep, near the kitchen) to #a9b8bf (bright, near the glass); mid-grey with b>r by ~8, i.e. very slightly cool. */
-  concrete: '#9ba1a3',
+  /**
+   * #b1bfc6 — EXPOSED CONCRETE soffit. Photo ceiling samples #7c8787 (deep, near
+   * the kitchen) to #abb8c0 (bright, near the glass), a 550x90 px band meaning
+   * rgb(136,153,158): mid-grey, distinctly cool (b > r by ~22, not the ~8 this
+   * note used to claim).
+   *
+   * RAISED from #9ba1a3, and the reason is measured on the Cycles side, where the
+   * same surface is `concrete-soffit` in scripts/blender/materials.py: at #96a3a9
+   * (the equivalent value there) the soffit band rendered at rgb(105,118,128) —
+   * 0.4 stop under the photo — so 30% of every hero frame read as a grey lid.
+   * Both files were lifted together to keep the preview and the path-traced frame
+   * describing the same slab.
+   *
+   * #b1bfc6 is a 0.44/0.52/0.57 LINEAR reflectance, which is at the top of the
+   * band for a pale smooth-formed slab (light concrete is 0.40-0.50) and is
+   * deliberately not pushed further: see the long note on `concrete-soffit` in the
+   * Cycles table for the calibration showing that the residual shortfall against
+   * the photo is a LIGHTING deficit, not an albedo one.
+   */
+  concrete: '#b1bfc6',
   /** #f6f5f2 — door leaves and the few casings there are. Photo shows almost no applied trim, so trim is basically wall colour, only flatter-sheened than paint. */
   trim: '#f6f5f2',
-  /** #f1efeb — baseboard. Photo shows minimal-to-none: deliberately within a hair of `wall` so it disappears the way it does in the frame. */
+  /**
+   * #f1efeb — baseboard. Photo shows minimal-to-none: deliberately within a hair
+   * of `wall` so it disappears the way it does in the frame.
+   *
+   * NOT CURRENTLY DRAWN. build.ts stopped emitting base trim (the reference unit
+   * has none — see the SHADOW GAP block in build.ts) and the wall/floor junction
+   * is now `shadowGap` below. Kept because the value is still right for a plan
+   * variant that does have base trim, but nothing reaches it today.
+   */
   baseboard: '#f1efeb',
+  /**
+   * #8f8d88 — the WALL/FLOOR JUNCTION, and it is a SHADOW GAP, not a moulding.
+   *
+   * The photo has no base trim anywhere: the wall butts the plank floor and all
+   * that marks the line is one dark row. MEASURED twice, independently, on a
+   * 30 px column down the base of the 16" pier between the glazing bays:
+   * the wall grades 106 -> 89 over ~36 px, drops to 66, bottoms at
+   * rgb(40,35,35) for 2-3 px, comes back to 47 then 59, and runs on into the
+   * floor's reflection of the pier. So the target is a SOFT dark line bottoming
+   * near 40, not a black one.
+   *
+   * WHY THIS MATERIAL EXISTS AT ALL. The previous pass drew this band in
+   * `metalBlack` on the argument that it was "the darkest surface this file can
+   * reach without adding a material to materials.ts (which this file does not
+   * own)". That constraint was real for that pass but the result overshot badly:
+   * the junction rendered at rgb(1.3,1.0,0.9) — one row of pure black, ~30x
+   * darker than the photo's 40 — which reads as a crack, not a shadow. So the
+   * material got added here instead.
+   *
+   * The value is CALIBRATED, not guessed: at #8f8d88 the junction lands at
+   * rgb(42,36,32) against the photo's rgb(40,35,35). It is deliberately much
+   * LIGHTER than it looks like it should be, because the band sits in a corner
+   * that is already heavily occluded — most of the darkness is the contact
+   * shadow doing its job, and the material only has to not fight it. Slightly
+   * warm-neutral (r > b) to match the measured junction, which is picking up
+   * bounce off the walnut.
+   */
+  shadowGap: '#8f8d88',
   /** #dcebe8 — glazing. Faint green-blue: the adjacent curtain-wall tower on the right reads cyan-green through the panes and at grazing angles the sliders tint the view. */
   glass: '#dcebe8',
-  /** #1e2124 — BLACK ANODISED ALUMINIUM mullions, slider frames, bottom rail. Photo frames sample #2a2d30 at their brightest; anodising is near-black with a soft metal sheen, never a true 0,0,0. */
-  frameDark: '#1e2124',
+  /**
+   * #4a4f53 — BLACK ANODISED ALUMINIUM mullions, slider frames, bottom rail.
+   *
+   * RAISED from #1e2124, which was an order of magnitude too dark once you read
+   * the photo properly. The sections are not near-black: a shadowed mullion
+   * samples #253d46 (rgb 37,62,71 — note b-r = +34, that blue is the SKY the
+   * section is carrying) and where the same section catches sky it goes to
+   * #6693b1. The sill track draws a bright line along its top edge (#606c72 mean,
+   * std 49.6 along the run). "Near-black with a soft sheen" describes none of
+   * that.
+   *
+   * The number itself is a FINISH fact: Class 1 architectural anodising in dark
+   * bronze / black measures 8-12% total reflectance. #1e2124 is 1.3% linear —
+   * a 1% mirror, which in the Cycles frame rendered the entire glazing assembly
+   * at rgb(9,11,13) with no bright arris anywhere on it. #4a4f53 is 6.8%, the low
+   * end of the band, because these sections are the BLACK finish rather than dark
+   * bronze.
+   */
+  frameDark: '#4a4f53',
   /** #ebedec — pale stone counter with a thin edge profile. Photo counter samples warm (#b78761) ONLY because of warm under-cabinet LED wash; the stone itself is a light, faintly cool grey. */
   counter: '#ebedec',
-  /** #4b443e — dark charcoal-brown slab-front UPPER cabinets. Photo uppers sample #666f72..#675e58 lit purely by window bounce, i.e. a dark warm grey; the albedo behind that is charcoal with a brown lean. */
-  cabinetUpper: '#4b443e',
-  /** #cfc9be — pale base cabinets. Photo base fronts sample #635e56 in the counter's shadow yet read clearly LIGHTER than the uppers; pale greige albedo. */
+  /**
+   * #7f7871 — dark charcoal-brown slab-front UPPER cabinets. Photo uppers sample
+   * #666f72..#675e58 lit purely by window bounce, i.e. a dark warm grey.
+   *
+   * RAISED TWO STOPS from #4b443e. Recovered by RATIO against an adjacent surface
+   * under the same illuminant, which is the only sound way to get an albedo out of
+   * a surface that is lit entirely by bounce: sampled pixels there are radiance,
+   * not reflectance. #4b443e is 6% linear; a charcoal laminate slab is a 20-28%
+   * finish and #7f7871 is 22%.
+   *
+   * UNCERTAINTY, stated: +/-15% in VALUE. The ratio read needs both surfaces to
+   * share an illuminant and the uppers sit under their own shadow line while the
+   * reference surface does not, so this is the weakest-evidence colour in this
+   * table. The HUE (warm charcoal, r > b) is solid; the value is a bracket. What
+   * is certain is that #4b443e sat well outside that bracket.
+   */
+  cabinetUpper: '#7f7871',
+  /** #cfc9be — pale base cabinets. Photo base fronts sample #635e56 in the counter's shadow yet read clearly LIGHTER than the uppers; pale greige albedo. A ratio read against the splash wall directly above them (door #635d53 vs splash #be936e under the same warm under-cabinet LED, i.e. ~0.7x its reflectance) puts the albedo near #c6c0b6, which is this value within its ~+/-10% uncertainty — so it is left alone. */
   cabinetBase: '#cfc9be',
   /** #9c968d — shadow tone for cabinet interiors, shelves and toe-kicks. Not a real surface in the photo: it is `cabinetBase` darkened, standing in for occlusion we do not compute. */
   cabinetShadow: '#9c968d',
@@ -222,11 +325,24 @@ export const MAT = {
   trim: matFor(PALETTE.trim, { roughness: 0.6, metalness: 0.0, name: 'trim' }),
   /**
    * MINIMAL baseboard: the photo shows essentially none, so this sits within a
-   * hair of `wall` at wall roughness. It stays a distinct material only so
-   * build.ts can keep emitting the geometry (cheap, and correct if a future
-   * plan variant does have base trim).
+   * hair of `wall` at wall roughness.
+   *
+   * NOTHING REFERENCES IT ANY MORE. This note used to end "It stays a distinct
+   * material only so build.ts can keep emitting the geometry" — build.ts stopped:
+   * the reference unit has no base trim at all, so the wall/floor junction is now
+   * `shadowGap` below. Kept, and kept accurate, because the value is still right
+   * for a plan variant that does have base trim; but do not expect to see it in a
+   * frame today.
    */
   baseboard: matFor(PALETTE.baseboard, { roughness: 0.9, metalness: 0.0, name: 'baseboard' }),
+  /**
+   * WALL/FLOOR SHADOW GAP (see PALETTE.shadowGap for the measurement). A flat
+   * dielectric at wall roughness: it is a sliver of paint and plaster in shadow,
+   * not metalwork, and it must have a full diffuse lobe or the contact shadow it
+   * sits in drives it to zero — which is exactly what happened when this band was
+   * drawn in `metalBlack` (metalness 0.6, so almost no diffuse response).
+   */
+  shadowGap: matFor(PALETTE.shadowGap, { roughness: 0.9, metalness: 0.0, name: 'shadow-gap' }),
   /**
    * FULL-HEIGHT GLAZING. Retuned for the real assembly: floor slab to soffit,
    * so glass is now a huge fraction of every interior frame rather than a
@@ -345,6 +461,62 @@ export const MAT = {
    * but the fold artefact costs far more realism than the transmission buys.
    */
   curtain: matFor('#efe9dc', { roughness: 0.97, name: 'curtain' }),
+
+  // ---------------------------------------------------------------- projection
+  //
+  // A projector's picture is made of two surfaces and they are NOT the same
+  // material, which is the single most common mistake in a rendered home
+  // cinema: the FABRIC is what you see with the projector off, and the IMAGE is
+  // what you see with it on. Modelling only the first gives you a grey rectangle
+  // that reads as a blank wall panel; modelling only the second gives you a
+  // glowing slab in a daylight frame, which is a lie about this room (see the
+  // daylight finding in the layout notes).
+
+  /**
+   * MATTE WHITE screen fabric, gain ~1.0-1.1. roughness 0.94: a real screen is
+   * near-Lambertian by design — that is the whole point of the material, so the
+   * image looks the same from every seat. Slightly off pure white because
+   * projector fabric is a warm-neutral vinyl, not paper.
+   */
+  screenFabric: matFor('#e6e5e1', { roughness: 0.94, metalness: 0.0, name: 'screen-fabric' }),
+  /**
+   * ALR / lenticular screen fabric — the grey, structured surface you pair with
+   * an ultra-short-throw projector. It is DARK on purpose (that is what rejects
+   * ambient light) and it is directional, which a MeshStandardMaterial cannot
+   * do: roughness 0.5 is the closest single-lobe stand-in for a surface that
+   * returns light up-and-out and swallows everything else.
+   */
+  screenFabricAlr: matFor('#8b8d90', { roughness: 0.5, metalness: 0.02, name: 'screen-fabric-alr' }),
+  /**
+   * THE PICTURE, switched on. Emissive, and deliberately cool-neutral: a
+   * projected image is a 6000-6500K light source and it spills that colour onto
+   * the ceiling and the faces of everyone watching. Intensity is set so the
+   * screen reads as ON without clipping in an evening frame.
+   */
+  screenImage: matFor('#dfe8f5', {
+    roughness: 0.9,
+    emissive: '#bcd2f0',
+    emissiveIntensity: 2.2,
+    name: 'projection-image',
+  }),
+  /**
+   * Black velvet bezel on a fixed-frame screen, and the cassette end caps on a
+   * roller. roughness 0.99 with no coat: flocked velvet is the blackest thing in
+   * the room, blacker than the anodised window frames, and it has to stay that
+   * way or the frame reads as a plastic surround.
+   */
+  bezelVelvet: matFor('#0e0e0e', { roughness: 0.99, metalness: 0.0, name: 'bezel-velvet' }),
+  /** Blackout roller / cellular shade fabric: dense, matte, warm charcoal. */
+  shadeFabric: matFor('#3a3833', { roughness: 0.96, metalness: 0.0, name: 'shade-blackout' }),
+  /** Speaker grille cloth, and the acoustically transparent front of a soundbar. */
+  speakerGrille: matFor('#26262a', { roughness: 0.92, metalness: 0.0, name: 'speaker-grille' }),
+  /**
+   * Projector lens glass and the exit window on a UST. Near-black and glossy —
+   * a lens reads as a dark hole with one bright specular highlight, which is
+   * exactly what cooktopGlass already does, but named separately so the Cycles
+   * table can give it a real IOR later without changing every cooktop.
+   */
+  lensGlass: matFor('#0c0e11', { roughness: 0.06, metalness: 0.1, name: 'lens-glass' }),
 } satisfies Record<string, THREE.MeshStandardMaterial>;
 
 export type MatKey = keyof typeof MAT;

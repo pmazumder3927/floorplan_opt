@@ -272,8 +272,12 @@ def _ground_bounce(nt, sky, bearing_deg: float):
     nt.links.new(hsky.outputs["Color"], _socket(ground, "A", "RGBA"))
     # A shade warmer than neutral: the ground is brick, asphalt and gravel, and it
     # is where the low afternoon sun is landing.
+    import os as _os
+    _ga = float(_os.environ.get("XP_GROUND_ALBEDO", GROUND_ALBEDO))
+    _tr, _tg, _tb = (float(v) for v in _os.environ.get("XP_GROUND_TINT", "1.06,1.0,0.92").split(","))
+    print(f"[xp] ground_albedo={_ga} tint={_tr},{_tg},{_tb}", flush=True)
     _socket(ground, "B", "RGBA").default_value = (
-        GROUND_ALBEDO * 1.06, GROUND_ALBEDO, GROUND_ALBEDO * 0.92, 1.0)
+        _ga * _tr, _ga * _tg, _ga * _tb, 1.0)
 
     mix = nt.nodes.new("ShaderNodeMix")
     mix.data_type = "RGBA"
@@ -358,9 +362,11 @@ def build_world(
     # crisp dark-blue mountain sky and would read as a different climate; much past
     # 3 and the direct sun goes amber enough to look like late evening at 4 pm.
     # Ozone mainly tints the zenith; 1.0 is the default and is right.
-    sky.air_density = 1.0
-    sky.dust_density = dust_density
-    sky.ozone_density = 1.0
+    import os as _os
+    sky.air_density = float(_os.environ.get("XP_AIR", 1.0))
+    sky.dust_density = float(_os.environ.get("XP_DUST", dust_density))
+    sky.ozone_density = float(_os.environ.get("XP_OZONE", 1.0))
+    print(f"[xp] air={sky.air_density} dust={sky.dust_density} ozone={sky.ozone_density}", flush=True)
     # The real sun subtends 0.545 deg. Keep it: with the OptiX denoiser there is no
     # reason to fake a soft sun, and a true-size disc gives the correct shadow
     # penumbra through the full-height glazing.

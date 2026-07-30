@@ -43,6 +43,7 @@ import {
   gridSet,
   buildGrid,
   itemObb,
+  lerp,
   norm,
   obbArea,
   obbContainsPoint,
@@ -745,12 +746,76 @@ function requiredRoutes(plan: FloorPlan, g: Grid, entries: Entry[]): Route[] {
 /** 55" TV, in inches. Real diagonals are printed on the box; guess if not. */
 function tvDiagonalInches(def: FurnitureDef): number {
   const hay = [def.name, def.id, def.source ?? '', ...(def.tags ?? [])].join(' ');
-  const m = hay.match(/\b(2[4-9]|[3-9]\d|1[0-1]\d)\s*(?:"|in\b|inch)/i);
+  // 24"-199": the top of the range is for PROJECTION screens, which really are
+  // sold at 120" and 150" — a TV never gets near it, so widening the pattern
+  // costs nothing and stops a 120" screen silently falling to the hypot guess.
+  const m = hay.match(/\b(2[4-9]|[3-9]\d|1\d\d)\s*(?:"|in\b|inch)/i);
   if (m) return parseFloat(m[1]);
   // Fallback: a panel is measured corner to corner, and for a bare screen the
   // catalog w/h are close enough to the panel size.
   return Math.hypot(def.w, def.h) * 12;
 }
+
+/** Every projection screen in the catalog is 16:9 unless it says otherwise. */
+const DEFAULT_IMAGE_ASPECT = 16 / 9;
+
+/**
+ * Standard thin-bezel face width on a fixed-frame screen, used only as a
+ * fallback when a def forgot to state its image diagonal.
+ */
+const SCREEN_BEZEL = 2.375 / 12;
+
+/**
+ * The width of the PICTURE in feet — not the width of the frame around it.
+ *
+ * This distinction is the whole reason `imageDiagonal` exists as a field: a 100"
+ * 16:9 image is 87.2" wide, but the frame around it is nearer 92", and every
+ * viewing-distance and throw-distance number below is a multiple of the IMAGE
+ * width. Using the frame instead overstates every distance by ~5%, which is
+ * enough to move a sofa half a foot.
+ */
+function imageWidthFt(def: FurnitureDef): number {
+  const aspect = def.imageAspect ?? DEFAULT_IMAGE_ASPECT;
+  if (def.imageDiagonal && def.imageDiagonal > 0) {
+    // w = diag * aspect / sqrt(aspect^2 + 1)
+    return ((def.imageDiagonal / 12) * aspect) / Math.hypot(aspect, 1);
+  }
+  return Math.max(0.5, def.w - SCREEN_BEZEL * 2);
+}
+
+/**
+ * Sensible horizontal viewing angles for a PROJECTED image, in degrees.
+ *
+ * These are the published recommendations, not invented numbers: SMPTE's
+ * reference is a 30 deg subtended angle and THX's is 36 deg. The bounds below
+ * are the widest and narrowest anyone sensibly sits either side of that pair —
+ * 45 deg is a front row (immersive, and some people hate it), 22 deg is a
+ * picture that reads like a large television. Distance = (width/2) / tan(a/2),
+ * which works out at 1.21x and 2.57x the image width.
+ */
+const VIEW_ANGLE_WIDE = 45;
+const VIEW_ANGLE_NARROW = 22;
+
+/** Distance at which an image of width `w` subtends `deg` horizontally. */
+function distanceForAngle(w: number, deg: number): number {
+  return w / 2 / Math.tan(((deg / 2) * Math.PI) / 180);
+}
+
+/** Horizontal angle an image of width `w` subtends at distance `d`, in degrees. */
+function angleAtDistance(w: number, d: number): number {
+  return (2 * Math.atan(w / 2 / d) * 180) / Math.PI;
+}
+
+/**
+ * Seated eye height, feet. 3'-10" is the standard figure for an adult on a
+ * 17-18" seat and it is what the sightline test below uses: anything taller
+ * than this standing between a seat and the screen is genuinely in the way,
+ * and anything shorter genuinely is not.
+ */
+const SEATED_EYE = 46 / 12;
+
+/** How far past the recommended throw band counts as "the image will not fit". */
+const THROW_EPS = 0.25;
 
 function nameOf(e: Entry): string {
   return `${e.item.label ?? e.def.name} (${e.item.id})`;
@@ -1100,6 +1165,168 @@ export function analyzeLayout(plan: FloorPlan, layout: Layout): AnalysisResult {
       [e.item.id, best.e.item.id],
       scale(add(e.obb.center, best.e.obb.center), 0.5),
     );
+  }
+
+  // ---- projection: seating distance, sightlines, throw geometry ---------
+  //
+  // A projector scheme is the one thing in this project that can be drawn
+  // perfectly and still not work, because two invisible numbers decide it: how
+  // far the audience sits from the picture, and how far the projector sits from
+  // the wall. Both are checked here against the picture's real width.
+  /*
+   * `render-only` defs are excluded here, and the reason matters. The catalog
+   * models a projected picture as TWO entries for ONE object — the screen, and
+   * the same rectangle switched on (projection-image-*, price 0), following the
+   * murphy-bed-open convention. A layout places the lit one coincident with the
+   * screen so an evening frame can show the room in use. Treating it as a second
+   * screen would double every viewing-distance and sightline finding and pair a
+   * projector with a picture that is not a surface, so it is skipped.
+   */
+  const renderOnly = (e: Entry): boolean => (e.def.tags ?? []).includes('render-only');
+  const screens = entries.filter((e) => e.def.kind === 'projection_screen' && !renderOnly(e));
+  for (const e of screens) {
+    const imgW = imageWidthFt(e.def);
+    const near = distanceForAngle(imgW, VIEW_ANGLE_WIDE);
+    const far = distanceForAngle(imgW, VIEW_ANGLE_NARROW);
+    const diag = e.def.imageDiagonal ?? Math.round(tvDiagonalInches(e.def));
+
+    // Which seats are actually pointed at it? Same 72-degree cone the TV check
+    // uses, so "facing" means the same thing throughout the analyzer.
+    const aimed: { seat: Entry; d: number }[] = [];
+    for (const s of entries) {
+      if (!SEATING.has(s.def.kind)) continue;
+      const toScreen = sub(e.obb.center, s.obb.center);
+      const d = Math.hypot(toScreen[0], toScreen[1]);
+      if (d < 0.5) continue;
+      if (dot(norm(toScreen), axisY(s.obb)) < 0.3) continue;
+      aimed.push({ seat: s, d });
+    }
+
+    if (aimed.length === 0) {
+      add_(
+        'warn',
+        'screen-no-audience',
+        `Nothing is pointed at ${nameOf(e)}. A ${Math.round(diag)}" picture with no seat facing it is decoration — turn a sofa, a chair or a bed to face it, or drop the screen.`,
+        [e.item.id],
+        e.obb.center,
+      );
+      continue;
+    }
+
+    aimed.sort((a, b) => a.d - b.d);
+    const nearest = aimed[0]!;
+    const furthest = aimed[aimed.length - 1]!;
+
+    if (nearest.d < near - 0.05) {
+      add_(
+        'warn',
+        'screen-distance',
+        `${nameOf(nearest.seat)} is too close to ${nameOf(e)}: ${formatShort(nearest.d)} from a ${Math.round(diag)}" picture ${formatShort(imgW)} wide, which subtends ${angleAtDistance(imgW, nearest.d).toFixed(0)} deg. Sit back to ${formatShort(near)} or further (SMPTE reference is 30 deg, THX 36 deg; ${VIEW_ANGLE_WIDE} deg is the widest front row anyone recommends).`,
+        [e.item.id, nearest.seat.item.id],
+        scale(add(e.obb.center, nearest.seat.obb.center), 0.5),
+      );
+    }
+    if (furthest.d > far + 0.05) {
+      add_(
+        'warn',
+        'screen-distance',
+        `${nameOf(furthest.seat)} is too far from ${nameOf(e)}: ${formatShort(furthest.d)} from a ${Math.round(diag)}" picture, which subtends only ${angleAtDistance(imgW, furthest.d).toFixed(0)} deg — a television, not a cinema. Either move the seat in to ${formatShort(far)} or go to a bigger image.`,
+        [e.item.id, furthest.seat.item.id],
+        scale(add(e.obb.center, furthest.seat.obb.center), 0.5),
+      );
+    }
+
+    // Sightline: anything taller than a seated eye standing between a seat and
+    // the picture. Sampled along the segment rather than solved analytically —
+    // PROBE_STEP is 1 1/4", far finer than the plan's own accuracy.
+    for (const { seat } of aimed) {
+      const a = seat.obb.center;
+      const b = e.obb.center;
+      const span = dist(a, b);
+      if (span < 0.5) continue;
+      const steps = Math.max(2, Math.ceil(span / PROBE_STEP));
+      const blockers = new Set<string>();
+      for (const o of entries) {
+        if (o === e || o === seat) continue;
+        if (o.def.walkable || o.def.lowProfile) continue;
+        if (o.z1 <= SEATED_EYE) continue;
+        for (let i = 1; i < steps; i++) {
+          const p = lerp(a, b, i / steps);
+          if (obbContainsPoint(o.obb, p)) {
+            blockers.add(o.item.id);
+            break;
+          }
+        }
+      }
+      for (const id of blockers) {
+        const o = entries.find((x) => x.item.id === id)!;
+        add_(
+          'warn',
+          'sightline',
+          `${nameOf(o)} stands between ${nameOf(seat)} and ${nameOf(e)}: it is ${formatShort(o.z1)} tall and a seated eye is at ${formatShort(SEATED_EYE)}, so whoever sits there watches the top half of the picture.`,
+          [o.item.id, seat.item.id, e.item.id],
+          o.obb.center,
+        );
+      }
+    }
+  }
+
+  for (const p of entries) {
+    if (p.def.kind !== 'projector') continue;
+    if (screens.length === 0) {
+      add_(
+        'warn',
+        'projector-no-screen',
+        `${nameOf(p)} has nothing to throw at. Add a projection screen (or a def tagged as a painted wall panel) so the throw distance can be checked.`,
+        [p.item.id],
+        p.obb.center,
+      );
+      continue;
+    }
+    // Pair the projector with its nearest screen. A layout with two screens and
+    // one projector is a scheduling question, not a geometry one.
+    let best = screens[0]!;
+    for (const s of screens) if (dist(p.obb.center, s.obb.center) < dist(p.obb.center, best.obb.center)) best = s;
+
+    if (!p.def.throwRatio) continue; // no published ratio, nothing to check
+
+    const imgW = imageWidthFt(best.def);
+    const [rMin, rMax] = p.def.throwRatio;
+    const needMin = rMin * imgW;
+    const needMax = rMax * imgW;
+
+    // Throw distance is measured PERPENDICULAR to the screen plane, from the
+    // lens. The lens sits `lensOffset` inside the face of the cabinet that
+    // points at the screen, so back the cabinet's own half-extent out first.
+    const nrm = axisY(best.obb); // the screen's front direction, into the room
+    // Measure to the PICTURE, not to the middle of the frame: the fabric sits at
+    // the screen's front face, and on a fixed frame that is 1-2" proud of the
+    // wall while a floor-riser's cabinet is 9 1/2" deep. Ignoring it throws the
+    // throw distance out by more than the tolerance on some of these products.
+    const perp = Math.abs(dot(sub(p.obb.center, best.obb.center), nrm)) - best.obb.d / 2;
+    const half =
+      Math.abs(dot(axisX(p.obb), nrm)) * (p.obb.w / 2) + Math.abs(dot(axisY(p.obb), nrm)) * (p.obb.d / 2);
+    const throwD = perp - half + (p.def.lensOffset ?? 0);
+
+    const band =
+      rMin === rMax
+        ? `wants exactly ${formatShort(needMin)}`
+        : `wants ${formatShort(needMin)} to ${formatShort(needMax)}`;
+    if (throwD < needMin - THROW_EPS || throwD > needMax + THROW_EPS) {
+      const imgAt = rMin > 0 ? (throwD / ((rMin + rMax) / 2)) : 0;
+      const diagAt = imgAt > 0 ? (imgAt * 12 * Math.hypot(best.def.imageAspect ?? DEFAULT_IMAGE_ASPECT, 1)) / (best.def.imageAspect ?? DEFAULT_IMAGE_ASPECT) : 0;
+      add_(
+        'error',
+        'throw-distance',
+        `${nameOf(p)} cannot make the picture on ${nameOf(
+          best,
+        )}: its lens is ${formatShort(throwD)} from the screen plane and a ${formatShort(
+          imgW,
+        )} wide image ${band} at a throw ratio of ${rMin === rMax ? rMin.toFixed(2) : `${rMin.toFixed(2)}-${rMax.toFixed(2)}`}:1. From where it stands it throws roughly a ${Math.round(diagAt)}" image instead. Move the projector, or change the screen size.`,
+        [p.item.id, best.item.id],
+        scale(add(p.obb.center, best.obb.center), 0.5),
+      );
+    }
   }
 
   // ---- warn: pieces adrift in the room ---------------------------------

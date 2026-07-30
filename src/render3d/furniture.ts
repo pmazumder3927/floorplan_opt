@@ -333,6 +333,14 @@ const KIND_COLOR: Partial<Record<FurnitureDef['kind'], string>> = {
   rug: '#a3a08f',
   tv: '#1b1d20',
   tv_stand: '#6a4a2c',
+  // A laser TV / UST is usually a pale cabinet with a fabric wrap; a long-throw
+  // projector is usually near-black. The catalog says which per product; this is
+  // the fallback for the more common one.
+  projector: '#d7d4cd',
+  // On a screen, color = the BEZEL and accent = the FABRIC.
+  projection_screen: '#0e0e0e',
+  speaker: '#26262a',
+  shade: '#3a3833',
   plant: '#4e7a4a',
   floor_lamp: '#2f3134',
   table_lamp: '#2f3134',
@@ -479,6 +487,18 @@ export function buildFurniture(def: FurnitureDef, item?: PlacedItem): THREE.Obje
     case 'tv_stand':
       buildCase(ctx, 'media');
       break;
+    case 'projector':
+      buildProjector(ctx);
+      break;
+    case 'projection_screen':
+      buildProjectionScreen(ctx);
+      break;
+    case 'speaker':
+      buildSpeaker(ctx);
+      break;
+    case 'shade':
+      buildShade(ctx);
+      break;
     case 'plant':
       buildPlant(ctx);
       break;
@@ -530,10 +550,36 @@ function stamp(root: THREE.Object3D, defId: string, itemId?: string): void {
  */
 function buildSeating(ctx: Ctx, sectional: boolean): void {
   const { g, w, d, h, seat, body, accent, n } = ctx;
-  const armW = Math.min(IN(7), w * 0.13);
+  const def = ctx.def;
+
+  /*
+   * LIFT AND SHADOW GAP — the single change that stops a sofa reading as a slab.
+   *
+   * The previous version ran the upholstered plinth from the floor to the
+   * underside of the cushions and then put four 2 1/2" feet INSIDE that volume,
+   * where they are invisible. So the sofa met the floor along a hard line with no
+   * shadow under it, and in a path-traced frame that is exactly what a
+   * featureless block looks like: the eye has nothing to separate the object from
+   * the plane it stands on.
+   *
+   * Real modern seating is lifted 4-7" on legs, and the dark band of shadow under
+   * it is most of what tells you it is furniture. So the body now starts at
+   * `lift` and the legs are real, visible, and outside the body.
+   *
+   * `lift` is read off the catalog: a 'floating' or 'legs' tag gets the full 6",
+   * a plinth-based design ('plinth' tag) gets a 1" recessed toe shadow, and
+   * anything else gets 4 1/2" — the industry-standard leg on an 17" seat.
+   */
+  const tagged = (re: RegExp): boolean => hasTag(def, re);
+  const onPlinth = tagged(/\bplinth\b|platform-base/);
+  const lift = onPlinth ? IN(1) : tagged(/floating|tall-leg/) ? IN(6) : IN(4.5);
+
+  const armless = tagged(/armless/);
+  const slimArm = tagged(/slim[- ]?arm|track[- ]?arm|thin[- ]?arm/);
+  const armW = armless ? 0 : Math.min(slimArm ? IN(3.5) : IN(7), w * 0.13);
   const backT = Math.min(IN(8), d * 0.22);
   const cushT = IN(5);
-  const plinthTop = Math.max(IN(3), seat - cushT);
+  const plinthTop = Math.max(lift + IN(2), seat - cushT);
   const armTop = Math.min(h - IN(2), seat + IN(7));
 
   // Depth of the main run. A sectional's def box is the whole L, so the
@@ -541,26 +587,40 @@ function buildSeating(ctx: Ctx, sectional: boolean): void {
   const mainD = sectional ? Math.min(d, IN(38)) : d;
   const zBack = -d / 2;
   const zMainFront = zBack + mainD;
+  // Chaise side: catalog says so, else the +x (right) side as before.
+  const chaiseLeft = tagged(/chaise[- ]?left|left[- ]?chaise|laf\b/);
 
-  // plinth: the upholstered base under the cushions
-  addBox(g, body, [w, plinthTop, mainD], [0, plinthTop / 2, zBack + mainD / 2], { name: `${n}/plinth` });
+  // plinth: the upholstered base under the cushions, lifted clear of the floor
+  addBox(g, body, [w, plinthTop - lift, mainD], [0, lift + (plinthTop - lift) / 2, zBack + mainD / 2], {
+    name: `${n}/plinth`,
+  });
 
-  // back: full height at the rear
-  addBox(g, body, [w, h, backT], [0, h / 2, zBack + backT / 2], { name: `${n}/back` });
+  // back: from the lift to the full height at the rear
+  addBox(g, body, [w, h - lift, backT], [0, lift + (h - lift) / 2, zBack + backT / 2], { name: `${n}/back` });
 
-  // arms: left always; right only when there is no L return on that side
+  // arms: on both ends of a plain sofa; a sectional keeps its outer arm only
   const armLen = mainD;
-  addBox(g, body, [armW, armTop, armLen], [-w / 2 + armW / 2, armTop / 2, zBack + armLen / 2], { name: `${n}/arm-l` });
-  if (!sectional) {
-    addBox(g, body, [armW, armTop, armLen], [w / 2 - armW / 2, armTop / 2, zBack + armLen / 2], { name: `${n}/arm-r` });
+  const armH = armTop - lift;
+  if (armW > 0) {
+    const outerLeft = !sectional || !chaiseLeft;
+    const outerRight = !sectional || chaiseLeft;
+    if (outerLeft)
+      addBox(g, body, [armW, armH, armLen], [-w / 2 + armW / 2, lift + armH / 2, zBack + armLen / 2], {
+        name: `${n}/arm-l`,
+      });
+    if (outerRight)
+      addBox(g, body, [armW, armH, armLen], [w / 2 - armW / 2, lift + armH / 2, zBack + armLen / 2], {
+        name: `${n}/arm-r`,
+      });
   }
 
   // seat cushions: divide the clear width into ~22-26" seats
-  const clearW = w - armW * (sectional ? 1 : 2);
+  const clearW = w - armW * (sectional || armless ? 1 : 2);
   const seatDepth = mainD - backT - IN(1);
   const seats = Math.max(1, Math.round(clearW / IN(24)));
   const cw = (clearW - IN(0.5) * (seats - 1)) / seats;
-  const x0 = -w / 2 + armW; // left edge of the clear span
+  // Left edge of the clear span: past the left arm unless the chaise is there.
+  const x0 = -w / 2 + (sectional && chaiseLeft ? 0 : armW);
   for (let i = 0; i < seats; i++) {
     const cx = x0 + cw / 2 + i * (cw + IN(0.5));
     addBox(g, accent, [cw, cushT, seatDepth], [cx, plinthTop + cushT / 2, zBack + backT + seatDepth / 2], {
@@ -576,34 +636,66 @@ function buildSeating(ctx: Ctx, sectional: boolean): void {
   }
 
   if (sectional) {
-    // L return (chaise) on the RIGHT (+x) side, filling the rest of the def box.
+    // L return (chaise) filling the rest of the def box on the chaise side.
     const retW = Math.min(w * 0.42, IN(36));
     const retZ0 = zMainFront;
     const retD = d / 2 - retZ0;
+    const side = chaiseLeft ? -1 : 1;
     if (retD <= IN(6)) {
-      // def box was too shallow for a return; fall back to a plain right arm
-      addBox(g, body, [armW, armTop, armLen], [w / 2 - armW / 2, armTop / 2, zBack + armLen / 2], { name: `${n}/arm-r` });
+      // def box was too shallow for a return; fall back to a plain arm there
+      if (armW > 0)
+        addBox(g, body, [armW, armH, armLen], [side * (w / 2 - armW / 2), lift + armH / 2, zBack + armLen / 2], {
+          name: chaiseLeft ? `${n}/arm-l` : `${n}/arm-r`,
+        });
     } else {
-      const rx = w / 2 - retW / 2;
-      addBox(g, body, [retW, plinthTop, retD], [rx, plinthTop / 2, retZ0 + retD / 2], { name: `${n}/return-plinth` });
-      addBox(g, accent, [retW - armW, cushT, retD - IN(1)], [rx - armW / 2, plinthTop + cushT / 2, retZ0 + retD / 2], {
-        name: `${n}/return-seat`,
+      const rx = side * (w / 2 - retW / 2);
+      addBox(g, body, [retW, plinthTop - lift, retD], [rx, lift + (plinthTop - lift) / 2, retZ0 + retD / 2], {
+        name: `${n}/return-plinth`,
       });
-      // outer arm runs the full length of the L on the +x side
-      addBox(g, body, [armW, armTop, d], [w / 2 - armW / 2, armTop / 2, 0], { name: `${n}/arm-r` });
+      addBox(
+        g,
+        accent,
+        [retW - armW, cushT, retD - IN(1)],
+        [rx - side * (armW / 2), plinthTop + cushT / 2, retZ0 + retD / 2],
+        { name: `${n}/return-seat` },
+      );
+      // outer arm runs the full length of the L on the chaise side
+      if (armW > 0)
+        addBox(g, body, [armW, armH, d], [side * (w / 2 - armW / 2), lift + armH / 2, 0], {
+          name: chaiseLeft ? `${n}/arm-l` : `${n}/arm-r`,
+        });
     }
   }
 
-  // feet: 2" blocks, inset 3", so the piece reads as lifted off the floor
-  const legS = IN(2);
-  const inset = IN(3);
-  for (const sx of [-1, 1]) {
-    for (const sz of [-1, 1]) {
-      addBox(g, MAT.woodDark, [legS, IN(2.5), legS], [sx * (w / 2 - inset), IN(1.25), sz * (d / 2 - inset)], {
-        name: `${n}/foot`,
-        recv: false,
-      });
-    }
+  if (onPlinth) {
+    // Recessed plinth: a dark toe band set back 1 1/2", so the piece still reads
+    // as lifted without inventing legs the product does not have.
+    addBox(g, MAT.cabinetDark, [w - IN(3), lift, mainD - IN(3)], [0, lift / 2, zBack + mainD / 2], {
+      name: `${n}/toe-plinth`,
+      recv: false,
+    });
+    return;
+  }
+
+  /*
+   * LEGS. Slim tapered timber or black steel, 1 1/2" square, set in 3 1/2" from
+   * each corner — that is what an Article/Floyd/Gus leg actually measures. On a
+   * sectional the L needs a fifth and sixth leg under the return or the chaise
+   * visibly floats.
+   */
+  const legS = IN(1.5);
+  const inset = IN(3.5);
+  const legMat = ctx.hasAccent && tagged(/black[- ]?leg|steel[- ]?leg/) ? MAT.metalBlack : MAT.woodDark;
+  const legXs = [-1, 1].map((s) => s * (w / 2 - inset));
+  const legZs = [-1, 1].map((s) => s * (d / 2 - inset));
+  const spots: [number, number][] = [];
+  for (const lx of legXs) for (const lz of legZs) spots.push([lx, lz]);
+  if (w > IN(84)) {
+    // A long run sags visually without a centre pair.
+    for (const lz of legZs) spots.push([0, lz]);
+  }
+  for (const [lx, lz] of spots) {
+    addBox(g, legMat, [legS, lift, legS], [lx, lift / 2, lz], { name: `${n}/leg`, recv: false });
   }
 }
 
@@ -836,19 +928,59 @@ function buildCase(ctx: Ctx, style: 'drawers' | 'doors' | 'media'): void {
   const face = matFor(ctx.color, { roughness: 0.5 });
   const pull = ctx.hasAccent ? matFor(ctx.accentColor, { roughness: 0.3, metalness: 0.7 }) : MAT.chrome;
 
+  /*
+   * HANDLELESS, and it is not a style preference — it is in the finish schedule.
+   * The reference photograph shows slab fronts with faint vertical seams and NOT
+   * ONE pull, knob, bar or edge profile on any door or drawer in the kitchen; the
+   * only visible hardware in the room is the range's own tubular oven handle and
+   * the faucet. So a bar pull on a new case piece standing next to that run is
+   * the single easiest way to make it read as a different, cheaper kitchen.
+   *
+   * Any catalog entry tagged 'slab-front', 'handleless', 'sliding', 'millwork' or
+   * 'ust-plinth' therefore gets NO pull, and the 1/4" recess plus the 1/8" reveal
+   * between panels does the whole job of making the front read. See
+   * src/core/finishes.ts, the KITCHEN HARDWARE / PULLS entry.
+   */
+  const handleless = hasTag(ctx.def, /slab-front|handleless|sliding|millwork|ust-plinth|push-open/);
+  const pullStyleH: 'bar-h' | 'none' = handleless ? 'none' : 'bar-h';
+  const pullStyleV: 'bar-v' | 'none' = handleless ? 'none' : 'bar-v';
+
   if (style === 'drawers') {
     // ~10" drawer faces; a 30" dresser gets 3, a 24" nightstand gets 2
     const rows = Math.max(1, Math.min(6, Math.round((h - toeH) / IN(10))));
     const cols = w > IN(44) ? 2 : 1; // wide dressers are double-banked
-    addPanels(g, { x0: -w / 2, x1: w / 2, y0: carcassY0, y1: h, zFace, rows, cols, face, pull, pullStyle: 'bar-h', name: n });
+    addPanels(g, { x0: -w / 2, x1: w / 2, y0: carcassY0, y1: h, zFace, rows, cols, face, pull, pullStyle: pullStyleH, name: n });
   } else if (style === 'doors') {
     const cols = Math.max(1, Math.round(w / IN(26))); // ~26" leaves
-    addPanels(g, { x0: -w / 2, x1: w / 2, y0: carcassY0, y1: h, zFace, rows: 1, cols, face, pull, pullStyle: 'bar-v', name: n });
+    addPanels(g, { x0: -w / 2, x1: w / 2, y0: carcassY0, y1: h, zFace, rows: 1, cols, face, pull, pullStyle: pullStyleV, name: n });
+  } else if (hasTag(ctx.def, /ust-plinth|millwork/) && h <= IN(20)) {
+    /*
+     * A UST PLINTH is not a media console and must not be built like one. It is a
+     * low slab base whose whole job is to be a flat, square, parallel platform:
+     * a UST amplifies any yaw straight into visible trapezoid, and digital
+     * keystone on one is a resolution crop rather than a fix. So no open middle
+     * bay (a UST's exhaust and cable want the back of the top, not a shelf), no
+     * pulls, and a deliberately generous run of push-open fronts.
+     */
+    const bays = Math.max(2, Math.round(w / IN(30)));
+    addPanels(g, {
+      x0: -w / 2,
+      x1: w / 2,
+      y0: carcassY0,
+      y1: h,
+      zFace,
+      rows: 1,
+      cols: bays,
+      face,
+      pull,
+      pullStyle: 'none',
+      name: n,
+    });
   } else {
     // media console: doors on the outer thirds, open shelf in the middle
     const bay = w / 3;
-    addPanels(g, { x0: -w / 2, x1: -w / 2 + bay, y0: carcassY0, y1: h - IN(1), zFace, rows: 1, cols: 1, face, pull, pullStyle: 'bar-v', name: `${n}-l` });
-    addPanels(g, { x0: w / 2 - bay, x1: w / 2, y0: carcassY0, y1: h - IN(1), zFace, rows: 1, cols: 1, face, pull, pullStyle: 'bar-v', name: `${n}-r` });
+    addPanels(g, { x0: -w / 2, x1: -w / 2 + bay, y0: carcassY0, y1: h - IN(1), zFace, rows: 1, cols: 1, face, pull, pullStyle: pullStyleV, name: `${n}-l` });
+    addPanels(g, { x0: w / 2 - bay, x1: w / 2, y0: carcassY0, y1: h - IN(1), zFace, rows: 1, cols: 1, face, pull, pullStyle: pullStyleV, name: `${n}-r` });
     addBox(g, MAT.cabinetDark, [bay, IN(0.75), d - IN(1)], [0, carcassY0 + (h - carcassY0) / 2, 0], { name: `${n}/shelf` });
   }
 }
@@ -928,28 +1060,362 @@ function buildTV(ctx: Ctx): void {
   addBox(g, MAT.screen, [w - bezel * 2, h - bezel * 2, IN(0.25)], [0, h / 2, IN(0.9)], { name: `${n}/panel`, cast: false });
 }
 
+/**
+ * A tag test, used by the projection builders to pick a variant. Reads the id,
+ * the name and the tags so a catalog entry can declare itself either way.
+ */
+function hasTag(def: FurnitureDef, re: RegExp): boolean {
+  return re.test(`${def.id} ${def.name} ${(def.tags ?? []).join(' ')}`.toLowerCase());
+}
+
+/**
+ * PROJECTOR — two genuinely different machines behind one kind.
+ *
+ * ULTRA-SHORT-THROW (a "laser TV"): a wide, shallow cabinet that stands a few
+ * inches OFF the screen wall, facing the room, and throws the image UP AND
+ * BACKWARD over its own body onto the wall behind it. So the lens window is on
+ * the TOP surface at the BACK (local -z), the speaker grille is on the front
+ * (+z) where the room can hear it, and the whole thing is furniture — it lives
+ * on a credenza top and reads as a piece of hi-fi.
+ *
+ * LONG / SHORT THROW: a smaller box that sits BEHIND the audience facing the
+ * screen, so its lens is on the FRONT face (+z) and its intake vents are on the
+ * side. Nothing protrudes past the def box in either case — the analyzer treats
+ * the box as the truth, so a lens barrel poking out of it would be a lie.
+ */
+function buildProjector(ctx: Ctx): void {
+  const { g, w, d, h, n } = ctx;
+  const ust = hasTag(ctx.def, /\bust\b|ultra[- ]?short|laser[- ]?tv/);
+  const shell = matFor(ctx.color, { roughness: 0.42, metalness: 0.06 });
+  const grille = ctx.hasAccent ? matFor(ctx.accentColor, { roughness: 0.92 }) : MAT.speakerGrille;
+
+  const footH = IN(0.6);
+  const bodyH = Math.max(IN(1), h - footH);
+  addBox(g, shell, [w, bodyH, d], [0, footH + bodyH / 2, 0], { name: `${n}/shell` });
+
+  // Four rubber feet, inset — a projector is levelled on its feet and the shadow
+  // under it is what stops it looking painted onto the credenza.
+  for (const sx of [-1, 1])
+    for (const sz of [-1, 1])
+      addBox(g, MAT.metalBlack, [IN(1.2), footH, IN(1.2)], [sx * (w / 2 - IN(1.5)), footH / 2, sz * (d / 2 - IN(1.5))], {
+        name: `${n}/foot`,
+        recv: false,
+      });
+
+  if (ust) {
+    // Lens exit window: a glass panel let into the top, back third, offset to one
+    // side the way every real laser TV does it.
+    const winW = Math.min(w * 0.3, IN(9));
+    const winD = Math.min(d * 0.34, IN(5));
+    const zWin = -d / 2 + winD / 2 + IN(1.2);
+    addBox(g, shell, [winW + IN(1.6), IN(0.5), winD + IN(1.6)], [0, footH + bodyH, zWin], {
+      name: `${n}/lens-hood`,
+    });
+    addBox(g, MAT.lensGlass, [winW, IN(0.25), winD], [0, footH + bodyH + IN(0.3), zWin], {
+      name: `${n}/lens-window`,
+      cast: false,
+    });
+    // Fabric-wrapped speaker band across the front face — a laser TV is also the
+    // sound system, and the band is the detail that says so.
+    addBox(g, grille, [w - IN(2), bodyH * 0.55, IN(0.6)], [0, footH + bodyH * 0.42, d / 2 - IN(0.3)], {
+      name: `${n}/grille`,
+      cast: false,
+    });
+    return;
+  }
+
+  // Long / short throw: lens barrel recessed into the front face, vent slot on
+  // the left cheek, and a slim top plate so the box is not one flat slab.
+  const lensDia = Math.min(bodyH * 0.62, IN(4.5));
+  addBar(g, MAT.metalBlack, lensDia + IN(0.8), IN(1.1), [w * 0.18, footH + bodyH * 0.55, d / 2 - IN(0.6)], true, {
+    name: `${n}/lens-ring`,
+  });
+  addBar(g, MAT.lensGlass, lensDia, IN(0.5), [w * 0.18, footH + bodyH * 0.55, d / 2 - IN(0.35)], true, {
+    name: `${n}/lens`,
+    cast: false,
+  });
+  addBox(g, grille, [IN(0.5), bodyH * 0.5, d * 0.5], [-w / 2 + IN(0.25), footH + bodyH * 0.5, 0], {
+    name: `${n}/vent`,
+    cast: false,
+  });
+  addBox(g, MAT.metalBlack, [w * 0.5, IN(0.3), d * 0.5], [0, footH + bodyH, -d * 0.1], {
+    name: `${n}/top-plate`,
+    cast: false,
+  });
+}
+
+/**
+ * PROJECTION SCREEN — always modelled DEPLOYED, because the deployed rectangle
+ * is what the sightline and seating-distance checks have to see.
+ *
+ * Three variants, chosen off the catalog entry's tags:
+ *   fixed frame  a velvet-wrapped bezel around a tensioned fabric panel
+ *   roller       a slim cassette across the top with the fabric hanging from it,
+ *                plus a weighted bottom bar (which is what a tab-tensioned
+ *                screen actually looks like from the side)
+ *   painted      no frame and no cassette at all: the wall IS the screen, so all
+ *                that exists is a 1/8" skim of screen paint
+ *
+ * `lit` swaps the fabric for the emissive picture material. That is how a layout
+ * shows the room in use without pretending a daylight frame is a dark room.
+ */
+function buildProjectionScreen(ctx: Ctx): void {
+  const { g, w, d, h, n } = ctx;
+  const def = ctx.def;
+  const roller = hasTag(def, /roller|motoris|motoriz|retract|drop[- ]?down|tab[- ]?tension/);
+  const painted = hasTag(def, /paint|wall[- ]?as[- ]?screen/);
+  const lit = hasTag(def, /\blit\b|image[- ]?on|switched[- ]?on|projected[- ]?image/);
+  const alr = hasTag(def, /\balr\b|lenticular|ambient[- ]?light/);
+
+  const fabric = lit
+    ? MAT.screenImage
+    : ctx.hasAccent
+      ? matFor(ctx.accentColor, { roughness: alr ? 0.5 : 0.94 })
+      : alr
+        ? MAT.screenFabricAlr
+        : MAT.screenFabric;
+  const bezel = ctx.def.color ? matFor(ctx.color, { roughness: 0.98 }) : MAT.bezelVelvet;
+
+  if (painted) {
+    // A painted wall panel: a skim of paint, nothing else. It has no thickness
+    // worth drawing, so it is one thin sheet at the front of the def box.
+    addBox(g, fabric, [w, h, IN(0.125)], [0, h / 2, d / 2 - IN(0.0625)], {
+      name: `${n}/paint`,
+      cast: false,
+    });
+    return;
+  }
+
+  if (roller) {
+    // Cassette across the head, fabric below it, weighted bar at the bottom.
+    const caseH = Math.min(IN(3.5), h * 0.06);
+    const caseD = Math.min(d, IN(3.5));
+    addBox(g, bezel, [w, caseH, caseD], [0, h - caseH / 2, d / 2 - caseD / 2], { name: `${n}/cassette` });
+    for (const sx of [-1, 1])
+      addBox(g, MAT.metalBlack, [IN(0.75), caseH * 0.9, caseD * 0.9], [sx * (w / 2 - IN(0.4)), h - caseH / 2, d / 2 - caseD / 2], {
+        name: `${n}/end-cap`,
+        cast: false,
+      });
+    const dropH = h - caseH - IN(1.5);
+    addBox(g, fabric, [w - IN(1.5), dropH, IN(0.1)], [0, IN(1.5) + dropH / 2, d / 2 - IN(0.4)], {
+      name: `${n}/fabric`,
+      cast: false,
+    });
+    addBox(g, MAT.metalBlack, [w - IN(1.5), IN(1.5), IN(0.9)], [0, IN(0.75), d / 2 - IN(0.4)], {
+      name: `${n}/weight-bar`,
+    });
+    return;
+  }
+
+  // Fixed frame: a velvet bezel with a tensioned panel inside it. The bezel face
+  // width comes from the def when it can (frame minus image), else 2 3/8" which
+  // is the industry standard thin bezel.
+  const bez = IN(2.375);
+  addBox(g, bezel, [w, h, Math.max(IN(1.4), d)], [0, h / 2, 0], { name: `${n}/frame` });
+  addBox(g, fabric, [Math.max(IN(6), w - bez * 2), Math.max(IN(6), h - bez * 2), IN(0.2)], [0, h / 2, d / 2 - IN(0.1)], {
+    name: `${n}/fabric`,
+    cast: false,
+  });
+}
+
+/**
+ * SPEAKER — soundbar, bookshelf pair or floor-stander, told apart by proportion
+ * rather than by a tag: anything more than three times as wide as it is tall is
+ * a bar, anything over 2'-6" tall is a floor-stander with a plinth.
+ */
+function buildSpeaker(ctx: Ctx): void {
+  const { g, w, d, h, n } = ctx;
+  const cabinet = matFor(ctx.color, { roughness: 0.55, metalness: 0.04 });
+  const grille = ctx.hasAccent ? matFor(ctx.accentColor, { roughness: 0.92 }) : MAT.speakerGrille;
+  const bar = w > h * 3;
+  const plinth = !bar && h > IN(30) ? IN(1) : 0;
+
+  if (plinth) addBox(g, MAT.metalBlack, [w + IN(1), plinth, d + IN(1)], [0, plinth / 2, 0], { name: `${n}/plinth` });
+  const bodyH = h - plinth;
+  addBox(g, cabinet, [w, bodyH, d], [0, plinth + bodyH / 2, 0], { name: `${n}/cabinet` });
+  // Grille cloth over the whole front face, inset 3/8" so the cabinet edge reads.
+  addBox(g, grille, [w - IN(0.75), bodyH - IN(0.75), IN(0.5)], [0, plinth + bodyH / 2, d / 2 - IN(0.2)], {
+    name: `${n}/grille`,
+    cast: false,
+  });
+  if (!bar) {
+    // Two driver rings so a bookshelf box does not read as a plain block.
+    const dia = Math.min(w * 0.62, bodyH * 0.34);
+    addBar(g, MAT.metalBlack, dia, IN(0.4), [0, plinth + bodyH * 0.3, d / 2 - IN(0.1)], true, { name: `${n}/woofer`, cast: false });
+    addBar(g, MAT.metalBlack, dia * 0.42, IN(0.4), [0, plinth + bodyH * 0.72, d / 2 - IN(0.1)], true, { name: `${n}/tweeter`, cast: false });
+  }
+}
+
+/**
+ * SHADE — a blind in a glazing reveal. The def box is the whole reveal: `h` is
+ * the head height above the floor and the fabric hangs from it. `item.size.h`
+ * is therefore how far DOWN the blind is drawn, which is how a layout shows the
+ * room blacked out for a film without needing a second catalog entry.
+ *
+ * Modelled as a cassette plus a face — cellular shades have a visible cell
+ * structure, so the fabric gets horizontal ribs at 1 1/2" (the real cell pitch
+ * of a single-cell honeycomb) whenever the drop is long enough to see them.
+ */
+function buildShade(ctx: Ctx): void {
+  const { g, w, d, h, n } = ctx;
+  const cassetteH = IN(2.5);
+  const fabric = ctx.def.color ? matFor(ctx.color, { roughness: 0.96 }) : MAT.shadeFabric;
+  const cell = hasTag(ctx.def, /cellular|honeycomb/);
+
+  addBox(g, MAT.metalBlack, [w, cassetteH, d], [0, h - cassetteH / 2, 0], { name: `${n}/cassette` });
+  const dropH = h - cassetteH;
+  if (dropH <= IN(1)) return;
+  addBox(g, fabric, [w - IN(0.5), dropH, Math.min(d * 0.6, IN(1.25))], [0, dropH / 2, 0], {
+    name: `${n}/blind`,
+    cast: false,
+  });
+  if (cell && dropH > IN(12)) {
+    const ribs = Math.min(48, Math.floor(dropH / IN(1.5)));
+    for (let i = 1; i < ribs; i++) {
+      addBox(g, fabric, [w - IN(0.5), IN(0.12), IN(1.5)], [0, (dropH / ribs) * i, Math.min(d * 0.6, IN(1.25)) / 2], {
+        name: `${n}/blind-cell-${i}`,
+        cast: false,
+        recv: false,
+      });
+    }
+  }
+  // Side channels: what makes a blackout blind actually black out, and a real
+  // line of hardware in the reveal.
+  for (const sx of [-1, 1])
+    addBox(g, MAT.metalBlack, [IN(0.75), dropH, IN(1.75)], [sx * (w / 2 - IN(0.375)), dropH / 2, 0], {
+      name: `${n}/channel`,
+      cast: false,
+    });
+}
+
+/**
+ * PLANT — a trunk and real leaves, not a green ball.
+ *
+ * WHY this was rewritten. The previous version stacked two ellipsoids and a cone
+ * and called it foliage. In a path-traced frame that is unmistakably a sphere:
+ * it has no silhouette, no gaps for light to come through and no scale, and it
+ * was the single most obviously fake object in the hero renders — a 6'-0" fig
+ * standing 5 ft from the lens read as a green boulder.
+ *
+ * A plant's whole visual identity is its SILHOUETTE and the light coming
+ * THROUGH it. So this builds a tapered trunk, a few stems, and individual leaf
+ * blades as thin boxes on a spiral phyllotaxis. The blades are two-sided-thin
+ * and the foliage material carries subsurface in Cycles, so backlit leaves glow
+ * the way real ones do against the west glazing.
+ *
+ * Costs about 30-60 extra meshes per plant. At two or three plants in a layout
+ * that is nothing next to what it buys.
+ */
 function buildPlant(ctx: Ctx): void {
   const { g, w, d, h, n } = ctx;
   const dia = Math.min(w, d);
   const potH = Math.min(h * 0.32, IN(14));
   // def.color is the foliage, def.accent the pot
   const leaf = ctx.def.color ? matFor(ctx.color, { roughness: 0.9, flatShading: true }) : MAT.foliage;
-  const leaf2 = ctx.def.color ? matFor(ctx.color, { roughness: 0.95, flatShading: true, metalness: 0.02 }) : MAT.foliageLight;
+  const leaf2 = ctx.def.color
+    ? matFor(ctx.color, { roughness: 0.95, flatShading: true, metalness: 0.02 })
+    : MAT.foliageLight;
   const pot = ctx.hasAccent ? matFor(ctx.accentColor, { roughness: 0.8 }) : MAT.pot;
+  const stemMat = matFor('#4a5c3a', { roughness: 0.7 });
+
   // tapered pot: wide at the rim, narrower at the base
   addCyl(g, pot, { dBottom: dia * 0.68, dTop: dia * 0.95, h: potH, seg: 16 }, [0, potH / 2, 0], { name: `${n}/pot` });
-  addCyl(g, matFor('#3b2f26', { roughness: 1 }), { dBottom: dia * 0.9, h: IN(1) }, [0, potH - IN(0.5), 0], { name: `${n}/soil`, cast: false });
-
-  // 2-3 foliage masses of varying scale; a cone on top reads as a leader
-  const canopyH = h - potH;
-  addSphere(g, leaf, [dia * 1.0, canopyH * 0.55, dia * 0.95], [0, potH + canopyH * 0.3, 0], { name: `${n}/foliage-0` });
-  addSphere(g, leaf2, [dia * 0.7, canopyH * 0.42, dia * 0.7], [dia * 0.16, potH + canopyH * 0.62, -dia * 0.1], {
-    name: `${n}/foliage-1`,
+  addCyl(g, matFor('#3b2f26', { roughness: 1 }), { dBottom: dia * 0.9, h: IN(1) }, [0, potH - IN(0.5), 0], {
+    name: `${n}/soil`,
+    cast: false,
   });
-  if (canopyH > IN(20)) {
-    addCyl(g, leaf, { dTop: 0, dBottom: dia * 0.62, h: canopyH * 0.4, seg: 10 }, [-dia * 0.1, potH + canopyH * 0.78, dia * 0.08], {
-      name: `${n}/foliage-2`,
+
+  const canopyH = h - potH;
+  if (canopyH <= IN(4)) return;
+
+  // A tabletop plant is a rosette: no trunk, leaves straight out of the pot.
+  const rosette = canopyH < IN(14);
+
+  // Blade size scales with the plant: a fiddle-leaf fig's leaves are 10-13"
+  // long, a small pothos 3-4". Clamped so a 6 ft tree does not grow 3 ft leaves.
+  const blade = Math.max(IN(2.2), Math.min(IN(12), canopyH * 0.2));
+  const bladeW = blade * 0.6;
+
+  let trunkTop = potH;
+  if (!rosette) {
+    // Trunk: slightly tapered, leaning a couple of degrees off vertical, because
+    // nothing that grew is plumb.
+    const trunkH = canopyH * 0.62;
+    trunkTop = potH + trunkH;
+    addCyl(g, stemMat, { dBottom: dia * 0.11, dTop: dia * 0.07, h: trunkH, seg: 8 }, [0, potH + trunkH / 2, 0], {
+      name: `${n}/trunk`,
+      rotZ: 0.035,
     });
+  }
+
+  // Leaves on a spiral: the golden angle (137.5 deg) is what real phyllotaxis
+  // uses and it is also the arrangement that avoids the leaves lining up into
+  // obvious rows, which is what would give the trick away.
+  const GOLDEN = 2.39996; // radians
+  // Leaf COUNT is what separates a plant from a spider. A 40" houseplant carries
+  // 20-30 visible leaves and a 6 ft fig 40-60; the first attempt at this used 12
+  // and the render showed a dozen green crosses on sticks.
+  const count = rosette ? 14 : Math.max(18, Math.min(58, Math.round(canopyH / IN(1.35))));
+  const zone0 = rosette ? potH : trunkTop - canopyH * 0.34;
+  const zone1 = potH + canopyH - blade * 0.3;
+
+  for (let i = 0; i < count; i++) {
+    const t = count === 1 ? 0.5 : i / (count - 1);
+    const a = i * GOLDEN;
+    // Reach: widest in the middle of the canopy, tucked in at the crown, and
+    // jittered so blades overlap into a mass instead of sitting on one shell.
+    const jitter = 0.82 + 0.3 * Math.abs(Math.sin(i * 3.7));
+    const reach =
+      (dia / 2) * jitter * (rosette ? 0.34 + 0.46 * t : 0.3 + 0.5 * Math.sin(Math.PI * (0.22 + 0.72 * t)));
+    const y = zone0 + (zone1 - zone0) * t;
+    const px = Math.cos(a) * reach;
+    const pz = Math.sin(a) * reach;
+    // Droop: leaves near the crown stand up, lower ones hang. 0 = straight out
+    // sideways, positive = drooping toward the floor.
+    const droop = 0.55 - 0.8 * t + 0.18 * Math.sin(i * 2.3);
+    // Petiole: the leaf stalk, from the trunk out to the blade.
+    addBar(g, stemMat, IN(0.3), Math.max(IN(1), reach * 1.05), [px * 0.5, y - blade * 0.06, pz * 0.5], false, {
+      name: `${n}/petiole-${i}`,
+      rotY: -a,
+      cast: false,
+    });
+
+    // Each blade gets its OWN local frame — a group yawed to point outward and
+    // pitched to droop — so the leaf can be built in sane coordinates: +z runs
+    // along the leaf, +x across it, +y is up out of the leaf's face.
+    //
+    // This matters more than it looks. Doing it with per-mesh Euler angles on a
+    // squashed cylinder put the THIN axis horizontal, so every leaf rendered as
+    // a vertical plate: 22 green slabs standing on end, which was worse than the
+    // sphere it replaced. A nested frame makes the orientation unambiguous.
+    const lf = new THREE.Group();
+    lf.name = `${n}/leaf-${i}`;
+    lf.position.set(px, y, pz);
+    lf.rotation.set(-droop, -a, 0, 'YXZ');
+    g.add(lf);
+
+    const blMat = i % 3 === 0 ? leaf2 : leaf;
+    const T = IN(0.1); // leaf thickness — real, and it catches an edge highlight
+    // Three widths along the length give a real leaf OUTLINE (narrow at the
+    // stalk, broadest past the middle, rounded at the tip) instead of a kite.
+    const segs: [number, number, number][] = [
+      [bladeW * 0.42, blade * 0.30, blade * 0.16],
+      [bladeW * 1.0, blade * 0.42, blade * 0.5],
+      [bladeW * 0.66, blade * 0.3, blade * 0.85],
+    ];
+    segs.forEach(([sw, sd, sz], j) => {
+      addBox(lf, blMat, [sw, T, sd], [0, 0, sz], { name: `${n}/leaf-${i}-${j}`, recv: false });
+    });
+    // Midrib: a thin spine down the centre — the line that catches the window on
+    // a big glossy leaf. Only on blades big enough to show one: on a 3" leaf it
+    // is wider than the blade's taper and the leaf renders as a plus sign.
+    if (blade > IN(6)) {
+      addBox(lf, stemMat, [T * 1.2, T * 1.4, blade * 0.9], [0, T * 0.6, blade * 0.5], {
+        name: `${n}/midrib-${i}`,
+        cast: false,
+        recv: false,
+      });
+    }
   }
 }
 

@@ -178,6 +178,27 @@ export type FurnitureKind =
   | 'rug'
   | 'tv'
   | 'tv_stand'
+  /**
+   * A projector: a box that throws an image at a wall. Modelled as a separate
+   * kind from 'tv' because the two are analysed differently — a TV IS the
+   * picture, whereas a projector is a small object whose position is dictated
+   * by throw geometry and whose picture lives somewhere else entirely.
+   */
+  | 'projector'
+  /**
+   * The projected picture: a fixed-frame screen, a motorised roller, or a
+   * painted wall panel. Always modelled at its DEPLOYED size, because that is
+   * the thing sightlines and seating distance have to be checked against.
+   */
+  | 'projection_screen'
+  /** Loudspeaker: soundbar, bookshelf pair, floor-stander, subwoofer. */
+  | 'speaker'
+  /**
+   * A window blind / shade in a glazing reveal. Wall-mounted and modelled at
+   * its stowed cassette height plus whatever drop the layout wants shown, so
+   * it never occupies floor.
+   */
+  | 'shade'
   | 'plant'
   | 'floor_lamp'
   | 'table_lamp'
@@ -218,6 +239,39 @@ export interface FurnitureDef {
   lowProfile?: boolean;
   tags?: string[];
   price?: number;
+
+  // ------------------------------------------------------- projection extras
+  //
+  // Two numbers, and they exist so the analyzer can do the ONE piece of
+  // arithmetic that decides whether a projector scheme is real: throw distance
+  // = throw ratio x image width. Without them a layout can put a projector
+  // anywhere and the drawing still looks fine, which is precisely the mistake
+  // this project exists to catch.
+
+  /**
+   * `projection_screen` only: the nominal image diagonal in INCHES (a 100"
+   * screen is 100). Stated explicitly rather than parsed out of the name,
+   * because the frame is bigger than the image and the two must not be
+   * confused.
+   */
+  imageDiagonal?: number;
+  /** `projection_screen` only: image aspect ratio, width/height. 16:9 = 1.7778. */
+  imageAspect?: number;
+  /**
+   * `projector` only: [min, max] throw ratio, i.e. throw distance divided by
+   * IMAGE WIDTH. A fixed-lens ultra-short-throw is about [0.25, 0.25]; a zoom
+   * lens might be [1.2, 1.6]. Measured from the lens, and for a UST the lens
+   * sits inside the cabinet, so a layout has to account for the cabinet depth
+   * itself — which is why the catalog entry also records `lensOffset`.
+   */
+  throwRatio?: [number, number];
+  /**
+   * `projector` only: distance in FEET from the face of the cabinet nearest the
+   * screen to the lens's optical axis. Positive = the lens is that far inside
+   * the box. Lets a layout dimension to the cabinet, which is the thing you can
+   * actually measure with a tape.
+   */
+  lensOffset?: number;
 }
 
 /** An instance of a FurnitureDef placed in a layout. */

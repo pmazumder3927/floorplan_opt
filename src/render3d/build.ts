@@ -35,7 +35,14 @@
  *   - The ceiling is an EXPOSED CONCRETE soffit with small recessed circular
  *     downlights, so opts.showCeiling uses the concrete material and scatters
  *     4" downlights over the living area plus one over the kitchen run.
- *   - There is effectively NO baseboard: what is left here is a minimal reveal.
+ *   - There is NO baseboard, no counter upstand and no backsplash. The wall dies
+ *     into the plank floor as a plain butt with a hairline shadow, and the wall
+ *     paint runs straight down to the stone through a plain inside corner. What is
+ *     left at the floor line is a 1/2" x 1/16" dark shadow gap, not trim (addWall),
+ *     and the kitchen run has no splash at all (fixCounter).
+ *   - Walls carry SWITCH AND OUTLET PLATES (addDevicePlates + fixCounter): the
+ *     photo shows white screwless decorator plates on the splash wall, and a
+ *     completely blank wall at eye level is one of the cues that says "model".
  */
 
 import * as THREE from 'three';
@@ -356,19 +363,50 @@ function addWall(root: THREE.Object3D, plan: FloorPlan, w: Wall, top: number, cu
   }
 
   /**
-   * BASEBOARD — a MINIMAL REVEAL, not a moulding.
+   * NOT A BASEBOARD — a SHADOW GAP.
    *
-   * The reference photo shows essentially no base: where the wall meets the dark
-   * plank floor there is at most a thin flush reveal, and at the glazing there is
-   * nothing at all (the aluminium track lands straight on the slab). So this is
-   * 2 1/2" tall and only 1/4" proud — enough to catch a shadow line and hide the
-   * floor/wall joint, far too slim to read as trim.
+   * MEASURED off the reference photo, and the previous 2 1/2" x 1/4" version was
+   * wrong: the crop at x700-824 y440-560 shows the right-hand wall meeting the
+   * plank floor as a plain butt with a HAIRLINE dark line and nothing else — no
+   * base, no shoe, no reveal band. Column samples there run
+   *   y482 (116,116,106) -> y488 (44,40,31) -> y494 (49,45,34) -> y506 (196,190,158)
+   * i.e. one dark row about 6 px deep against a 0.30 in/px scale, ~1 1/2 - 2", with
+   * wall value above it and floor value below it. At the glazing there is nothing
+   * at all (the aluminium track lands straight on the slab).
    *
-   * It breaks across every FLOOR-level opening (sill <= 0.05'), which now
-   * includes the full-height glazing, so the glass runs to the floor uninterrupted.
+   * What was drawn instead was a distinct LIGHT band — rgb(134,132,132) along the
+   * right wall and around the kitchen in a measured frame — because 2 1/2" of
+   * MAT.baseboard standing 1/4" proud at semi-gloss is a painted moulding, and a
+   * white moulding is the single loudest "spec house" cue a frame can carry. The
+   * reference unit has no base trim whatsoever.
+   *
+   * So: 1/2" tall, 1/16" proud. At that size it subtends about 2 px in a hero
+   * frame, which is exactly the hairline the photo shows. MAT.baseboard is
+   * deliberately no longer used here.
+   *
+   * THE MATERIAL IS MAT.shadowGap, AND IT USED TO BE MAT.metalBlack. That choice
+   * was made here on the stated grounds that black steel was "the darkest surface
+   * this file can reach without adding a material to materials.ts (which this file
+   * does not own)". The constraint was real; the result overshot. MEASURED on the
+   * same pier base, in three layouts: the junction rendered as one row of
+   * rgb(1.3,1.0,0.9) on a-window-desk and rgb(7.7,5.6,4.6) on c-lounge-wall,
+   * against the rgb(40,35,35) quoted from the photo four paragraphs up. ~30x too
+   * dark reads as a CRACK between the wall and the floor, not as a shadow — the
+   * opposite failure to the white moulding, but a failure.
+   *
+   * Two faults compounded: #2a2b2e is ~10x darker than the measurement, and
+   * metalness 0.6 leaves almost no diffuse lobe, so a 1/2" band sitting in a
+   * corner that is already heavily occluded had nothing left to return. The
+   * replacement is a plain dielectric at wall roughness and a mid-grey value
+   * (#8f8d88), calibrated so the junction lands rgb(42,36,32). Most of the
+   * darkness here is the contact shadow; the material only has to not fight it.
+   * See PALETTE.shadowGap and SURFACES['shadow-gap'] for the full numbers.
+   *
+   * It breaks across every FLOOR-level opening (sill <= 0.05'), which includes the
+   * full-height glazing, so the glass runs to the floor uninterrupted.
    */
-  const BASE_H = IN(2.5);
-  const BASE_T = IN(0.25);
+  const BASE_H = IN(0.5);
+  const BASE_T = IN(1 / 16);
   const floorOps = ops.filter((x) => x.sill <= 0.05);
   for (const face of f.faces) {
     let c = 0;
@@ -380,7 +418,7 @@ function addWall(root: THREE.Object3D, plan: FloorPlan, w: Wall, top: number, cu
     if (c < L) runs.push([c, L]);
     for (const [a, b] of runs) {
       // sits proud of the face by BASE_T, i.e. from v=face.v outward
-      wallBox(g, MAT.baseboard, f, a, b, 0, Math.min(BASE_H, top), face.v, face.v + face.out * BASE_T, `wall:${w.id}/base`);
+      wallBox(g, MAT.shadowGap, f, a, b, 0, Math.min(BASE_H, top), face.v, face.v + face.out * BASE_T, `wall:${w.id}/base`);
     }
   }
 }
@@ -637,26 +675,96 @@ const GLZ = {
   /**
    * How far the frame is set back from the EXTERIOR face of the wall.
    *
-   * 3 1/2" in a 7" wall lands the frame's ROOM face about 1/2" behind the room
-   * face of the wall — i.e. very nearly flush, which is what the photo shows.
-   * At the old 1" the frame sat in the outer third and left a 3" white plaster
-   * return around every opening; that bright outline was the most CAD-looking
-   * thing left in the render. Clamped below against the real wall thickness, so
-   * a thinner future wall still cannot push the frame out of its own faces.
+   * THE PREVIOUS NOTE HERE WAS WRONG ON THE FACTS, so it is replaced rather than
+   * trimmed. It set SETBACK to 3 1/2" — frame all but flush with the room face,
+   * return about 1/2" deep — on the grounds that "a 3" white plaster return
+   * around every opening was the most CAD-looking thing left in the render".
+   *
+   * The photograph contradicts that: the return is really there, and it is
+   * MEASURED, not impressionistic. Every opening in the reference frame is a
+   * plain painted drywall return with no casing at all, reading 3-6" deep:
+   *   - the right-bay jamb return is a distinct LIGHT PLANE at x752-772 sampling
+   *     #95a09a (mean rgb 149,160,155) — a full 20 px of turned-away wall;
+   *   - above the glass a light head band at y126-140 samples #94bedc, stepping
+   *     down off the concrete soffit before it reaches the frame head.
+   * What actually read as CAD was the return's FLAT UNIFORM VALUE, not its
+   * existence. So the depth the photo shows is restored and the return is given
+   * the WALL's own plaster material (MAT.wall, see addGlazedAssembly), which
+   * falls off into shade as it turns away toward the black frame instead of
+   * outlining the opening in one even bright tone.
+   *
+   * 1" into this 7" wall leaves ~3" of wall depth between the room face and the
+   * frame's room-side face — the bottom of the photographed range. Clamped below
+   * against the real wall thickness, so a thinner future wall still cannot push
+   * the frame out of its own faces.
    */
-  SETBACK: IN(3.5),
-  /** Plaster return lining the hole from the room face back to the frame. */
-  LINER: IN(0.75),
-  /** Intermediate vertical mullion — a shade beefier than the perimeter face. */
+  SETBACK: IN(1),
+  /**
+   * Width of the plaster return lining the hole, measured ALONG the wall: the
+   * glazing sits this far in from the rough opening on every side, and that strip
+   * of wall is what turns back to meet the frame.
+   *
+   * PHOTO: the right-bay jamb return is 20 px wide against a 311 px / ~100" lite
+   * (0.32 in/px) = ~6"; the head band at y126-140 is 14 px = ~4 1/2". 4" is the
+   * low end of that range and keeps the daylight opening honest. At the old 3/4"
+   * the return was there in the mesh but subtended less than a pixel, which is
+   * why the render read as wall butting straight onto frame.
+   */
+  LINER: IN(4),
+  /**
+   * Intermediate vertical mullion.
+   * PHOTO: the right-bay mullion is 7 px = ~2 1/4"; 2 1/2" is one extrusion size
+   * up from that and inside the measurement error of a single 7 px run.
+   */
   MULLION: IN(2.5),
   /** Target daylight panel width; panel count = round(glass width / this). */
   PANEL: FTIN(3, 3),
   /** 1" double-glazed IGU. */
   GLASS: IN(1),
-  /** Operable leaf: stile width, bottom rail, top rail. */
-  STILE: IN(1.75),
-  RAIL: IN(6),
+  /**
+   * Operable leaf stile — ONE per leaf, at the run-centre edge of its lite (see
+   * addGlazedAssembly; the leaf used to carry a stile on BOTH edges).
+   *
+   * PHOTO, left bay, 331 px / ~100" lite = 0.30 in/px: the member at the
+   * pier-side edge of the operable lite is 12 px = ~3.6", the mullion beside it
+   * 7 px = ~2.1", and the bay's far jamb only 5 px = ~1.5". 3.6" is a 2" frame
+   * jamb plus a ~1 1/4" leaf stile lapped onto it, which is why the stile is
+   * 1 1/4" here and appears on one edge only: the far jamb is frame face alone.
+   */
+  STILE: IN(1.25),
+  /**
+   * The HORIZONTAL RAIL across the operable leaf, and its height above the slab.
+   *
+   * PHOTO (column scans): a dark run at y374-390 appears at x400 and x440 and
+   * NOT at x250, x300 or x560, and a row scan at y378-386 shows it spanning
+   * x341-465 — exactly one lite, dying at the mullion on one side and at the
+   * leaf stile on the other. That termination is the evidence it belongs to the
+   * ASSEMBLY: a parapet or guard rail BEYOND the glass (which is what the old
+   * note in addGlazedAssembly assumed it was) would carry across the mullion
+   * into the neighbouring lite, and there is nothing there.
+   * 16-17 px tall = ~5", sitting 95 px = ~28 1/2" above the track.
+   *
+   * STATED AS AN ASSUMPTION: at 28 1/2" AFF this is low for a slider's bottom
+   * rail and could equally be a code fall-protection bar fixed across the
+   * operable lite. It is modelled as part of the leaf because that is what the
+   * measurements support and because the Cycles table already maps a
+   * `glazing:<id>` member named `leaf-rail` to anodised aluminium. Either way it is
+   * the only
+   * horizontal in an 8 ft lite, and it is what gives the glass human scale.
+   */
+  RAIL: IN(5),
+  RAIL_AFF: IN(28.5),
   TOP_RAIL: IN(2.25),
+  /**
+   * Sill / bottom track, and the elevation band the leaf's own bottom rail
+   * shares with it.
+   *
+   * PHOTO: the bottom track is 22 px = ~2 1/2 - 3". It used to be drawn at FACE
+   * (2") with the leaf's 6" bottom rail stacked in front of it, so the base of
+   * the operable bay read as one ~8" black band — the "~5 in of real sill" a
+   * measurement pass found in the render against the photo's 2 1/2 - 3".
+   */
+  SILL: IN(2.75),
 } as const;
 
 /**
@@ -826,11 +934,35 @@ function addGlazedAssembly(
   const hi = Math.min(o.head, top);
   const capped = o.head > top + 1e-6;
 
-  // ---- plaster reveal returning into the wall thickness
+  /**
+   * ---- plaster reveal returning into the wall thickness.
+   *
+   * MAT.wall, deliberately: this IS the wall, turning the corner into the hole.
+   * See GLZ.SETBACK for the measured depth and GLZ.LINER for the measured width.
+   * The head return is emitted on the same terms as the jambs — the photo shows a
+   * light head band stepping down off the soffit before the frame head, and there
+   * is no reason for the head to be the one edge of the hole without a return.
+   *
+   * The one case it is skipped is `capped`: opts.wallCutHeight has sliced the head
+   * off, so there is no head left to line, and a band of plaster hanging at the
+   * cut plane would read as a lintel the building does not have. (The audit that
+   * measured this gap asked for the head return to be unconditional; it is
+   * unconditional for every eye-level camera, where `capped` is always false.)
+   */
   const lin = Math.min(GLZ.LINER, (s1 - s0) * 0.1);
   wallBox(g, MAT.wall, f, s0, s0 + lin, sill, hi, vf1, vRoom, `${n}/reveal-jamb`);
   wallBox(g, MAT.wall, f, s1 - lin, s1, sill, hi, vf1, vRoom, `${n}/reveal-jamb`);
-  if (!capped) wallBox(g, MAT.wall, f, s0, s1, hi - lin, hi, vf1, vRoom, `${n}/reveal-head`);
+  /**
+   * The head return runs BETWEEN the two jamb returns (s0+lin .. s1-lin), not
+   * across the whole opening. The jambs already run full height, so spanning the
+   * head across them put two MAT.wall boxes through each other in a lin x lin x
+   * (return depth) cube at both top corners — and a path tracer cannot resolve
+   * coincident faces. At the old 3/4" liner that showed up as a dark speck at each
+   * head corner (visible in the checked-in eye-living frames); at a 4" liner it
+   * became a 4" dark square floating on the wall. Butting the members instead of
+   * lapping them removes it, and a mitre is what the plasterer does anyway.
+   */
+  if (!capped) wallBox(g, MAT.wall, f, s0 + lin, s1 - lin, hi - lin, hi, vf1, vRoom, `${n}/reveal-head`);
 
   // ---- perimeter frame, inside the plaster line
   const a0 = s0 + lin;
@@ -838,8 +970,10 @@ function addGlazedAssembly(
   if (a1 - a0 <= GLZ.FACE * 2.5) return; // nonsense opening; the reveal alone will do
   wallBox(g, MAT.metalBlack, f, a0, a0 + GLZ.FACE, sill, hi, vf0, vf1, `${n}/frame-jamb`, NO_SHADOW);
   wallBox(g, MAT.metalBlack, f, a1 - GLZ.FACE, a1, sill, hi, vf0, vf1, `${n}/frame-jamb`, NO_SHADOW);
-  // The track sits ON the slab — there is no sill and no apron below it.
-  wallBox(g, MAT.metalBlack, f, a0 + GLZ.FACE, a1 - GLZ.FACE, sill, sill + GLZ.FACE, vf0, vf1, `${n}/track`, NO_SHADOW);
+  // The track sits ON the slab — there is no sill and no apron below it. Height
+  // is GLZ.SILL (measured), not GLZ.FACE: the track is a different member from
+  // the jambs and the photo measures it slightly deeper.
+  wallBox(g, MAT.metalBlack, f, a0 + GLZ.FACE, a1 - GLZ.FACE, sill, sill + GLZ.SILL, vf0, vf1, `${n}/track`, NO_SHADOW);
   if (!capped) {
     wallBox(g, MAT.metalBlack, f, a0 + GLZ.FACE, a1 - GLZ.FACE, hi - GLZ.FACE, hi, vf0, vf1, `${n}/frame-head`, NO_SHADOW);
   }
@@ -847,7 +981,7 @@ function addGlazedAssembly(
   // ---- glazed field, split into panels by vertical mullions
   const gs0 = a0 + GLZ.FACE;
   const gs1 = a1 - GLZ.FACE;
-  const gy0 = sill + GLZ.FACE;
+  const gy0 = sill + GLZ.SILL;
   const gy1 = capped ? hi : hi - GLZ.FACE;
   if (gy1 - gy0 <= 0.05) return;
 
@@ -874,19 +1008,36 @@ function addGlazedAssembly(
     wallBox(g, MAT.metalBlack, f, c - GLZ.MULLION / 2, c + GLZ.MULLION / 2, gy0, gy1, vf0, vf1, `${n}/mullion`, NO_SHADOW);
   }
 
-  // Which panel slides: the one nearest the middle of the whole glazed run
-  // (see isOperableOpening). Openings this narrow are one panel each, so in this
-  // plan that resolves to a single sliding leaf in the whole run, as photographed.
+  /**
+   * Which panel slides: the one nearest the middle of the whole glazed RUN (see
+   * isOperableOpening), which in the photograph is the lite that sits against the
+   * wide structural pier.
+   *
+   * `runMid` is the mid-point of every full-height opening on this wall, NOT of
+   * this bay. Using the bay centre put the leaf in the wrong lite: a two-panel bay
+   * is symmetrical about its own centre, so the tie broke toward panel 0 — the
+   * lite at the far END of the run — while the photo's rail and stile are in the
+   * lite beside the pier. Same criterion, one level up.
+   */
   let opIdx = -1;
+  let stileAtLow = true;
   if (isOperableOpening(plan, w, o, f.length)) {
-    const oCentre = (s0 + s1) / 2;
+    const sibs = plan.openings.filter((x) => x.wall === w.id && isFullHeightGlazing(x));
+    const lo = Math.min(...sibs.map((x) => Math.max(0, x.offset)));
+    const hi2 = Math.max(...sibs.map((x) => Math.min(f.length, x.offset + x.width)));
+    const runMid = (lo + hi2) / 2;
     let bestD = Infinity;
     for (let i = 0; i < panels; i++) {
-      const d = Math.abs((edges[i]! + edges[i + 1]!) / 2 - oCentre);
+      const d = Math.abs((edges[i]! + edges[i + 1]!) / 2 - runMid);
       if (d < bestD) {
         bestD = d;
         opIdx = i;
       }
+    }
+    // ... and the leaf's single stile goes on that lite's run-centre edge, which
+    // is the edge the photo measures at ~3.6" (frame/mullion + stile lapped on).
+    if (opIdx >= 0) {
+      stileAtLow = Math.abs(edges[opIdx]! - runMid) < Math.abs(edges[opIdx + 1]! - runMid);
     }
   }
 
@@ -895,24 +1046,47 @@ function addGlazedAssembly(
     const p1 = edges[i + 1]! - (i === panels - 1 ? 0 : GLZ.MULLION / 2);
     if (i === opIdx) {
       /**
-       * OPERABLE LEAF. Stiles + a top rail + the deep BOTTOM RAIL that gives a
-       * slider away in any photograph, all stepped forward onto the inboard track
-       * so the leaf reads as a separate moving panel rather than more frame.
+       * OPERABLE LEAF, stepped forward onto the inboard track so it reads as a
+       * separate moving panel rather than more frame.
        *
-       * Stated assumption: the bottom rail is modelled at the BASE of the leaf
-       * where a real slider carries it (4"-6" of extrusion over the track). The
-       * other horizontal line visible part-way up the photographed glass is the
-       * roof parapet BEYOND the glazing, not part of the assembly, so it is not
-       * modelled here.
+       * ONE STILE, at the run-centre edge (see GLZ.STILE and `stileAtLow`). A
+       * stile on BOTH edges is what made the left bay's outer jamb measure ~4"
+       * against the photo's ~1.5": the leaf stile was lapped onto the perimeter
+       * jamb as well as onto the mullion, so the two bays of one assembly
+       * disagreed with each other by 2x.
+       *
+       * BOTTOM RAIL shares the track's elevation band (GLZ.SILL) instead of
+       * stacking 6" of extrusion on top of it, because the photo's base band is
+       * one ~2 1/2 - 3" member, not two.
+       *
+       * MID RAIL (`leaf-rail`) at GLZ.RAIL_AFF — the measured horizontal that the
+       * photograph shows across this lite and this lite only. See GLZ.RAIL for the
+       * column/row scans, and for the note that the previous version of this
+       * comment read it as a parapet BEYOND the glass and therefore drew no
+       * horizontal member at all.
        */
-      wallBox(g, MAT.metalBlack, f, p0, p0 + GLZ.STILE, gy0, gy1, vl0, vl1, `${n}/leaf-stile`, NO_SHADOW);
-      wallBox(g, MAT.metalBlack, f, p1 - GLZ.STILE, p1, gy0, gy1, vl0, vl1, `${n}/leaf-stile`, NO_SHADOW);
-      wallBox(g, MAT.metalBlack, f, p0 + GLZ.STILE, p1 - GLZ.STILE, gy0, gy0 + GLZ.RAIL, vl0, vl1, `${n}/leaf-bottom-rail`, NO_SHADOW);
-      wallBox(g, MAT.metalBlack, f, p0 + GLZ.STILE, p1 - GLZ.STILE, gy1 - GLZ.TOP_RAIL, gy1, vl0, vl1, `${n}/leaf-top-rail`, NO_SHADOW);
-      wallBox(g, MAT.glass, f, p0 + GLZ.STILE, p1 - GLZ.STILE, gy0 + GLZ.RAIL, gy1 - GLZ.TOP_RAIL, vlg0, vlg1, `${n}/leaf-glass`, {
-        cast: false,
-        recv: false,
-      });
+      const st0 = stileAtLow ? p0 : p1 - GLZ.STILE;
+      const st1 = stileAtLow ? p0 + GLZ.STILE : p1;
+      const lf0 = stileAtLow ? p0 + GLZ.STILE : p0;
+      const lf1 = stileAtLow ? p1 : p1 - GLZ.STILE;
+      wallBox(g, MAT.metalBlack, f, st0, st1, sill, gy1, vl0, vl1, `${n}/leaf-stile`, NO_SHADOW);
+      wallBox(g, MAT.metalBlack, f, lf0, lf1, sill, gy0, vl0, vl1, `${n}/leaf-bottom-rail`, NO_SHADOW);
+      wallBox(g, MAT.metalBlack, f, lf0, lf1, gy1 - GLZ.TOP_RAIL, gy1, vl0, vl1, `${n}/leaf-top-rail`, NO_SHADOW);
+      // The mid rail, and the glass split around it (one pane through the rail
+      // would interpenetrate it — the leaf's glass sits INSIDE the leaf frame's
+      // depth range, not behind it).
+      const rY0 = Math.max(gy0, sill + GLZ.RAIL_AFF - GLZ.RAIL / 2);
+      const rY1 = Math.min(gy1 - GLZ.TOP_RAIL, rY0 + GLZ.RAIL);
+      wallBox(g, MAT.metalBlack, f, lf0, lf1, rY0, rY1, vl0, vl1, `${n}/leaf-rail`, NO_SHADOW);
+      for (const [ly0, ly1] of [
+        [gy0, rY0],
+        [rY1, gy1 - GLZ.TOP_RAIL],
+      ] as [number, number][]) {
+        wallBox(g, MAT.glass, f, lf0, lf1, ly0, ly1, vlg0, vlg1, `${n}/leaf-glass`, {
+          cast: false,
+          recv: false,
+        });
+      }
     } else {
       wallBox(g, MAT.glass, f, p0, p1, gy0, gy1, vg0, vg1, `${n}/glass`, { cast: false, recv: false });
     }
@@ -1178,12 +1352,18 @@ function buildFixture(plan: FloorPlan, f: Fixture, others: Fixture[], cutTop: nu
 
 /**
  * Base cabinet run: toe kick, doors/drawers, and a stone top with a nosing that
- * overhangs the fronts by 1". Real numbers: 34 1/2" boxes + 1 1/2" top = 36",
+ * overhangs the fronts by 1". Real numbers: 35" boxes + 1" top = 36",
  * 3 1/2" x 3" toe kick, 24" deep boxes under a 25 1/2" top.
  */
 function fixCounter(c: FixCtx): void {
   const { g, w, d, h, n } = c;
-  const TOP_T = IN(1.5);
+  /**
+   * Slab thickness. MEASURED: in the photo the counter's front edge reads as a
+   * single thin dark line — a ~3/4 to 1" square eased drop edge, not the 1 1/2"
+   * mitred apron a 1 1/2" slab draws. 1" is the thick end of that reading and the
+   * thinnest a real engineered-quartz top is built.
+   */
+  const TOP_T = IN(1);
   const NOSE = IN(1);
   const TOE_H = IN(3.5);
   const TOE_D = IN(3);
@@ -1237,9 +1417,44 @@ function fixCounter(c: FixCtx): void {
     addBox(g, MAT.counter, [x1 - x0, TOP_T, d], [(x0 + x1) / 2, h - TOP_T / 2, 0], { name: `${n}/top` });
   }
 
-  // 4" tile backsplash up the wall behind the run
-  if (h + IN(4) <= c.maxY) {
-    addBox(g, MAT.tile, [w, IN(4), IN(0.5)], [0, h + IN(2), -d / 2 + IN(0.25)], { name: `${n}/backsplash` });
+  /**
+   * NO BACKSPLASH AND NO UPSTAND. This run used to carry a 4" tile splash standing
+   * 1/2" proud of the wall behind it, which drew a raised lip along the back of the
+   * counter and a band of tile above it.
+   *
+   * PHOTO: the crop at x20-120 y320-420 shows the wall paint running straight down
+   * to the counter through a plain inside corner — no tile, no cove, no upstand, no
+   * trim of any kind. The finish schedule for this unit says the same thing in one
+   * word: splash, none. So the wall material simply runs down to the stone, and the
+   * only thing on that wall is the device plate below.
+   *
+   * (Kept as a comment rather than deleted silently because scripts/blender/
+   * materials.py still carries an OBJECT_RULE mapping `/backsplash$` -> 'tile' for
+   * any future plan that really has one.)
+   */
+
+  /**
+   * ---- switch / outlet plate above the run.
+   *
+   * PHOTO: at least two white screwless decorator plates on the kitchen splash
+   * wall — a portrait one at ~(70,363) above the counter and a smaller one to its
+   * left near the sink. A 2 3/4" x 4 1/2" single-gang plate at 44" AFF is the
+   * standard height for a counter receptacle (8" over a 36" top) and lands well
+   * clear of the 54" underside of the uppers.
+   *
+   * Placed at the first candidate along the run that is clear of a sink cutout,
+   * because a plate floating over the sink would be worse than no plate at all.
+   */
+  if (h + IN(8) <= c.maxY) {
+    const clearOf = (x: number): boolean =>
+      c.cuts.every((cut) => x + PLATE.W / 2 + IN(3) < cut.x0 || x - PLATE.W / 2 - IN(3) > cut.x1);
+    const x = [-w / 2 + IN(14), w / 2 - IN(14), 0].find(clearOf);
+    if (x !== undefined) {
+      addBox(g, MAT.trim, [PLATE.W, PLATE.H, PLATE.T], [x, PLATE.SWITCH_AFF, -d / 2 + PLATE.T / 2], {
+        name: `${n}/device-plate`,
+        cast: false,
+      });
+    }
   }
 }
 
@@ -1330,10 +1545,33 @@ function fixPanelAppliance(c: FixCtx, doors: number, round: boolean): void {
   let y = gap;
   splits.forEach((frac, i) => {
     const ph = (h - gap * (splits.length + 1)) * frac;
-    addBox(g, MAT.applianceDark, [w - gap * 2, ph, IN(0.5)], [0, y + ph / 2, d / 2 - IN(0.25)], { name: `${n}/door-${i}` });
+    /**
+     * The door stands PROUD of the carcass, and the sign here is load-bearing.
+     *
+     * It used to be `d / 2 - IN(0.25)`. With a IN(0.5) thickness that puts the
+     * door's front face at exactly `d / 2` — COPLANAR with the front face of the
+     * body box behind it. Every shadow ray leaving the door was blocked by that
+     * face at zero distance, so the panel received no light and rendered black.
+     *
+     * MEASURED, and the proof is a null result: lifting SURFACES['steel-dark']
+     * from #4a4e52 to #7b8084 (2.9x in linear) AND giving it a 15% diffuse lobe
+     * moved this panel from 0.4,0.4,0.4 to 0.3,0.4,0.4. Zero response to a 3x
+     * albedo change can only mean zero light transport. On eye-kitchen the fridge
+     * was a jet-black rectangle 90 x 320 px with a chrome pull floating on it, and
+     * 5.5% of that whole frame was crushed below rgb 6.
+     *
+     * `+ IN(0.25)` puts the face at `d / 2 + IN(0.5)`, i.e. half an inch proud,
+     * which is also what a real appliance door does — the doors ARE the front of
+     * the box and overhang the carcass.
+     */
+    addBox(g, MAT.applianceDark, [w - gap * 2, ph, IN(0.5)], [0, y + ph / 2, d / 2 + IN(0.25)], { name: `${n}/door-${i}` });
     if (round) {
-      // porthole: dark glass disc, 2/3 of the door width
-      addCyl(g, matFor('#23262a', { roughness: 0.12, metalness: 0.3 }), { dBottom: Math.min(w, ph) * 0.66, h: IN(0.6), seg: 20 }, [0, y + ph / 2, d / 2 + IN(0.2)], {
+      // porthole: dark glass disc, 2/3 of the door width. Its z FOLLOWS the door
+      // face (now `d / 2 + IN(0.5)`): at the old `d / 2 + IN(0.2)` this 0.6"-thick
+      // disc ended exactly ON that face, which is the same zero-distance
+      // self-shadowing trap the door comment above describes. IN(0.6) leaves it
+      // 0.4" proud of the door, the way a washer porthole bezel actually sits.
+      addCyl(g, matFor('#23262a', { roughness: 0.12, metalness: 0.3 }), { dBottom: Math.min(w, ph) * 0.66, h: IN(0.6), seg: 20 }, [0, y + ph / 2, d / 2 + IN(0.6)], {
         name: `${n}/porthole-${i}`,
         rotX: Math.PI / 2,
       });
@@ -1461,6 +1699,100 @@ function fixVanity(c: FixCtx): void {
   }
 }
 
+// --------------------------------------------------- switch / outlet plates
+
+/**
+ * SWITCH AND OUTLET PLATES.
+ *
+ * PHOTO: the kitchen splash wall carries at least two white screwless decorator
+ * plates — a portrait one at ~(70,363) above the counter and a smaller one to its
+ * left near the sink. The render's walls were completely blank, and at eye-level
+ * framing a wall with nothing on it is one of the loudest cues that says "model":
+ * a real room this size has a dozen visible plates, and the eye knows it.
+ *
+ * A single-gang screwless plate is 2 3/4" x 4 1/2" and stands about 3/16" off the
+ * paint. MAT.trim (white enamel) is the right finish and already maps to the
+ * 'trim' surface in the Cycles table, so this needs nothing from materials.py.
+ *
+ * DELIBERATELY SPARSE — one per room-facing wall face, and only on walls long
+ * enough that a device would really be there. Carpeting the room in outlets would
+ * trade one wrong cue for another.
+ */
+const PLATE = {
+  W: IN(2.75),
+  H: IN(4.5),
+  T: IN(0.1875),
+  /** counter receptacle: 8" over a 36" top, and clear of 54" AFF uppers */
+  SWITCH_AFF: IN(44),
+  /** general-purpose receptacle, centre height */
+  OUTLET_AFF: IN(15),
+  /** shorter walls are jambs, returns and closet cheeks — leave them bare */
+  MIN_WALL: FTIN(9, 0),
+} as const;
+
+function addDevicePlates(root: THREE.Object3D, plan: FloorPlan, cut: number | undefined): void {
+  const g = new THREE.Group();
+  g.name = 'device-plates';
+  const y0 = PLATE.OUTLET_AFF - PLATE.H / 2;
+  const y1 = PLATE.OUTLET_AFF + PLATE.H / 2;
+
+  for (const w of plan.walls) {
+    const top = cut !== undefined ? Math.min(w.height, cut) : w.height;
+    if (y1 > top) continue; // sliced off by a wall cut
+    const f = wallFrame(w);
+    const L = f.length;
+    if (L < PLATE.MIN_WALL) continue;
+    const ops = plan.openings.filter((o) => o.wall === w.id);
+    /**
+     * The GLAZED wall gets nothing. After the two full-height bays the only wall
+     * surface left on it is the 1'-4" pier between them, and the photograph shows
+     * that pier bare — a plate stuck on a 16" pier between two glazed bays would be
+     * a detail the building does not have, in the most looked-at part of the frame.
+     */
+    if (ops.some(isFullHeightGlazing)) continue;
+
+    for (const face of f.faces) {
+      /** Is a plate centred at `s` on this face somewhere a plate could be? */
+      const clear = (s: number): boolean => {
+        const half = PLATE.W / 2 + IN(6);
+        if (s - half < IN(6) || s + half > L - IN(6)) return false;
+        // not in, or hard against, an opening
+        for (const o of ops) {
+          if (o.offset - IN(4) < s + half && o.offset + o.width + IN(4) > s - half) return false;
+        }
+        // and not behind a cabinet run, an appliance or a closet front: probe 9"
+        // off the wall face and reject if that lands in a fixture footprint
+        const p = wallPoint(f, s, face.v + face.out * 0.75);
+        return !plan.fixtures.some((fx) => {
+          const r = fx.footprint;
+          return (
+            p[0] > r.x - 0.25 && p[0] < r.x + r.w + 0.25 && p[1] > r.y - 0.25 && p[1] < r.y + r.h + 0.25
+          );
+        });
+      };
+      // A couple of plausible positions, first clear one wins. Nothing here is
+      // surveyed — the plate POSITIONS are an approximation; only the plate size
+      // and the two mounting heights come off the photo and the electrical code.
+      const s = [0.28, 0.62, 0.5, 0.15, 0.85].map((k) => L * k).find(clear);
+      if (s === undefined) continue;
+      wallBox(
+        g,
+        MAT.trim,
+        f,
+        s - PLATE.W / 2,
+        s + PLATE.W / 2,
+        y0,
+        y1,
+        face.v,
+        face.v + face.out * PLATE.T,
+        `wall:${w.id}/device-plate`,
+        { cast: false },
+      );
+    }
+  }
+  if (g.children.length) root.add(g);
+}
+
 // ------------------------------------------------------------ soffit downlights
 
 /**
@@ -1528,14 +1860,44 @@ function addDownlights(root: THREE.Object3D, plan: FloorPlan): void {
   if (!pts.length) return;
 
   const APERTURE = IN(4); // 4" aperture LED downlight
-  const TRIM = IN(5.25); // trim ring outside diameter
+  /**
+   * Trim ring outside diameter, and how far the whole fitting hangs below the
+   * slab.
+   *
+   * MEASURED off the photo: the fitting is a small aperture sitting FLUSH in the
+   * concrete, blown out and clearly WARM — the core at (252,98) samples #f7e9db
+   * (247,233,219, R-B = +28, i.e. 2700-3000K) with a soft warm halo bleeding onto
+   * the slab and NO visible trim ring against it.
+   *
+   * What was drawn was a proud 5 1/4" puck standing 0.6" below the soffit with the
+   * lens hanging a further 0.4" below THAT, so it cast its own ring shadow onto the
+   * concrete and read as a surface-mounted disc. 4 1/4" over a 4" aperture leaves a
+   * 1/8" bevel of trim — the most a flush fitting shows — and PROUD is cut to 1/8"
+   * so that bevel is all that hangs below the plane. There is no CSG here, so the
+   * fitting cannot be recessed INTO the slab; 1/8" is the smallest step that will
+   * not z-fight the soffit (which itself sits 1/32" below the wall tops).
+   */
+  const TRIM = IN(4.25);
+  const PROUD = IN(0.125);
   const trimMat = matFor('#d2d0cc', { roughness: 0.5, metalness: 0.05, name: 'downlight-trim' });
-  // Faint on purpose: at ACESFilmic/exposure 1 in daylight these should read as
-  // warm discs, not blown-out white holes in the slab.
+  /**
+   * Lens. WARMER than before: '#ffe6bc' emissive read neutral in the path-traced
+   * frame (lens sampling rgb 172,174,174 — R-B = -2, not even reading as on)
+   * against the photo's R-B = +28, so the emissive is pulled to '#ffd9a5' (~2700K)
+   * to sit warm against cool daylight.
+   *
+   * NOTE ON WHERE THIS ACTUALLY LANDS: the Cycles render does not use these
+   * numbers — scripts/blender/materials.py owns SURFACES['downlight-lens'] and
+   * matches it by material NAME, so this pair only drives the WebGL preview. That
+   * table now carries the matching hue (#ffd9a5) and emit_strength 55.0; the two
+   * files were changed together, and the lens's z below was the third part of the
+   * same fix. All three were needed: with the lens hidden behind the trim puck,
+   * neither an emissive colour here nor an emit_strength there could reach a pixel.
+   */
   const lensMat = matFor('#fff7e8', {
     roughness: 0.9,
-    emissive: '#ffe6bc',
-    emissiveIntensity: 1.15,
+    emissive: '#ffd9a5',
+    emissiveIntensity: 1.6,
     name: 'downlight-lens',
   });
 
@@ -1543,16 +1905,42 @@ function addDownlights(root: THREE.Object3D, plan: FloorPlan): void {
   g.name = 'downlights';
   root.add(g);
   pts.forEach((p, i) => {
-    // Trim: a shallow can whose bottom face hangs 0.6" below the soffit. There is
-    // no CSG here, so a truly recessed can would be invisible behind the slab;
-    // a 0.6" proud trim ring is what a flush fitting actually looks like anyway.
-    addCyl(g, trimMat, { dBottom: TRIM, h: IN(0.6), seg: 16 }, [p[0], y - IN(0.3), p[1]], {
+    // Trim: a ring whose bottom face hangs PROUD (1/8") below the soffit and whose
+    // body disappears up into the slab. That 1/8" bevel is the whole fitting as far
+    // as the room is concerned.
+    addCyl(g, trimMat, { dBottom: TRIM, h: PROUD, seg: 16 }, [p[0], y - PROUD / 2, p[1]], {
       name: `downlight:${i}/trim`,
       cast: false,
       recv: false,
     });
-    // Lens, seated up inside the trim so only the disc shows from the room.
-    addCyl(g, lensMat, { dBottom: APERTURE, h: IN(0.45), seg: 16 }, [p[0], y - IN(0.775), p[1]], {
+    /**
+     * Lens. Its bottom face is the LOWEST face of the whole fitting, 1/16" below
+     * the trim's, and that ordering is the entire point of this block.
+     *
+     * IT USED TO BE AT `y + IN(0.19)`, described as "pushed UP THROUGH the soffit
+     * plane: it starts 1/16" below the slab — just clear of the trim's own bottom
+     * face". The arithmetic says otherwise. At h = IN(0.5) that centre puts the
+     * lens's bottom face at y - IN(0.06), while the trim's bottom face is at
+     * y - PROUD = y - IN(0.125). So the lens sat 1/16" ABOVE the trim's face —
+     * and `addCyl` builds a SOLID cylinder, not a ring, so the 4 1/4" trim puck
+     * completely occluded the 4" lens. The lens was invisible in every frame.
+     *
+     * MEASURED, and this is what makes it certain rather than a reading of the
+     * code: raising SURFACES['downlight-lens'].emit_strength from 12.0 to 55.0 —
+     * a 4.6x change on an EMITTER — moved the disc from rgb(122,131,138) to
+     * rgb(115,124,131), i.e. it moved DOWN, entirely inside the noise of the
+     * concrete recipe changing underneath it. A visible emitter cannot ignore a
+     * 4.6x change in its own strength. What that patch was sampling all along was
+     * `downlight-trim` (#d4d2ce, a pale grey disc), which is exactly why the
+     * fitting read as a plaster patch and not as a light.
+     *
+     * y + IN(0.0625) puts the lens's bottom face at y - IN(0.1875): 1/16" clear
+     * below the trim's face, so the aperture reads as lens with a 1/8" bevel of
+     * trim around it, and no two faces are coplanar. 3/16" of total projection on
+     * a 4" disc is still visually flush, and both parts are `cast: false`, so
+     * nothing here can bring back the ring shadow the previous edit removed.
+     */
+    addCyl(g, lensMat, { dBottom: APERTURE, h: IN(0.5), seg: 16 }, [p[0], y + IN(0.0625), p[1]], {
       name: `downlight:${i}/lens`,
       cast: false,
       recv: false,
@@ -1776,6 +2164,9 @@ export function buildScene(plan: FloorPlan, layout: Layout | undefined, opts: Re
       addDoorLeaf(root, plan, o, Math.min(deg, o.swing?.angle ?? deg), top);
     }
   }
+
+  // ---- switch / outlet plates (walls; the counter's own plate is in fixCounter)
+  addDevicePlates(root, plan, cut);
 
   // ---- fixtures
   for (const f of plan.fixtures) {

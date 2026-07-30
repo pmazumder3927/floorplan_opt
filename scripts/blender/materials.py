@@ -146,8 +146,42 @@ SURFACES: dict[str, Surface] = {
              'vague warm smudge at 108,92,86. A factory satin (25-35 gloss units) '
              'is a thin hard UV-cured coat over the grain: the right model is a '
              'moderately smooth base under a STRONG, SMOOTH coat, not a uniformly '
-             'semi-rough dielectric.',
-        base='#664c3a', rough=0.19, coat=0.58, coat_rough=0.065,
+             'semi-rough dielectric.\n'
+             'CORRECTED AGAIN, and the paragraph above OVERSHOT — read it as the '
+             'reason the numbers moved, not as a description of what they are now. '
+             'It is also worth saying plainly that the note further down in '
+             '`_planks` CLAIMED to have already killed the pale-hairline joint '
+             'artefact. It had not; it only darkened the joint albedo and left the '
+             'bevel in the normal, which is the part that draws the line.\n'
+             'MEASURED on eye-hero, the glare sheet in front of the glazing:\n'
+             '  * the photo (y520-650, x220-470) means RGB 204,218,228 with std '
+             'only 11.0/13.6/14.1 — a smooth low-frequency bright plane. The '
+             'mullions are NOT legible in it and the plank joints vanish entirely.\n'
+             '  * the render, same zone, meant 138,141,151 with std 66/74/82: a '
+             'hard-edged white slab with a crisp shadow boundary and every plank '
+             'joint drawn as a PALE hairline. Same average brightness, six times '
+             'the local contrast — i.e. the error was never the value, it was the '
+             'width of the specular lobe.\n'
+             'So: coat 0.58 -> 0.22, coat_rough 0.065 -> 0.18, rough 0.19 -> 0.30. '
+             'A 25-35 gloss-unit factory satin has a WIDE specular lobe; '
+             'coat_rough 0.065 is a semi-gloss lacquer and 0.58 of it is a wet '
+             'look. This is a FINISH fact (gloss units -> lobe width), calibrated '
+             'against the photo\'s std, not read off it directly.\n'
+             'RESULT of that change, measured on the same eye-hero glare patch: '
+             '142,142,148 std 66/74/84 -> 177,187,201 std 45/49/53, and at 4x '
+             'magnification the pale hairline down every joint is gone. The '
+             'remaining std is a real hard shadow edge and a rug boundary inside the '
+             'patch, not the floor finish.\n'
+             'COLOUR, lifted #664c3a -> #6d5847 (and the four tones in `_planks` '
+             'scaled by the same per-channel LINEAR factors, 1.05/1.17/1.37, so the '
+             'recipe still averages to the base — the recipe overrides Base Color, '
+             'so moving `base` alone would have done nothing). The stated reason for '
+             'the lift was to throw a warmer bounce onto the walls; MEASURED, it did '
+             'not do that (see the wall-paint note for the two-render comparison, '
+             'which refutes the theory). It is kept because it is independently '
+             'right: the photo\'s foreground floor diffuse is a mid brown and '
+             '#664c3a was still reading a little dark and a little red.',
+        base='#6d5847', rough=0.30, coat=0.22, coat_rough=0.18,
         texture='planks',
     ),
     'concrete-soffit': Surface(
@@ -160,8 +194,56 @@ SURFACES: dict[str, Surface] = {
              'neutral and rendered at R-G=+11 (a beige ceiling) against the '
              "photo's R-G=-16; that single sign error is what made our soffit read "
              'as painted drywall in a warm room instead of bare concrete. The ratios '
-             'here are the photo\'s own: R/G 0.90, B/G 1.03.',
-        base='#96a3a9', rough=0.62, texture='concrete',
+             'here are the photo\'s own: R/G 0.90, B/G 1.03.\n'
+             'RE-MEASURED, and the HUE above was right while the VALUE and the '
+             'VARIANCE were both wrong — which is why the soffit still read as '
+             'painted drywall even after the cool correction landed:\n'
+             '  * VALUE. A 550x90 px patch of the photo\'s soffit means RGB '
+             '136,153,158; the same band on eye-living rendered at 105,118,128 with '
+             'base #96a3a9. R-B was -23 in both, so the colour cast was already '
+             'correct; it was 0.4 stop too DARK. base is now the effective albedo '
+             'the `concrete` recipe averages to (see the VALUE paragraph there for '
+             'the two-point calibration that produced it) — but note that the '
+             'recipe overrides Base Color, so this field is documentation, not the '
+             'thing the renderer reads.\n'
+             '  * SHEEN. rough 0.62 is EGGSHELL PAINT. That single number is most '
+             'of why 30% of every hero frame read as a painted ceiling: an '
+             'eggshell soffit returns a soft but coherent specular sheet off the '
+             'glazing, and no amount of grey fixes that. Bare formed concrete is '
+             'chalky cement paste — effectively Lambertian — so 0.85. This is a '
+             'FINISH fact, not a photo measurement: the photo shows no sheen '
+             'anywhere on the soffit, which is consistent with 0.85 but does not '
+             'by itself pin the number.\n'
+             'HOW FAR THIS GOT, AND WHY IT STOPS HERE. eye-living, 700x75 px soffit '
+             'band: 105,118,128 -> 116,128,137. The R-B cast held at -21 against the '
+             'photo\'s -21 for the band as a whole (near the glazing the photo goes '
+             'much cooler still, R-B -54 at 150,184,204, which is sky bouncing off '
+             'the slab and not albedo). '
+             'IGNORE ANY BAND-STD NUMBER YOU FIND ATTACHED TO THIS SURFACE: the band '
+             'std of a soffit is dominated by the illumination ramp along it, so it '
+             'is not a texture statistic. An earlier pass in this same file tuned the '
+             '`_concrete` blotch field until the band std matched the photo\'s and '
+             'produced a thundercloud ceiling; the corrected split of gradient vs '
+             'high-frequency contrast, and the right targets for each, are in the '
+             'SPAN comment in `_concrete`. The MEAN is still ~15% under the photo\'s 136,153,158 and '
+             'IT IS DELIBERATELY LEFT THERE, because closing it would need an albedo '
+             'this material has no right to. Calibrated over two renders, display '
+             'value goes as (linear albedo)^0.434 here; reaching 136,153,158 from '
+             'this albedo needs a further x1.42/1.48/1.41 in linear, i.e. an '
+             'effective reflectance of 0.64/0.78/0.76. That is white paint. Concrete, '
+             'even a pale smooth-formed slab, tops out around 0.50-0.55.\n'
+             'SO THE RESIDUAL IS A LIGHTING DEFICIT, NOT A MATERIAL ONE, and the '
+             'arithmetic says so. In this render the soffit (albedo 0.45 linear) '
+             'returns 117 while the wall (albedo 0.90) returns 145: a ratio of 1.24 '
+             'for a 2.0x albedo ratio, where equal illumination would give 2.0^0.434 '
+             '= 1.35. So our soffit receives ~15% LESS light than our walls. In the '
+             'photograph the same comparison — soffit 136 at ~0.45, wall 133 at ~0.90 '
+             '— implies the soffit receives roughly 2.1x MORE light than the wall '
+             'relative to what we deliver. A soffit under a full-height glass wall '
+             'should be flooded with sky; ours is not. That is GAP 11 (the inverted '
+             'soffit/wall relationship) at root, it lives in render.py/world.py, and '
+             'no albedo in this file can substitute for it honestly.',
+        base='#b1bfc6', rough=0.85, texture='concrete',
     ),
     'glass': Surface(
         note='Real transmissive glazing: IOR 1.5, no thin-film, near-zero '
@@ -177,8 +259,39 @@ SURFACES: dict[str, Surface] = {
     # ---------------------------------------------------------- walls + trim
     'wall-paint': Surface(
         note='PHOTO: flat, smooth, barely off-white. Flat latex on skim coat '
-             'is rough ~0.6; a hair of bump keeps it from looking like plastic.',
-        base='#f2f1ee', rough=0.60, texture='plaster',
+             'is rough ~0.6; a hair of bump keeps it from looking like plastic.\n'
+             'WARMED A HAIR, #f2f1ee -> #f3f0e9, and the size of the change is the '
+             'point: it is almost nothing, because the albedo was already right. '
+             'MEASURED: the photo\'s wall right of the glazing (y260-470, x782-822) '
+             'means RGB 133,135,124, i.e. R-B = +9 — warm-neutral. The render was '
+             'coming out at R-B = -12 to -14 on the same plane: cool blue-grey. An '
+             'albedo whose own R-B is +9 cannot produce a -14 render, so the cast '
+             'was never in this hex — it was in the ILLUMINANT. A sky-dominated '
+             'world bouncing off a floor that was too dark and too red to return '
+             'much warm light leaves the walls lit by sky alone.\n'
+             'MEASURED, which of the two candidate fixes actually moved it — and the '
+             'answer was the opposite of what was expected, so it is recorded here '
+             'rather than quietly dropped. Two renders of b-fold-away, one variable '
+             'each:\n'
+             '  * warming THIS hex, #f2f1ee -> #f3f0e9: eye-living wall R-B +1.0 -> '
+             '+6.9, eye-hero wall R-B -11.6 -> -8.5. That is the whole move.\n'
+             '  * then lightening and desaturating the FLOOR (floor-walnut base '
+             '#664c3a -> #6d5847, and its four `_planks` tones scaled to match): '
+             'eye-living +6.9 -> +6.4, eye-hero -8.5 -> -8.6. Nothing, and very '
+             'slightly the wrong way.\n'
+             'So the "the cast comes from the floor bounce, not the paint" theory is '
+             'REFUTED for this room at this exposure. The floor subtends a big solid '
+             'angle from the wall but it is still a 0.15 reflectance surface, and '
+             'multiplying a warm bounce that small by a factor of 1.05-1.37 cannot '
+             'compete with a sky that is two stops brighter. The paint hex is a '
+             'direct multiplier on everything the wall returns, which is why a '
+             '3-level change in it beat a 37% change in the floor.\n'
+             'What has NOT been closed: eye-hero\'s upper wall still reads R-B -8.6 '
+             'against the photo\'s +9. That plane is lit mostly by the soffit, which '
+             'is deliberately COOL (see concrete-soffit), so it cannot go warm-'
+             'neutral without either a warmer sky or a warmer soffit, and neither is '
+             'supported by the photograph. Stated as an open gap, not a fixed one.',
+        base='#f3f0e9', rough=0.60, texture='plaster',
     ),
     'wall-outer': Surface(
         note='Outer face of the exterior walls. Only ever seen edge-on through '
@@ -197,15 +310,72 @@ SURFACES: dict[str, Surface] = {
     ),
     'baseboard': Surface(
         note='PHOTO: baseboard is minimal to none, so it is the same enamel as '
-             'the trim and is meant to disappear.',
+             'the trim and is meant to disappear.\n'
+             'CURRENTLY UNREACHABLE, and that is worth saying rather than deleting '
+             'the entry: build.ts no longer emits any base trim (this plan has '
+             'none — the wall butts the floor) so nothing in the glb carries this '
+             'material. The wall/floor junction is `shadow-gap` below. Kept '
+             'because the value is still correct for a plan variant that does have '
+             'base trim.',
         base='#f5f4f1', rough=0.32,
+    ),
+    'shadow-gap': Surface(
+        note='The WALL/FLOOR JUNCTION. This is a SHADOW GAP, not a moulding, and '
+             'it is not metalwork either — read the value note before touching it, '
+             'because it is much lighter than it looks like it should be.\n'
+             'MEASURED on the reference photo, twice and independently: a 30 px '
+             'column down the base of the 16" pier between the glazing bays shows '
+             'the wall grading 106 -> 89 over ~36 px, dropping to 66, bottoming at '
+             'rgb(40,35,35) for 2-3 px, recovering to 47 then 59, and running on '
+             'into the floor\'s reflection of the pier. A SOFT dark line bottoming '
+             'near 40. There is no base trim anywhere in the frame and at the '
+             'glazing there is nothing at all — the aluminium track lands straight '
+             'on the slab.\n'
+             'WHY IT IS NOT BLACK. An earlier pass drew this band with '
+             '`metal-black` (powder-coated black steel, #26272a at metal 0.7) on '
+             'the stated grounds that it was the darkest surface reachable from '
+             'build.ts without adding a material. MEASURED, that rendered the '
+             'junction at rgb(1.3,1.0,0.9) — a single row of pure black, ~30x '
+             'darker than the photo\'s 40, which reads as a CRACK between the wall '
+             'and the floor rather than a shadow. Two separate faults: the albedo '
+             'was ~10x too dark AND metal 0.7 leaves almost no diffuse lobe, so a '
+             'band sitting in a heavily occluded corner had nothing to return.\n'
+             'So #8f8d88 at rough 0.90 and metal 0: a sliver of paint and plaster '
+             'in shadow. CALIBRATED — at this value the junction lands rgb(42,36,32) '
+             'against the photo\'s rgb(40,35,35). The point is that most of the '
+             'darkness is the contact shadow doing its own work; the material only '
+             'has to not fight it. Faintly warm (R > B) to match the measured '
+             'junction, which is picking up bounce off the walnut.',
+        base='#8f8d88', rough=0.90,
     ),
 
     # ---------------------------------------------------------- glazing frames
     'anodised-black': Surface(
         note='PHOTO: black anodised aluminium glazing sections. Anodising is a '
-             'thin oxide over metal: metallic with a satin, not mirror, finish.',
-        base='#1a1b1d', rough=0.34, metal=1.0,
+             'thin oxide over metal: metallic with a satin, not mirror, finish.\n'
+             'MEASURED, and base #1a1b1d was an order of magnitude too dark. In the '
+             'photo the sections are a dark charcoal that visibly CARRIES THE SKY: a '
+             'shadowed mullion at x626-631 samples #253d46 (37,62,71 — note B-R = '
+             '+34, that blue IS the sky) and where the same section catches sky at '
+             'x342-348 it goes to #6693b1 (103,148,178). The sill track draws a '
+             'bright line along its top edge (#606c72 mean, std 49.6 along the run).\n'
+             'The render had NONE of that: the mullion sampled 0.7,0.8,1.0 out of '
+             '255 and the head band and jambs were flat black whose only variation '
+             'was path-tracer noise. There was no bright arris anywhere on the '
+             'assembly.\n'
+             'WHY. At metal=1.0 there is no diffuse lobe at all, so the base colour '
+             'IS the reflectance: #1a1b1d is 0.0097 LINEAR, i.e. a 1% mirror. Class '
+             '1 architectural anodising in dark bronze/black measures 8-12% total '
+             'reflectance — sRGB 0x50..0x61 — so this was ~10x too dark, and a 1% '
+             'mirror facing a dark interior renders as zero no matter what else is '
+             'right. rough 0.34 made it worse by spreading that 1% over a wide '
+             'lobe, which is what killed the arris.\n'
+             'The base below is the value that lands the measurement (see the render '
+             'notes in the fidelity pass); it sits at the low end of the 8-12% band '
+             'because these sections are the BLACK finish, not dark bronze. rough '
+             '0.22 is satin anodising: tight enough to keep a legible bright edge '
+             'where a member turns toward the sky, wide enough not to mirror.',
+        base='#4a4f53', rough=0.22, metal=1.0,
     ),
 
     # ---------------------------------------------------------- kitchen
@@ -216,8 +386,18 @@ SURFACES: dict[str, Surface] = {
     ),
     'cabinet-base-pale': Surface(
         note='PHOTO: base cabinets read pale — light grey-beige slab fronts in '
-             'a satin catalysed lacquer.',
-        base='#e2ded5', rough=0.36, coat=0.12, coat_rough=0.09,
+             'a satin catalysed lacquer.\n'
+             'MEASURED by RATIO, which is the only sound way to read a cabinet front '
+             'out of a photograph: a base door at x92-112 y430-540 samples #635d53 '
+             'while the splash wall directly above it (x95-150 y300-370) samples '
+             '#be936e under the SAME warm under-cabinet downlight. The door is '
+             'therefore ~0.7x the wall\'s reflectance, and the wall is the pale '
+             'stone splash. That puts the door albedo near #c6c0b6 — a LIGHT warm '
+             'greige, definitely not a dark front. #e2ded5 was a touch high and a '
+             'touch cool; #cdc7bd is the ratio read, warmed to match the splash it '
+             'was measured against. Uncertainty is real here: a reflectance ratio '
+             'off one photograph carries maybe +/-10% in value.',
+        base='#cdc7bd', rough=0.36, coat=0.12, coat_rough=0.09,
     ),
     'cabinet-shadow': Surface(
         note='Toe kick / cabinet returns: same finish, darker, matte (it is in '
@@ -226,20 +406,70 @@ SURFACES: dict[str, Surface] = {
     ),
     'cabinet-upper-dark': Surface(
         note='PHOTO: the UPPER cabinets are dark charcoal-brown slab fronts, '
-             'clearly a different finish from the pale bases. Object rule only.',
-        base='#332d28', rough=0.34, coat=0.14, coat_rough=0.10,
+             'clearly a different finish from the pale bases. Object rule only.\n'
+             'RAISED TWO STOPS, from #332d28. #332d28 is 0.031 linear — a 3% '
+             'reflectance, which is flat black velvet, not a cabinet door. The '
+             'photographic read is ~#7f7871, recovered the same way as the base '
+             'fronts: by RATIO against an adjacent surface under the same '
+             'illuminant, because the uppers in the reference frame are lit only by '
+             'window bounce and their sampled pixels are radiance, not albedo.\n'
+             'STATE THE UNCERTAINTY: +/-15% in VALUE. A ratio read needs the two '
+             'surfaces to share an illuminant, and the uppers sit under their own '
+             'shadow line while the reference surface does not, so this is the '
+             'weakest-evidence colour in this table. The HUE (warm charcoal, R > B) '
+             'is solid; the value is a bracket. What is certain is that #332d28 was '
+             'outside the bracket by a long way — a charcoal laminate slab is a '
+             '20-28% reflectance finish and #7f7871 is 22%.',
+        base='#7f7871', rough=0.34, coat=0.14, coat_rough=0.10,
     ),
     'steel-brushed': Surface(
         note='Appliance stainless. Horizontally brushed: full metal, anisotropic '
              'along the brush direction, with a fine directional roughness '
-             'streak. (The glb under-drives metalness so the rasteriser does not '
-             'render it black; a path tracer wants the real 1.0.)',
-        base='#b9bdc0', rough=0.26, metal=1.0, aniso=0.65, texture='brushed',
+             'streak.\n'
+             'CORRECTED. The parenthetical this note used to end with — "the glb '
+             'under-drives metalness so the rasteriser does not render it black; a '
+             'path tracer wants the real 1.0" — is only half true, and the half it '
+             'got wrong cost the whole kitchen. metal=1.0 at rough=0.26 on a FLAT '
+             'PANEL facing a dark interior renders black in a path tracer for '
+             'exactly the reason src/render3d/materials.ts warns about for the '
+             'rasteriser: a metal has no diffuse lobe, so it can only show what it '
+             'reflects, and a 0.26-rough panel reflects a narrow cone of dark room. '
+             'MEASURED: the base run came out at 18,23,29 and the dishwasher was a '
+             'mirror-black slab, against a photographic read of #464b4c (std 39.5, '
+             'plainly LIGHTER than its own shadow) for the dishwasher panel.\n'
+             'So: rough 0.26 -> 0.42 so the panel integrates a wide swath of the '
+             'room instead of one dark cone, metal 1.0 -> 0.85 so it keeps a small '
+             'diffuse floor it cannot fall below, and base lifted to #cdd1d3. 0.85 '
+             'is a deliberate, stated departure from physics (bare steel is 1.0): '
+             'it is a robustness margin against a dark surround, the same trade the '
+             'rasteriser side makes at 0.78 and for the same reason.',
+        base='#cdd1d3', rough=0.42, metal=0.85, aniso=0.65, texture='brushed',
     ),
     'steel-dark': Surface(
         note='PHOTO: the oven front reads much darker than the body — dark '
-             'tinted steel/glass.',
-        base='#4a4e52', rough=0.24, metal=1.0, aniso=0.5, texture='brushed',
+             'tinted steel/glass.\n'
+             'SAME FAULT AS `steel-brushed`: #4a4e52 at metal 1.0 / rough 0.24 is a '
+             '7% mirror with no diffuse floor, so on a flat panel facing a dim room '
+             'it renders near-black. MEASURED on eye-kitchen, the range/oven front '
+             'went 51,53,58 -> 90,97,105 on this change alone.\n'
+             'AND A WARNING THAT BELONGS HERE BECAUSE THIS IS WHERE ANYONE WILL LOOK: '
+             'the near-black FRIDGE in the eye-kitchen and eye-living frames is NOT '
+             'this material misbehaving, and it is not a catalog colour falling '
+             'through to the anonymous fallback either. Its doors do resolve to '
+             'steel-dark (the glb has fixture:REF/door-0 and door-1 on this material). '
+             'They are black because they receive NO LIGHT: fixPanelAppliance in '
+             'src/render3d/build.ts centres the door panel at `d/2 - IN(0.25)` with a '
+             'thickness of `IN(0.5)`, so the door\'s front face is exactly COPLANAR '
+             'with the front face of the solid body box behind it, and every shadow '
+             'ray leaving the door is blocked by that face at zero distance.\n'
+             'The proof is a null result, which is why it is written down: lifting '
+             'this base from #4a4e52 to #7b8084 (2.9x in linear) AND adding a 15% '
+             'diffuse lobe by dropping metal to 0.85 moved the fridge door from '
+             '0.4,0.4,0.4 to 0.3,0.4,0.4. Zero response to a 3x albedo change can '
+             'only mean zero light transport. It is a geometry bug, the fix is one '
+             'sign in build.ts (`d / 2 + IN(0.25)`, i.e. proud of the body rather '
+             'than inside it), and no value in this file can reach it.',
+        base='#7b8084', rough=0.40, metal=0.85, aniso=0.5, texture='brushed',
     ),
     'chrome': Surface(
         note='Polished chrome: gooseneck faucet, pulls, oven handle bar.',
@@ -283,6 +513,78 @@ SURFACES: dict[str, Surface] = {
     'mirror': Surface(
         note='Real mirror. Silvered glass is ~96% reflective and neutral.',
         base='#f4f5f6', rough=0.0, metal=1.0,
+    ),
+
+    # ------------------------------------------------------------- projection
+    #
+    # A projected picture is made of two DIFFERENT surfaces and the pair is what
+    # makes a home-cinema frame believable:
+    #   the FABRIC   what you see with the projector off
+    #   the IMAGE    what you see with it on, which is an EMITTER and therefore
+    #                lights the ceiling, the seats and the faces watching it
+    # Getting only the first gives a grey rectangle that reads as a blank wall
+    # panel. Getting only the second gives a glowing slab in a daylight frame.
+    'screen-fabric': Surface(
+        note='Matte-white projection fabric, gain ~1.0-1.1. Near-Lambertian BY '
+             'DESIGN — the whole purpose of the material is that the image looks '
+             'the same from every seat — so rough is very high and there is no '
+             'coat at all. A vinyl screen is a warm-neutral off-white, not paper '
+             'white; the weave bump is the real 1/8" woven texture, which is what '
+             'stops a 7 ft rectangle of flat white reading as a hole in the wall.',
+        base='#e6e5e1', rough=0.93, sheen=0.10, sheen_rough=0.5, texture='weave',
+    ),
+    'screen-fabric-alr': Surface(
+        note='LENTICULAR / ALR fabric, the grey structured surface you pair with '
+             'an ultra-short-throw projector. It is DARK on purpose: rejecting '
+             'ambient light means absorbing everything that does not arrive from '
+             'below, which is why an ALR screen looks like slate with the '
+             'projector off. Cycles cannot express the directional gain either, '
+             'so this is the honest single-lobe stand-in: a dark base under a '
+             'weak smooth coat, i.e. it returns a little light specularly and '
+             'swallows the rest. Stated as an approximation, not a measurement.',
+        base='#83868a', rough=0.34, coat=0.22, coat_rough=0.10,
+    ),
+    'projection-image': Surface(
+        note='THE PICTURE, switched on. An emitter, and cool-neutral because a '
+             'projector lamp is 6000-6500 K: this is what spills blue-white onto '
+             'the soffit and the faces of everyone watching, and that spill is '
+             'the single strongest cue that a room is in use. emit_strength 9.0 '
+             'is a stated ESTIMATE, not a measurement: a 100" 16:9 image is '
+             '~2.4 m2, so a 2500 lm projector on a gain-1.0 screen returns '
+             'roughly 300-350 cd/m2 — bright enough to read as ON against a dim '
+             'interior, dim enough not to clip. Re-check it against a frame '
+             'before trusting it.',
+        base='#dfe8f5', rough=0.88, emit='#bcd2f0', emit_strength=9.0,
+    ),
+    'bezel-velvet': Surface(
+        note='Flocked black velvet on a fixed-frame screen bezel, and the end '
+             'caps of a roller cassette. This is the BLACKEST surface in the '
+             'room — blacker than the anodised window frames — and it has to '
+             'stay that way: velvet is a forest of fibres that traps light, so '
+             'rough is at the ceiling and there is deliberately no coat. Any '
+             'coat at all turns it into black plastic, which is exactly what a '
+             'cheap screen looks like and exactly what this is not.',
+        base='#0d0d0d', rough=0.98, sheen=0.12, sheen_rough=0.7,
+    ),
+    'shade-blackout': Surface(
+        note='Blackout cellular / roller blind fabric. Dense, matte, warm '
+             'charcoal so a dropped blind reads as fabric and not as a hole. '
+             'Sheen is what sells it: a blind is always seen against the light, '
+             'so its edge is rimmed even when the face of it is dark.',
+        base='#3a3833', rough=0.94, sheen=0.35, sheen_rough=0.35, texture='weave',
+    ),
+    'speaker-grille': Surface(
+        note='Acoustic grille cloth over a driver: an open weave over a void, so '
+             'it reads darker than its own albedo. Modelled as a very rough near-'
+             'black with a weave bump rather than as real transparency, which '
+             'would cost transmission rays for something 2" across.',
+        base='#26262a', rough=0.93, sheen=0.20, sheen_rough=0.45, texture='weave',
+    ),
+    'lens-glass': Surface(
+        note='Projector lens / UST exit window: a multi-coated dielectric behind '
+             'a black barrel. It reads as a dark hole with ONE hard specular '
+             'highlight, so it is the cooktop-glass recipe with a tighter coat.',
+        base='#0b0d10', rough=0.04, coat=0.60, coat_rough=0.02,
     ),
     'fabric': Surface(
         note='Upholstery. Sheen is what makes cloth read as cloth: a bright rim '
@@ -334,13 +636,38 @@ SURFACES: dict[str, Surface] = {
         base='#d4d2ce', rough=0.45, metal=0.15,
     ),
     'downlight-lens': Surface(
-        note='PHOTO: 4" LED downlight lenses, WASHED OUT rather than glowing — the '
-             'daylight through the glazing is orders of magnitude stronger. '
-             'Deliberately a weak emitter (build.ts says the same thing about the '
-             'preview): enough to read as a warm disc, not enough to light the '
-             'room. A physically-on 700 lm lamp over a 4" aperture is ~130 W/m2 '
-             'of exitance — use that, not this, for a night frame.',
-        base='#fff7e8', rough=0.9, emit='#ffe6bc', emit_strength=12.0,
+        note='PHOTO: 4" LED downlight lenses. The note here used to say they are '
+             '"WASHED OUT rather than glowing" and that emit_strength 12.0 was '
+             'enough "to read as a warm disc" with the physical ~130 W/m2 of a '
+             '700 lm lamp over a 4" aperture reserved "for a night frame". BOTH '
+             'HALVES OF THAT WERE WRONG, and the photograph settles it:\n'
+             '  * the lens in the reference frame is NOT washed out, it is CLIPPED. '
+             'A 10x8 px patch on its core means 196,196,199 and its maximum hits '
+             '255,254,255, with a warm halo bleeding several aperture-widths onto '
+             'the slab. The concrete around it is 150,184,204 to 166,188,201. So '
+             'the disc is ~1.25x the slab it sits in, with blown highlights, in '
+             'BROAD DAYLIGHT.\n'
+             '  * at emit_strength 12.0 the rendered disc measured 122,131,138 '
+             'against slab of 117,129,139 immediately left of it — i.e. within the '
+             'noise of the ceiling, and DARKER than the slab a little further '
+             'along. It did not read as on at all; it read as a plaster patch. '
+             '(The geometry side was fixed first — the lens is now flush with the '
+             'slab instead of a proud puck, see TRIM in build.ts — which removed '
+             'the ring shadow but could not make an emitter brighter.)\n'
+             'emit_strength 12.0 -> 55.0, and the reason it is 55 rather than the '
+             'physical 130 is a MEASURED trade, not a fudge: 130 lands the core in '
+             'clipping like the photo but at this aperture size it is a small '
+             'bright emitter in a path tracer and it starts to speckle the soffit '
+             'around it at the sample counts these frames actually run. 55 puts '
+             'the core comfortably above the slab (the whole point) while staying '
+             'clean. STATED AS AN APPROXIMATION: this is a legibility setting for '
+             'a daylight frame at 96-256 spp, not the lamp\'s real exitance. For a '
+             'night frame, or at high sample counts, use 130 and treat the disc as '
+             'a real light source.\n'
+             'emit hue #ffe6bc -> #ffd9a5: the photo\'s core is #f7e9db at R-B +28 '
+             'while the render\'s disc sat at R-B -16 against concrete at R-B -21, '
+             'so it was barely warmer than the ceiling it was cut into.',
+        base='#fff7e8', rough=0.9, emit='#ffd9a5', emit_strength=55.0,
     ),
     'ground': Surface(
         note='The glb ground plane. Only used if render.py leaves it in place '
@@ -353,6 +680,34 @@ SURFACES: dict[str, Surface] = {
     # These are not in the glb. render.py builds the outlook (see its
     # `build_context`) because with floor-to-ceiling glazing the view is a large
     # fraction of every interior frame and a blank sky reads as fake instantly.
+    #
+    # !! READ THIS BEFORE TUNING ANY OF THE SIX `context-*` SURFACES BELOW: on the
+    # CURRENT code path they are DEAD, and changing them will not move a pixel.
+    # render.py imports scripts/blender/world.py at module load and uses it for the
+    # sky AND the city; its own add_daylight()/build_context() are the fallback for
+    # when that import RAISES. Every live frame logs `outlook: world.py city, N
+    # object(s)` — so build_city() in world.py is what actually builds the outlook,
+    # and world.py carries its OWN palettes (WALL_COLORS / ROOF_COLORS, near the top
+    # of that file) baked into a per-vertex `albedo` attribute that its private
+    # `_city_material` reads. materials.py is never consulted.
+    #
+    # This was checked because an audit pass reported "`context-deck` appears to be
+    # UNUSED in the frame" and guessed that build_context was not assigning it in
+    # the right proportion. That specific diagnosis is REFUTED: build_context does
+    # assign it, one deck cap per block, right after the block itself. The surface is
+    # unused for a completely different reason — build_context does not run at all.
+    # Kept, not deleted, because it IS the fallback path and has to stay coherent.
+    #
+    # And for the record, MEASURED, the outlook is not the white-styrofoam field that
+    # audit described either: sampling the roofscape through the left bay of
+    # b-fold-away/eye-living and excluding mullion and sky, the render runs p5 163 /
+    # p50 189 / p95 244, against the photograph's darkest roof feature (a red brick
+    # flank) at 139,152,162 and its palest membrane at 215,228,232. The render is
+    # slightly SHORT at the dark end, not blown out. What it genuinely lacks is
+    # CHROMA: every pixel of our outlook sits at R-B ~= -12, while the photo swings
+    # from R-B -28 on a shaded deck to R-B +30 on a run of ochre parapet panels.
+    # That is a palette gap in world.py's WALL_COLORS / ROOF_COLORS — both tables are
+    # entirely neutral-to-cool — and it cannot be fixed from this file.
     'context-roof': Surface(
         note='PHOTO: mid-distance mid-rise rooftops — grey membrane, ballast, '
              'mechanical plant. Read at 100-900 ft, so all that matters is the '
@@ -395,7 +750,21 @@ SURFACES: dict[str, Surface] = {
     # catalog colour survives and the surface still behaves like what it is.
     'soft-goods': Surface(
         note='Upholstery/bedding of unknown colour: the catalog colour with real '
-             'cloth behaviour (sheen + a weave bump).',
+             'cloth behaviour (sheen + a weave bump + a broad mottle).\n'
+             'COVERAGE, which turned out to matter more than any number in the '
+             '`weave` recipe: widening the ANON_RULES pattern to include /back, '
+             '/arm, /arm-l, /arm-r and /headboard took this surface from 4 slots to '
+             '9 on b-fold-away. 284 anonymous slots in that frame still reach no '
+             'rule at all, but the great majority of them are the 43-leaf fiddle-leaf '
+             'fig (petiole, midrib and leaf parts), which wants a foliage rule, not '
+             'a cloth one.\n'
+             'NOT VERIFIED AT ROOM DISTANCE, stated plainly: b-fold-away contains no '
+             'sofa and no cushions, so the largest soft-goods surface in any of its '
+             'frames is a 60x105 px task-chair back. Doubling the mottle depth on '
+             'that patch moved its mean 92.0 -> 86.8 and its std 17.0 -> 17.7, which '
+             'proves the recipe is wired and live but is far too small a sample to '
+             'show whether a cushion now reads as cloth across a room. Re-check on '
+             'c-lounge-wall or d-two-rooms before trusting the weave pitch.',
         base='#8b8678', rough=0.86, sheen=0.5, sheen_rough=0.32,
         texture='weave', keep_glb_color=True,
     ),
@@ -409,6 +778,15 @@ SURFACES: dict[str, Surface] = {
              'streak, so legs and frames stop looking like painted plastic.',
         base='#a87d4d', rough=0.44, coat=0.10, coat_rough=0.20,
         texture='grain', keep_glb_color=True,
+    ),
+    'shell-goods': Surface(
+        note='A moulded / painted equipment enclosure of unknown colour: '
+             'projector and speaker cabinets, appliance plastics. Satin ABS or '
+             'lacquered MDF is a smooth dielectric under a thin hard coat, which '
+             'is what separates a piece of hi-fi from a piece of furniture in a '
+             'render — it has a soft highlight and no grain at all.',
+        base='#cfccc6', rough=0.40, coat=0.18, coat_rough=0.08,
+        keep_glb_color=True,
     ),
 }
 
@@ -475,9 +853,35 @@ OBJECT_RULES: list[tuple[str, str]] = [
 # pattern below is a part name that can only be one kind of thing.
 # (furniture.ts names sub-meshes `${item}/cushion`, `/pillow`, `/leg`, ...)
 ANON_RULES: list[tuple[str, str]] = [
-    (r'/(seat|cushion|back-cushion-\d+|return-seat|pillow|duvet|mattress|fold-\d+)$', 'soft-goods'),
+    # `back`, `arm`, `arm-l`, `arm-r` and `headboard` are ADDED here, and the
+    # ambiguity check is worth writing down because it is what makes the rule safe.
+    # furniture.ts uses `/back` for BOTH an upholstered sofa/chair back (lines
+    # ~599, ~850, ~868, ~892) and a bookcase back PANEL (~955) — but the panel is
+    # built with MAT.cabinetDark, a NAMED material, so it resolves through SURFACES
+    # and can never reach ANON_RULES. Everything that arrives here with a `/back`
+    # and an anonymous `mat:#rrggbb` colour is therefore cloth. Same for the arms
+    # and the headboard.
+    #
+    # This matters more than it looks: MEASURED on b-fold-away, 289 of the 297
+    # anonymous slots in the frame match NO rule below and go to the plain
+    # Principled fallback with no recipe at all, so `_weave` was reaching four
+    # slots in the whole apartment. Widening the rule is a bigger lever on
+    # "upholstery has no texture at room distance" than any number inside the
+    # recipe.
+    (r'/(seat|cushion|back|back-cushion-\d+|return-seat|arm|arm-l|arm-r|headboard'
+     r'|pillow|duvet|mattress|fold-\d+)$', 'soft-goods'),
     (r'/(pile|field)$', 'pile-goods'),
     (r'/(leg|leg-\d+|plinth|return-plinth|pedestal|column)$', 'timber-goods'),
+    # Projection + AV parts whose material goes anonymous the moment a catalog
+    # entry names its own colour: screen fabric, a dropped blind, grille cloth.
+    # All three are woven textiles over a void, so soft-goods is the right
+    # physics and keep_glb_color preserves the product's real colour.
+    (r'/(fabric|blind|blind-cell-\d+|grille)$', 'soft-goods'),
+    # Equipment enclosures: a projector shell or a speaker cabinet is lacquer or
+    # satin ABS, NOT timber, and must not pick up a grain streak. `/body` is
+    # deliberately NOT in this list — three other builders use it for upholstery
+    # and for appliance steel, so the projector's own part is named `/shell`.
+    (r'/(shell|cabinet|lens-hood|top-plate)$', 'shell-goods'),
 ]
 
 # Materials no OBJECT_RULE may override, whatever the object is called.
@@ -696,9 +1100,9 @@ def _planks(nt: NT, bsdf: bpy.types.Node, s: Surface) -> None:
     # paragraph in the floor-walnut note — and the darkest term (the heartwood
     # streak) is deliberately kept narrow, because in the photo the plank-to-plank
     # variation is much more visible than the within-board figure.
-    board_tone = nt.mix_color(nt.remap(brd, 0.0, 1.0, 0.0, 1.0), '#573f2e', '#7f6349')
-    with_grain = nt.mix_color(nt.remap(grain, 0.25, 0.85, 0.0, 0.35), board_tone, '#4f3b2e')
-    albedo = nt.mix_color(nt.remap(streak, 0.4, 0.9, 0.0, 0.22), with_grain, '#836852')
+    board_tone = nt.mix_color(nt.remap(brd, 0.0, 1.0, 0.0, 1.0), '#594436', '#826b55')
+    with_grain = nt.mix_color(nt.remap(grain, 0.25, 0.85, 0.0, 0.35), board_tone, '#514036')
+    albedo = nt.mix_color(nt.remap(streak, 0.4, 0.9, 0.0, 0.22), with_grain, '#86705f')
     nt.link(albedo, _sock(bsdf, 'Base Color', 'RGBA'))
 
     # Roughness: a satin floor is not uniform. Per-board variation is what stops
@@ -707,7 +1111,7 @@ def _planks(nt: NT, bsdf: bpy.types.Node, s: Surface) -> None:
     r = nt.math('ADD', r, nt.math('MULTIPLY_ADD', grain, 0.06, -0.03), clamp=False)
     nt.link(nt.remap(r, 0.0, 1.0, 0.0, 1.0), _sock(bsdf, 'Roughness', 'VALUE'))
 
-    # The COAT carries the window reflection now (coat=0.62), so it needs the same
+    # The COAT still carries some of the window reflection, so it keeps the same
     # per-board break-up: a floor whose whole surface shares one perfectly uniform
     # specular sheet is the other way this material reads as plastic. +/-40% of the
     # nominal coat roughness is what a real site-laid floor shows — boards take the
@@ -715,27 +1119,41 @@ def _planks(nt: NT, bsdf: bpy.types.Node, s: Surface) -> None:
     nt.link(nt.remap(brd, 0.0, 1.0, s.coat_rough * 0.6, s.coat_rough * 1.4),
             _sock(bsdf, 'Coat Roughness', 'VALUE'))
 
-    # Relief: a groove at every joint, plus a tiny per-board height offset so
-    # adjacent boards are not perfectly coplanar (they never are).
+    # Where the joints are. Used for ALBEDO ONLY — see the NORMAL block below.
     dx = nt.math('MULTIPLY', nt.math('MINIMUM', colfrac, nt.math('SUBTRACT', 1.0, colfrac)), L)
     dy = nt.math('MULTIPLY', nt.math('MINIMUM', rowfrac, nt.math('SUBTRACT', 1.0, rowfrac)), W)
     joint = nt.remap(nt.math('MINIMUM', dx, dy), 0.0, BEVEL, 0.0, 1.0)
-    height = nt.math('ADD', joint, nt.math('MULTIPLY', brd, 0.10))
 
-    # The joint is also DARKER, and it has to be. A micro-bevel is end-grain and
-    # cut face: the factory finish is thinner there and the groove holds dust, so
-    # every real plank floor shows its joints as thin DARK hairlines. Relying on
-    # the bump alone did the opposite here — the groove's slanted walls caught the
-    # bright glazing and drew a pale line down every joint, which is the tell that
-    # said "procedural" loudest in the 256-spp test frame.
+    # The joint is DARKER, and that is the whole of how it is drawn now. A micro-
+    # bevel is end-grain and cut face: the factory finish is thinner there and the
+    # groove holds dust, so every real plank floor shows its joints as thin DARK
+    # hairlines.
     albedo = nt.mix_color(
-        nt.math('MULTIPLY', nt.math('SUBTRACT', 1.0, joint), 0.6), albedo, '#2b1e17')
+        nt.math('MULTIPLY', nt.math('SUBTRACT', 1.0, joint), 0.6), albedo, '#2c211c')
     nt.link(albedo, _sock(bsdf, 'Base Color', 'RGBA'))
-    # bump distance is in Blender units == feet, hence the /12 scale of a bevel
-    # Gentle: a micro-bevel is 1/64" of relief. Overdriving it puts a bright
-    # specular LINE down every joint, which at satin gloss is very obviously wrong —
-    # the photo's joints read as thin dark hairlines, not as highlights.
-    nt.link(nt.bump(height, strength=0.22, distance=0.35 * IN),
+
+    # THE BEVEL IS DELIBERATELY NOT IN THE NORMAL, and this is a correction of a
+    # previous fix that did not work. The version before this one darkened the
+    # joint albedo (above) and ALSO fed the bevel groove into a Bump node, with a
+    # comment claiming the pale-hairline artefact was solved. Measured on eye-hero:
+    # it was not. In the glare sheet in front of the glazing every joint was still
+    # a pale line, and the patch std was 66/74/82 against the photo's 11/14/14.
+    #
+    # Why the albedo fix cannot work while the bevel is in the normal: a groove's
+    # slanted walls TILT toward the glazing, so they mirror a 200-nit sky into the
+    # camera. That specular term is added on top of the albedo, so darkening the
+    # albedo underneath it changes nothing — it is the geometry that draws the
+    # line. On a real floor the bevel is ~1/64" and at 8-20 ft it is far below a
+    # pixel, so carrying it in the normal at all was over-modelling.
+    #
+    # What is left is the per-board height offset, which is a real thing (site-laid
+    # boards are never perfectly coplanar) and is smooth WITHIN a board. It is
+    # driven through the grain so the Bump node sees a continuous field instead of
+    # a step at every board edge — a step would draw exactly the hairline this
+    # block exists to remove.
+    micro = nt.math('ADD', nt.math('MULTIPLY', grain, 0.6),
+                    nt.math('MULTIPLY', brd, 0.4))
+    nt.link(nt.bump(micro, strength=0.08, distance=0.12 * IN),
             _sock(bsdf, 'Normal', 'VECTOR'))
 
 
@@ -747,14 +1165,125 @@ def _concrete(nt: NT, bsdf: bpy.types.Node, s: Surface) -> None:
     bump and it turns into stucco.
     """
     pos = nt.world_pos()
-    patch = nt.noise(nt.vmath('MULTIPLY', pos, (0.30, 0.30, 0.30)), scale=2.2, detail=8.0, rough=0.55)
+    # BLOTCH SCALE. `scale * prescale` is 1/feature-size in FEET, so the pair
+    # below is a ~2 ft blotch (4.0 * 0.12 = 0.48 -> 1/0.48 = 2.1 ft). It used to
+    # be 2.2 * 0.30 = 1.5 ft, which is decimetre-scale form-release mottling: at
+    # 8-14 ft from the camera that averages out inside a couple of pixels and the
+    # soffit reads as one flat value.
+    #
+    # MEASURED, and worth recording because the obvious move is the wrong one:
+    # going to metre-and-a-bit blotches made it WORSE. scale 0.8 * prescale 0.12
+    # is a 10.4 ft feature, and at 10 ft the entire visible soffit sits inside one
+    # or two blotches, so the variation stops being visible AS variation — the
+    # 700x75 px soffit patch on eye-living went from std 15.0 to 14.8 rather than
+    # up. 2 ft is the size that puts several blotches inside that patch AND
+    # survives the foreshortening: the soffit runs 20 ft away from the camera
+    # inside 80 px of image height, so anything metre-scale is one band, not a
+    # pattern.
+    #
+    # detail 3.0, not 8.0: at detail 8 the fractal octaves make the blotches read
+    # as cumulus. Curing and form-release blotching on a smooth-formed slab is
+    # smooth-edged, so the octaves are spent rather than saved.
+    patch = nt.noise(nt.vmath('MULTIPLY', pos, (0.12, 0.12, 0.12)), scale=4.0, detail=3.0, rough=0.55)
     fine = nt.noise(nt.vmath('MULTIPLY', pos, (2.0, 2.0, 2.0)), scale=6.0, detail=6.0)
 
     # Both blotch tones are COOL greys (B > R), matching the measurement in the
     # concrete-soffit note. Form-release staining darkens and slightly warms, which
     # is why the fine layer is the least blue of the three.
-    tone = nt.mix_color(nt.remap(patch, 0.35, 0.72, 0.0, 1.0), '#8a959c', '#a3b0b6')
-    albedo = nt.mix_color(nt.remap(fine, 0.4, 0.85, 0.0, 0.22), tone, '#7f888c')
+    #
+    # THESE THREE HEXES, NOT `Surface.base`, ARE WHAT THE CAMERA SEES. This recipe
+    # overrides Base Color outright, so `concrete-soffit.base` is documentation
+    # only (it is the nominal albedo the three tones average to) — changing it
+    # alone moves nothing, which is a trap worth naming.
+    #
+    # VALUE, calibrated not guessed. The old pair averaged to an effective albedo
+    # of sRGB ~148,159,166 and rendered the eye-living soffit at 105,118,128
+    # against the photo's 136,153,158 — 0.4 stop dark.
+    #
+    # The response was measured, not assumed: one render at these albedos and one
+    # with all three hexes scaled by exactly 1.30 in LINEAR gave 116.9 -> 131.0 on
+    # the soffit band, so display value goes as (linear albedo)^0.434 —
+    # ln(1.1206)/ln(1.30). That is close to a plain 2.3 gamma; AgX at this exposure
+    # is not doing anything exotic to a mid-grey ceiling. (An earlier estimate of
+    # ^0.94 was wrong: it came from two renders where the BLOTCH GEOMETRY had also
+    # changed, so the patches were not sampling comparable pattern.)
+    #
+    # The pair below averages to an effective albedo of sRGB ~181,191,198, which is
+    # 0.44/0.52/0.57 linear — luminous reflectance 0.52. That is the TOP of the band
+    # for a pale smooth-formed slab (light concrete is 0.40-0.50) and it is where
+    # this stops on purpose. See the `concrete-soffit` note for the arithmetic
+    # showing that going further, to the ~0.64-0.78 the photo's numbers would
+    # require, means putting white paint on a material called concrete to compensate
+    # for a lighting deficit — which would then blow out the moment the lighting is
+    # fixed.
+    #
+    # SPAN — and the previous version of this paragraph GOT THIS WRONG, in a way
+    # worth writing down because it is a general trap and not a typo. It read:
+    #
+    #     "the remap is deliberately TIGHT (0.40-0.60) because that clips the
+    #      noise's tails and makes the field read as discrete PATCHES ... MEASURED,
+    #      that window is what bought the variance: at remap 0.30-0.70 the soffit
+    #      band was std 7.3/5.5/5.1, at 0.40-0.60 it is 11.5/10.3/10.3, same mean.
+    #      The photo's own band is std 16.0/19.5/25.3"
+    #
+    # Those three numbers are all real. The inference from them is not, and the
+    # same paragraph said why two sentences later without acting on it: MOST OF THE
+    # PHOTO'S BAND STD IS THE ILLUMINATION FALLOFF, so "band std" is not a texture
+    # statistic and cannot be used to tune one. Tuning an albedo pattern until its
+    # band std matched the photo's put ~1.9x the photo's high-frequency contrast on
+    # the ceiling, and the visible result was a soffit that read as THUNDERCLOUD —
+    # 2 ft blotches at a 1.86x albedo ratio, hard-edged because of the clipping.
+    #
+    # SEPARATE THE TWO COMPONENTS AND THE RIGHT TARGET FALLS OUT. Take the soffit
+    # band, average it into 40 px-wide columns (that is the low-frequency
+    # illumination ramp) and separately subtract an 18 px gaussian blur (that is
+    # everything finer than a blotch):
+    #
+    #                                       GRADIENT      HIGH-FREQ
+    #                                  (std of col means)  (std of L - blur18)
+    #   photo, x180-700 y15-95                 18.9              2.3
+    #   render BEFORE this change, 3 layouts   6.9-10.1          4.1
+    #   render AFTER, 3 layouts                4.5-8.9           1.7
+    #   ditto on eye-kitchen (steeper angle)      --      5.6 -> 2.1
+    #
+    # (Mask the downlight discs out of that patch before you measure it — they are
+    # legitimately clipped bright features now, and left in they read as texture:
+    # unmasked, the AFTER figure comes out at 8.4 rather than 1.7.)
+    #
+    # The photo's soffit is essentially SMOOTH — a residual std of 2.2 at this JPEG
+    # size is compression noise, not mottling — and its column means fall
+    # MONOTONICALLY 181 -> 135 away from the glazing. Ours were non-monotonic
+    # (126,123,116,110,110,119,122,128,131,...): a W, which is the blotch field
+    # showing through as if it were lighting. So the whole of the photo's variance
+    # is the gradient, we have half the gradient we should, and we had twice the
+    # texture. Confirming again, from the other side, that GAP 11 is a lighting
+    # deficit: see the `concrete-soffit` note.
+    #
+    # SO: tone ratio 1.86x -> 1.50x, and the remap window goes back OUT to
+    # 0.28-0.72 so the field is an un-clipped smooth mottle instead of hard patches.
+    # The pair below is computed to preserve the LINEAR mean of the old pair exactly
+    # (lo = mean*2/(1+k), hi = k*lo at k=1.50), so this costs nothing in value: the
+    # effective albedo is still sRGB ~#b3bfc6 = 0.45/0.52/0.57 linear. Feature size
+    # is left at 2 ft, which is the right physical scale for form-release blotching;
+    # it was never the scale that was wrong, only the contrast.
+    #
+    # k WAS PICKED BY MEASUREMENT, in two passes, against the high-freq column of
+    # the table above. k=1.25 with this window gave a residual std of 1.22-1.26 —
+    # a real overshoot in the other direction, smoother than the photograph — so k
+    # went to 1.50, which lands 1.68. The log-of-the-ratio extrapolation used to
+    # pick 1.50 predicted 2.25 and it came out at 1.68, so RECORD THAT AS A MISS:
+    # the response is sub-logarithmic here, presumably because the 18 px blur that
+    # defines "high frequency" is itself removing part of a 2 ft blotch. Left at
+    # 1.50 rather than pushed to ~2.0 for a third pass, because some of the photo's
+    # 2.3 is JPEG noise rather than concrete and being slightly UNDER the
+    # photograph's texture is the safe side of a number that, overdone, produced a
+    # thundercloud. Anything in 1.5-2.3 is defensible; this is a JUDGEMENT inside a
+    # measured bracket, not a match.
+    #
+    # DO NOT tune this against a wide-patch std again. If you want more variance in
+    # the soffit band, it has to come from the light.
+    tone = nt.mix_color(nt.remap(patch, 0.28, 0.72, 0.0, 1.0), '#a2adb3', '#c3d0d7')
+    albedo = nt.mix_color(nt.remap(fine, 0.4, 0.85, 0.0, 0.22), tone, '#a8b5bc')
     nt.link(albedo, _sock(bsdf, 'Base Color', 'RGBA'))
     nt.link(nt.remap(patch, 0.2, 0.8, s.rough - 0.08, s.rough + 0.10),
             _sock(bsdf, 'Roughness', 'VALUE'))
@@ -818,13 +1347,53 @@ def _grain(nt: NT, bsdf: bpy.types.Node, s: Surface) -> None:
 
 
 def _weave(nt: NT, bsdf: bpy.types.Node, s: Surface) -> None:
-    """Cloth: a fine two-axis weave in the normal, and a matching roughness break."""
+    """Cloth: a two-axis weave in the normal, plus a broad albedo mottle.
+
+    SCALE, and it was wrong by more than an order of magnitude. The previous
+    version was noise scale 25 with a 60x anisotropic prescale, i.e. 1500 cycles
+    per FOOT — a 1/125" thread pitch — with a bump distance of 0.06*IN, about
+    1/300 ft of relief. At the 8-12 ft the camera actually stands from a sofa,
+    one pixel covers roughly 0.15", so every one of those threads averaged out
+    inside a single pixel: the weave was present in the shader, invisible in the
+    frame, and cost samples to resolve as noise. A cushion read as one flat
+    value, which is the tell.
+
+    The numbers below are the real product geometry instead: 8 x 1.5 prescale at
+    noise scale 6 is 48 cycles/ft along the tight axis, a 1/4" pitch, which is a
+    coarse upholstery weave (a chenille or a heavy linen) and is 1-2 px wide
+    across a room rather than 1/50 of one. Relief goes to 0.25*IN to match — the
+    ridge of a 1/4" pitch weave really is a couple of hundredths of an inch.
+
+    THE MOTTLE IS THE OTHER HALF, and arguably the bigger half. Real upholstery
+    is not one albedo: dye takes unevenly, the nap lies differently over a crown
+    than in a valley, and light-scattering in a pile makes the same cloth read
+    several percent lighter where it is compressed. A 10" low-frequency mottle at
+    +/-8% is what stops a cushion being a flat-shaded polygon. It is read off
+    `_base_of` so it works for the keep_glb_color surfaces (soft-goods etc.),
+    where the albedo is a catalog colour this file never sees.
+
+    Stated as an approximation: the pitch is a plausible product spec chosen to
+    be legible at room distance, not a measurement off the reference photo —
+    that frame is an empty unit and has no upholstery in it at all.
+    """
     pos = nt.world_pos()
-    warp = nt.noise(nt.vmath('MULTIPLY', pos, (60.0, 3.0, 60.0)), scale=25.0, detail=2.0)
-    weft = nt.noise(nt.vmath('MULTIPLY', pos, (3.0, 60.0, 3.0)), scale=25.0, detail=2.0)
+    warp = nt.noise(nt.vmath('MULTIPLY', pos, (8.0, 1.5, 8.0)), scale=6.0, detail=2.0)
+    weft = nt.noise(nt.vmath('MULTIPLY', pos, (1.5, 8.0, 1.5)), scale=6.0, detail=2.0)
     mixed = nt.math('MULTIPLY', warp, weft)
+
+    # Broad albedo mottle: ~10" features, mixing the surface's own colour toward a
+    # slightly darker and slightly desaturated version of itself. Keeping it
+    # relative to _base_of means one recipe serves both the named fabrics and the
+    # anonymous catalog colours.
+    broad = nt.noise(nt.vmath('MULTIPLY', pos, (1.0, 1.0, 1.0)), scale=1.2, detail=4.0)
+    b = _base_of(bsdf)
+    shade = (b[0] * 0.80, b[1] * 0.81, b[2] * 0.84, 1.0)
+    lift = (min(1.0, b[0] * 1.14), min(1.0, b[1] * 1.13), min(1.0, b[2] * 1.11), 1.0)
+    nt.link(nt.mix_color(nt.remap(broad, 0.32, 0.72, 0.0, 1.0), shade, lift),
+            _sock(bsdf, 'Base Color', 'RGBA'))
+
     nt.link(nt.remap(mixed, 0.1, 0.6, s.rough - 0.06, s.rough + 0.04), _sock(bsdf, 'Roughness', 'VALUE'))
-    nt.link(nt.bump(mixed, strength=0.25, distance=0.06 * IN), _sock(bsdf, 'Normal', 'VECTOR'))
+    nt.link(nt.bump(mixed, strength=0.25, distance=0.25 * IN), _sock(bsdf, 'Normal', 'VECTOR'))
 
 
 def _pile(nt: NT, bsdf: bpy.types.Node, s: Surface) -> None:

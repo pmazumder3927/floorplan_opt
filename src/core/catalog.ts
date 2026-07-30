@@ -80,6 +80,10 @@ const TERRACOTTA = '#A85B42'; // the one warm accent - pots, a pillow, a pouf
 const LEAF = '#5A7A4E'; // foliage under bright hazy daylight
 const RUG_BASE = '#CFC5B3'; // flatweave wool ground - lifted to read on a dark floor
 const RUG_ALT = '#807A72'; // the darker rug option, now a warm grey
+const ALR_GREY = '#8B8D90'; // lenticular / ALR screen fabric: dark by design, see below
+const SCREEN_WHITE = '#E6E5E1'; // matte-white projection vinyl, gain ~1.0
+const JUTE = '#C2A87E'; // natural banana fibre / jute - the one high-tooth texture
+const BLACKOUT = '#3A3833'; // blackout cellular / roller shade fabric
 
 // -------------------------------------------------------------- entries
 //
@@ -137,11 +141,11 @@ const DEFS: FurnitureDef[] = [
     seatHeight: CM(43), // 17"
     color: SLATE,
     accent: CREAM,
-    source: `IKEA KLIPPAN 2-seat, 180 x 88 x 66 cm (5'-11" x 2'-11" x 2'-2"), seat 43 cm`,
+    source: `IKEA KLIPPAN 2-seat, 180 x 88 x 66 cm (5'-11" x 2'-11" x 2'-2"), seat 43 cm RE-VERIFIED 30 Jul 2026 off the IKEA US measurements table: 70 7/8" W x 34 5/8" D x 26" H, seat depth 21 1/4", seat height 16 7/8", $349 sale / $399 regular. THIS IS THE LOWEST-BACKED SOFA IN THE CATALOG AT 26", which is why it keeps earning its place in a plan where sightlines decide everything: it is the only two-seater that can stand within a foot of floor-to-ceiling glass with room to spare, and you look straight over it from the bed or the desk. Its 34 5/8" depth is also 4" shallower than the deep modulars, which is 4" back in the walkway. The current US cover range has no true dark warm neutral - a Bemz or Comfort Works cover in charcoal or espresso is the honest route to this palette.`,
     frontClearance: IN(18),
     lowProfile: true, // 26" back - you can see over it
     tags: ['seating', 'sofa', 'small-space', 'ikea', 'budget', 'low-profile'],
-    price: 279,
+    price: 399,
   },
   {
     id: 'sofa-2seat-sven72',
@@ -730,13 +734,13 @@ const DEFS: FurnitureDef[] = [
     seatHeight: CM(74), // 29 1/8"
     color: OFF_WHITE,
     accent: OAK,
-    source: `IKEA NORDEN gateleg table, folded 80 x 26 x 74 cm (2'-7" x 10 1/4"); one leaf 89 cm; both leaves 152 cm (5'-0") deep`,
+    source: `IKEA NORDEN gateleg table, folded 80 x 26 x 74 cm (2'-7" x 10 1/4"); one leaf 89 cm; both leaves 152 cm (5'-0") deep RE-VERIFIED 30 Jul 2026 off the IKEA US measurements table (birch, 90423887): min length 10 1/4", MID length 35" (seats two), max length 59 7/8" (seats four), width 31 1/2", height 29 1/8", six integral drawers, $349.99, two cartons. THREE lengths out of one object is what makes it the honest 448 sq ft answer: closed it is a 10 1/4"-deep console against a wall, and it folds back out of a projected sightline. The birch is mostly solid (the white version is melamine particleboard) and neither finish matches walnut - stain it or accept it as a deliberate pale note.`,
     frontClearance: IN(60), // must be able to open a leaf AND seat someone
     // A 29-30" top is see-over from a 17-18" seat: a table does not
     // wall off a studio, so keep it out of sightline blocking.
     lowProfile: true,
     tags: ['dining', 'table', 'small-space', 'convertible', 'folding', 'ikea'],
-    price: 279,
+    price: 350,
   },
   {
     id: 'coffee-table-rect-48',
@@ -1164,7 +1168,7 @@ const DEFS: FurnitureDef[] = [
     seatHeight: IN(29.5), // work-surface height
     color: BAMBOO,
     accent: NEAR_BLACK, // black powder-coated frame
-    source: `Fully Jarvis Bamboo Standing Desk, 30" x 27" top (smallest bamboo top; sizes are 30x27, 48x27, 48x30, 60x27, 60x30, 72x30). 3-stage frame travel 24.5"-50" with the bamboo top (25.5"-51" laminate), frame width adjusts ~24"-51", 350 lb capacity. The 24.5"-50" RANGE is what makes it a standing desk; h is the seated pose. List price c. 2023 (remembered spec)`,
+    source: `Fully Jarvis Bamboo Standing Desk, 30" x 27" top (smallest bamboo top; sizes are 30x27, 48x27, 48x30, 60x27, 60x30, 72x30). 3-stage frame travel 24.5"-50" with the bamboo top (25.5"-51" laminate), frame width adjusts ~24"-51", 350 lb capacity. The 24.5"-50" RANGE is what makes it a standing desk; h is the seated pose. List price c. 2023 (remembered spec) AVAILABILITY AND PRICE RE-VERIFIED 30 Jul 2026: Fully.com was shut down after MillerKnoll absorbed Fully, but the Jarvis was NOT discontinued - it is made by MillerKnoll and sold through store.hermanmiller.com and dwr.com, both marked Ready to Ship. Bamboo Rectangle tops offered: 48x27, 48x30, 60x27, 60x30, 72x30. Frames: 3-Stage 25.5"-51", 3-Stage Low 23"-43.25", 2-Stage 30"-49.375"; SPECIFY 3-STAGE (the 25.5" bottom end is what makes it sittable by a 5'2" user). 350 lb capacity, 7yr frame/motor and 5yr top warranty. PRICE: the configured Bamboo Rectangle PDP shows $1,195 and the brand index page shows a $1,145-$1,625 range across sizes, stages, handset and powered-grommet options - so $1,195 is a size-INDEPENDENT planning figure and the exact desk must be configured in a cart before ordering. What the client lost with Fully.com: the configurator is down to nine top SKUs and the whole accessory catalogue to nine items. NOTE THE 30x27 TOP IS NO LONGER OFFERED: the MillerKnoll Bamboo Rectangle range as of 30 Jul 2026 is 48x27, 48x30, 60x27, 60x30 and 72x30 only. This entry is kept because the smallest footprint is still the right ANSWER for some plans, but it now has to be sourced second-hand or substituted with the 48x27. PRICE AND TRAVEL CORRECTED ON AN ADVERSARIAL CHECK, 30 Jul 2026: the Herman Miller Jarvis Bamboo PDP shows $1,325.00 - IDENTICAL to the laminate SKU, not the $1,195 first recorded here - and the 3-Stage travel is 25.75"-51.25" (3-Stage Low 23"-43.5", 2-Stage 30"-49.5"), which is the laminate figure the earlier note wrongly split between the two. Offered sizes 27x48, 27x60, 30x48, 30x60, 30x72. A 15/20/25% volume-discount ladder is live on both desks, and the "$1,145-$1,625 brand index range" quoted earlier is NOT on the PDP - treat $1,325 as the number and the discount as a windfall.`,
     frontClearance: IN(30), // CLEARANCE.deskChair - roll back AND stand up
     // 29 1/2" work surface in its default pose - see-over, so it does not block
     // sightlines. (Raised to 50" it would, but see the section note.)
@@ -1173,7 +1177,7 @@ const DEFS: FurnitureDef[] = [
       'wfh', 'jarvis', 'fully', 'desk', 'work', 'standing-desk', 'sit-stand', 'small-space',
       'requirement',
     ],
-    price: 549,
+    price: 1325,
   },
   {
     id: 'desk-standing-jarvis-48x27',
@@ -1187,14 +1191,14 @@ const DEFS: FurnitureDef[] = [
     seatHeight: IN(29.5),
     color: BAMBOO,
     accent: NEAR_BLACK,
-    source: `Fully Jarvis Bamboo Standing Desk, 48" x 27" top. 3-stage frame travel 24.5"-50" with the bamboo top (25.5"-51" laminate), frame width adjusts ~24"-51", 350 lb capacity. The 24.5"-50" RANGE is what makes it a standing desk; h is the seated pose. List price c. 2023 (remembered spec)`,
+    source: `Fully Jarvis Bamboo Standing Desk, 48" x 27" top. 3-stage frame travel 24.5"-50" with the bamboo top (25.5"-51" laminate), frame width adjusts ~24"-51", 350 lb capacity. The 24.5"-50" RANGE is what makes it a standing desk; h is the seated pose. List price c. 2023 (remembered spec) AVAILABILITY AND PRICE RE-VERIFIED 30 Jul 2026: Fully.com was shut down after MillerKnoll absorbed Fully, but the Jarvis was NOT discontinued - it is made by MillerKnoll and sold through store.hermanmiller.com and dwr.com, both marked Ready to Ship. Bamboo Rectangle tops offered: 48x27, 48x30, 60x27, 60x30, 72x30. Frames: 3-Stage 25.5"-51", 3-Stage Low 23"-43.25", 2-Stage 30"-49.375"; SPECIFY 3-STAGE (the 25.5" bottom end is what makes it sittable by a 5'2" user). 350 lb capacity, 7yr frame/motor and 5yr top warranty. PRICE: the configured Bamboo Rectangle PDP shows $1,195 and the brand index page shows a $1,145-$1,625 range across sizes, stages, handset and powered-grommet options - so $1,195 is a size-INDEPENDENT planning figure and the exact desk must be configured in a cart before ordering. What the client lost with Fully.com: the configurator is down to nine top SKUs and the whole accessory catalogue to nine items. PRICE AND TRAVEL CORRECTED ON AN ADVERSARIAL CHECK, 30 Jul 2026: the Herman Miller Jarvis Bamboo PDP shows $1,325.00 - IDENTICAL to the laminate SKU, not the $1,195 first recorded here - and the 3-Stage travel is 25.75"-51.25" (3-Stage Low 23"-43.5", 2-Stage 30"-49.5"), which is the laminate figure the earlier note wrongly split between the two. Offered sizes 27x48, 27x60, 30x48, 30x60, 30x72. A 15/20/25% volume-discount ladder is live on both desks, and the "$1,145-$1,625 brand index range" quoted earlier is NOT on the PDP - treat $1,325 as the number and the discount as a windfall.`,
     frontClearance: IN(30),
     lowProfile: true,
     tags: [
       'wfh', 'jarvis', 'fully', 'desk', 'work', 'standing-desk', 'sit-stand', 'small-space',
       'requirement',
     ],
-    price: 579,
+    price: 1325,
   },
   {
     id: 'desk-standing-jarvis-48x30',
@@ -1209,14 +1213,14 @@ const DEFS: FurnitureDef[] = [
     seatHeight: IN(29.5),
     color: BAMBOO,
     accent: NEAR_BLACK,
-    source: `Fully Jarvis Bamboo Standing Desk, 48" x 30" top. 3-stage frame travel 24.5"-50" with the bamboo top (25.5"-51" laminate), frame width adjusts ~24"-51", 350 lb capacity. The 24.5"-50" RANGE is what makes it a standing desk; h is the seated pose. List price c. 2023 (remembered spec)`,
+    source: `Fully Jarvis Bamboo Standing Desk, 48" x 30" top. 3-stage frame travel 24.5"-50" with the bamboo top (25.5"-51" laminate), frame width adjusts ~24"-51", 350 lb capacity. The 24.5"-50" RANGE is what makes it a standing desk; h is the seated pose. List price c. 2023 (remembered spec) AVAILABILITY AND PRICE RE-VERIFIED 30 Jul 2026: Fully.com was shut down after MillerKnoll absorbed Fully, but the Jarvis was NOT discontinued - it is made by MillerKnoll and sold through store.hermanmiller.com and dwr.com, both marked Ready to Ship. Bamboo Rectangle tops offered: 48x27, 48x30, 60x27, 60x30, 72x30. Frames: 3-Stage 25.5"-51", 3-Stage Low 23"-43.25", 2-Stage 30"-49.375"; SPECIFY 3-STAGE (the 25.5" bottom end is what makes it sittable by a 5'2" user). 350 lb capacity, 7yr frame/motor and 5yr top warranty. PRICE: the configured Bamboo Rectangle PDP shows $1,195 and the brand index page shows a $1,145-$1,625 range across sizes, stages, handset and powered-grommet options - so $1,195 is a size-INDEPENDENT planning figure and the exact desk must be configured in a cart before ordering. What the client lost with Fully.com: the configurator is down to nine top SKUs and the whole accessory catalogue to nine items. PRICE AND TRAVEL CORRECTED ON AN ADVERSARIAL CHECK, 30 Jul 2026: the Herman Miller Jarvis Bamboo PDP shows $1,325.00 - IDENTICAL to the laminate SKU, not the $1,195 first recorded here - and the 3-Stage travel is 25.75"-51.25" (3-Stage Low 23"-43.5", 2-Stage 30"-49.5"), which is the laminate figure the earlier note wrongly split between the two. Offered sizes 27x48, 27x60, 30x48, 30x60, 30x72. A 15/20/25% volume-discount ladder is live on both desks, and the "$1,145-$1,625 brand index range" quoted earlier is NOT on the PDP - treat $1,325 as the number and the discount as a windfall.`,
     frontClearance: IN(30),
     lowProfile: true,
     tags: [
       'wfh', 'jarvis', 'fully', 'desk', 'work', 'standing-desk', 'sit-stand', 'small-space',
       'requirement',
     ],
-    price: 599,
+    price: 1325,
   },
   {
     id: 'desk-standing-jarvis-60x27',
@@ -1230,14 +1234,14 @@ const DEFS: FurnitureDef[] = [
     seatHeight: IN(29.5),
     color: BAMBOO,
     accent: NEAR_BLACK,
-    source: `Fully Jarvis Bamboo Standing Desk, 60" x 27" top. 3-stage frame travel 24.5"-50" with the bamboo top (25.5"-51" laminate), frame width adjusts ~24"-51", 350 lb capacity. The 24.5"-50" RANGE is what makes it a standing desk; h is the seated pose. List price c. 2023 (remembered spec)`,
+    source: `Fully Jarvis Bamboo Standing Desk, 60" x 27" top. 3-stage frame travel 24.5"-50" with the bamboo top (25.5"-51" laminate), frame width adjusts ~24"-51", 350 lb capacity. The 24.5"-50" RANGE is what makes it a standing desk; h is the seated pose. List price c. 2023 (remembered spec) AVAILABILITY AND PRICE RE-VERIFIED 30 Jul 2026: Fully.com was shut down after MillerKnoll absorbed Fully, but the Jarvis was NOT discontinued - it is made by MillerKnoll and sold through store.hermanmiller.com and dwr.com, both marked Ready to Ship. Bamboo Rectangle tops offered: 48x27, 48x30, 60x27, 60x30, 72x30. Frames: 3-Stage 25.5"-51", 3-Stage Low 23"-43.25", 2-Stage 30"-49.375"; SPECIFY 3-STAGE (the 25.5" bottom end is what makes it sittable by a 5'2" user). 350 lb capacity, 7yr frame/motor and 5yr top warranty. PRICE: the configured Bamboo Rectangle PDP shows $1,195 and the brand index page shows a $1,145-$1,625 range across sizes, stages, handset and powered-grommet options - so $1,195 is a size-INDEPENDENT planning figure and the exact desk must be configured in a cart before ordering. What the client lost with Fully.com: the configurator is down to nine top SKUs and the whole accessory catalogue to nine items. PRICE AND TRAVEL CORRECTED ON AN ADVERSARIAL CHECK, 30 Jul 2026: the Herman Miller Jarvis Bamboo PDP shows $1,325.00 - IDENTICAL to the laminate SKU, not the $1,195 first recorded here - and the 3-Stage travel is 25.75"-51.25" (3-Stage Low 23"-43.5", 2-Stage 30"-49.5"), which is the laminate figure the earlier note wrongly split between the two. Offered sizes 27x48, 27x60, 30x48, 30x60, 30x72. A 15/20/25% volume-discount ladder is live on both desks, and the "$1,145-$1,625 brand index range" quoted earlier is NOT on the PDP - treat $1,325 as the number and the discount as a windfall.`,
     frontClearance: IN(30),
     lowProfile: true,
     tags: [
       'wfh', 'jarvis', 'fully', 'desk', 'work', 'standing-desk', 'sit-stand', 'dual-monitor',
       'requirement',
     ],
-    price: 619,
+    price: 1325,
   },
   {
     id: 'desk-standing-jarvis-60x30',
@@ -1252,14 +1256,14 @@ const DEFS: FurnitureDef[] = [
     seatHeight: IN(29.5),
     color: BAMBOO,
     accent: NEAR_BLACK,
-    source: `Fully Jarvis Bamboo Standing Desk, 60" x 30" top. 3-stage frame travel 24.5"-50" with the bamboo top (25.5"-51" laminate), frame width adjusts ~24"-51", 350 lb capacity. The 24.5"-50" RANGE is what makes it a standing desk; h is the seated pose. List price c. 2023 (remembered spec)`,
+    source: `Fully Jarvis Bamboo Standing Desk, 60" x 30" top. 3-stage frame travel 24.5"-50" with the bamboo top (25.5"-51" laminate), frame width adjusts ~24"-51", 350 lb capacity. The 24.5"-50" RANGE is what makes it a standing desk; h is the seated pose. List price c. 2023 (remembered spec) AVAILABILITY AND PRICE RE-VERIFIED 30 Jul 2026: Fully.com was shut down after MillerKnoll absorbed Fully, but the Jarvis was NOT discontinued - it is made by MillerKnoll and sold through store.hermanmiller.com and dwr.com, both marked Ready to Ship. Bamboo Rectangle tops offered: 48x27, 48x30, 60x27, 60x30, 72x30. Frames: 3-Stage 25.5"-51", 3-Stage Low 23"-43.25", 2-Stage 30"-49.375"; SPECIFY 3-STAGE (the 25.5" bottom end is what makes it sittable by a 5'2" user). 350 lb capacity, 7yr frame/motor and 5yr top warranty. PRICE: the configured Bamboo Rectangle PDP shows $1,195 and the brand index page shows a $1,145-$1,625 range across sizes, stages, handset and powered-grommet options - so $1,195 is a size-INDEPENDENT planning figure and the exact desk must be configured in a cart before ordering. What the client lost with Fully.com: the configurator is down to nine top SKUs and the whole accessory catalogue to nine items. PRICE AND TRAVEL CORRECTED ON AN ADVERSARIAL CHECK, 30 Jul 2026: the Herman Miller Jarvis Bamboo PDP shows $1,325.00 - IDENTICAL to the laminate SKU, not the $1,195 first recorded here - and the 3-Stage travel is 25.75"-51.25" (3-Stage Low 23"-43.5", 2-Stage 30"-49.5"), which is the laminate figure the earlier note wrongly split between the two. Offered sizes 27x48, 27x60, 30x48, 30x60, 30x72. A 15/20/25% volume-discount ladder is live on both desks, and the "$1,145-$1,625 brand index range" quoted earlier is NOT on the PDP - treat $1,325 as the number and the discount as a windfall.`,
     frontClearance: IN(30),
     lowProfile: true,
     tags: [
       'wfh', 'jarvis', 'fully', 'desk', 'work', 'standing-desk', 'sit-stand', 'dual-monitor',
       'requirement',
     ],
-    price: 639,
+    price: 1325,
   },
   {
     id: 'desk-standing-jarvis-72x30',
@@ -1274,14 +1278,14 @@ const DEFS: FurnitureDef[] = [
     seatHeight: IN(29.5),
     color: BAMBOO,
     accent: NEAR_BLACK,
-    source: `Fully Jarvis Bamboo Standing Desk, 72" x 30" top (largest bamboo top). 3-stage frame travel 24.5"-50" with the bamboo top (25.5"-51" laminate), frame width adjusts ~24"-51", 350 lb capacity. The 24.5"-50" RANGE is what makes it a standing desk; h is the seated pose. List price c. 2023 (remembered spec)`,
+    source: `Fully Jarvis Bamboo Standing Desk, 72" x 30" top (largest bamboo top). 3-stage frame travel 24.5"-50" with the bamboo top (25.5"-51" laminate), frame width adjusts ~24"-51", 350 lb capacity. The 24.5"-50" RANGE is what makes it a standing desk; h is the seated pose. List price c. 2023 (remembered spec) AVAILABILITY AND PRICE RE-VERIFIED 30 Jul 2026: Fully.com was shut down after MillerKnoll absorbed Fully, but the Jarvis was NOT discontinued - it is made by MillerKnoll and sold through store.hermanmiller.com and dwr.com, both marked Ready to Ship. Bamboo Rectangle tops offered: 48x27, 48x30, 60x27, 60x30, 72x30. Frames: 3-Stage 25.5"-51", 3-Stage Low 23"-43.25", 2-Stage 30"-49.375"; SPECIFY 3-STAGE (the 25.5" bottom end is what makes it sittable by a 5'2" user). 350 lb capacity, 7yr frame/motor and 5yr top warranty. PRICE: the configured Bamboo Rectangle PDP shows $1,195 and the brand index page shows a $1,145-$1,625 range across sizes, stages, handset and powered-grommet options - so $1,195 is a size-INDEPENDENT planning figure and the exact desk must be configured in a cart before ordering. What the client lost with Fully.com: the configurator is down to nine top SKUs and the whole accessory catalogue to nine items. PRICE AND TRAVEL CORRECTED ON AN ADVERSARIAL CHECK, 30 Jul 2026: the Herman Miller Jarvis Bamboo PDP shows $1,325.00 - IDENTICAL to the laminate SKU, not the $1,195 first recorded here - and the 3-Stage travel is 25.75"-51.25" (3-Stage Low 23"-43.5", 2-Stage 30"-49.5"), which is the laminate figure the earlier note wrongly split between the two. Offered sizes 27x48, 27x60, 30x48, 30x60, 30x72. A 15/20/25% volume-discount ladder is live on both desks, and the "$1,145-$1,625 brand index range" quoted earlier is NOT on the PDP - treat $1,325 as the number and the discount as a windfall.`,
     frontClearance: IN(30),
     lowProfile: true,
     tags: [
       'wfh', 'jarvis', 'fully', 'desk', 'work', 'standing-desk', 'sit-stand', 'dual-monitor',
       'large', 'requirement',
     ],
-    price: 719,
+    price: 1325,
   },
   {
     id: 'desk-47',
@@ -1371,10 +1375,10 @@ const DEFS: FurnitureDef[] = [
     seatHeight: IN(18),
     color: CHARCOAL,
     accent: NEAR_BLACK,
-    source: `IKEA MARKUS office chair, 62 x 60 x 129-140 cm, seat 43-54 cm (17"-21 1/4")`,
+    source: `IKEA MARKUS office chair, 62 x 60 x 129-140 cm, seat 43-54 cm (17"-21 1/4") PRICE RE-VERIFIED 30 Jul 2026: $299.99 regular / $249.99 IKEA Family on a promotion dated 7 Jul - 2 Aug 2026 (Medium, Vissle dark grey; the Large is $329.99). Seat height 17 3/4"-22 7/8" covers the Jarvis 3-Stage's 25.5" bottom deck. The footprint DEPTH here is an estimate: the IKEA listing's 38.05" figure is a packaged or overall-with-recline number, not a seated footprint.`,
     frontClearance: 0, // it IS the clearance the desk asks for
     tags: ['wfh', 'chair', 'work', 'ikea', 'ergonomic'],
-    price: 259,
+    price: 300,
   },
   {
     id: 'chair-task-simple',
@@ -1411,14 +1415,14 @@ const DEFS: FurnitureDef[] = [
     seatHeight: IN(18), // pneumatic 16"-20 1/2"; 18" suits a 29 1/2" work surface
     color: CHARCOAL, // graphite frame
     accent: NEAR_BLACK, // black 8Z Pellicle mesh
-    source: `Herman Miller Aeron size B: 27" overall width (5-star base ~27" dia = the footprint), back top 38 1/2"-43", pneumatic seat height 16"-20 1/2", seat depth 16 1/2"-18 1/2"; 18" seat quoted as the nominal for a 29 1/2" work surface (published spec, sizes from the Aeron A/B/C chart)`,
+    source: `Herman Miller Aeron size B: 27" overall width (5-star base ~27" dia = the footprint), back top 38 1/2"-43", pneumatic seat height 16"-20 1/2", seat depth 16 1/2"-18 1/2"; 18" seat quoted as the nominal for a 29 1/2" work surface (published spec, sizes from the Aeron A/B/C chart) PRICE RE-VERIFIED 30 Jul 2026: $2,150.00 for Size B Graphite as configured on store.hermanmiller.com (volume discounts from $1,000; the June 2026 Aeron price book also shows a $1,520.99 starting configuration). Size B fits 5'5"-6'2" / 150-230 lb, seat height 16"-20 1/2". IMPORTANT: Herman Miller's published 16 3/4" "depth" is the seat/back depth, NOT the caster-to-caster footprint, which is closer to 27" square - plan aisles off 27". Specify Onyx Ultra Matte or Graphite here; polished aluminium would fight the black anodised glazing. RE-VERIFIED 30 Jul 2026: $2,150 configured, 27" x 16 3/4" x 41", seat 16"-20 1/2" - exact, and the caveat about the 16 3/4" figure being seat depth rather than the caster footprint is confirmed: plan aisles off 27". A 25% promotion was live at the time of checking (the Aeron line showing $1,215-$2,013.75 against $1,620-$2,685), so $2,150 is the pre-promotion price.`,
     frontClearance: 0, // it IS the clearance the desk asks for
     // Known, pre-existing model behaviour that is not specific to this chair:
     // desks are solid boxes from the floor to the work surface, so a chair drawn
     // TUCKED UNDER a desk registers as an `overlap` error (MARKUS does the same).
     // Park it clear of the top, or set `ignoreAnalysis` on the placed item.
     tags: ['wfh', 'chair', 'work', 'ergonomic', 'splurge', 'requirement'],
-    price: 1795,
+    price: 2150,
   },
   {
     id: 'chair-dining',
@@ -1512,13 +1516,13 @@ const DEFS: FurnitureDef[] = [
     h: IN(15.5), // post height above the clamp
     color: STEEL, // silver anodised; also sold in black and white
     accent: NEAR_BLACK,
-    source: `Fully Jarvis Monitor Arm (single): supports monitors up to 32" / 19.8 lb, VESA 75 x 100 mm, clamp fits desktops ~0.4"-2.4" thick (grommet mount also included), post ~15 1/2" above the clamp, arm reaches ~24" from the clamp; clamp block ~3 1/2" x 5" (remembered spec)`,
+    source: `Fully Jarvis Monitor Arm (single): supports monitors up to 32" / 19.8 lb, VESA 75 x 100 mm, clamp fits desktops ~0.4"-2.4" thick (grommet mount also included), post ~15 1/2" above the clamp, arm reaches ~24" from the clamp; clamp block ~3 1/2" x 5" (remembered spec) PRICE AND AVAILABILITY RE-VERIFIED 30 Jul 2026 at $175 on the MillerKnoll Fully brand index page (single-with-laptop-tray $225, dual $245, dual-with-tray $295, clamp-mounted surge protector $85). Published capability: 13"-32" monitors up to 19 lb, 13.2" of height travel, max 19.8" above the tabletop, VESA 75/100, clamp or grommet. Those figures come from a search summary of the Herman Miller PDP rather than a spec table read line by line, and the w/d here is the arm's swept envelope, which is an estimate, not a published dimension. RE-VERIFIED 30 Jul 2026: $175, 13"-32", 19 lb, 13.2" of travel, 19.8" maximum height above the top - exact.`,
     frontClearance: 0,
     wallMounted: true, // carried by the desk - see the section note
     walkable: true, // "never a collision" (see section note): the monitor it carries shares this footprint
     defaultZ: IN(29.5), // clamps at the work surface
     tags: ['wfh', 'jarvis', 'fully', 'monitor-arm', 'desk-accessory', 'work', 'ergonomic'],
-    price: 149,
+    price: 175,
   },
   {
     id: 'monitor-arm-dual-jarvis',
@@ -1532,7 +1536,7 @@ const DEFS: FurnitureDef[] = [
     h: IN(17), // taller post so two arms can pass each other
     color: STEEL,
     accent: NEAR_BLACK,
-    source: `Fully Jarvis Monitor Arm (dual): two arms on one post/clamp, each supports up to 27" / 19.8 lb, VESA 75 x 100 mm, clamp fits desktops ~0.4"-2.4" thick, post ~17", each arm reaches ~20" from the post; side-by-side span with two 27" monitors is ~48" of cabinet so it needs a 60"+ top; clamp block ~3 1/2" x 5 1/2" (remembered spec)`,
+    source: `Fully Jarvis Monitor Arm (dual): two arms on one post/clamp, each supports up to 27" / 19.8 lb, VESA 75 x 100 mm, clamp fits desktops ~0.4"-2.4" thick, post ~17", each arm reaches ~20" from the post; side-by-side span with two 27" monitors is ~48" of cabinet so it needs a 60"+ top; clamp block ~3 1/2" x 5 1/2" (remembered spec) PRICE RE-VERIFIED 30 Jul 2026 at $245 on the MillerKnoll Fully brand index page. The per-head load rating was NOT separately verified - it is assumed to match the single arm's 19 lb, which matters: a 27" panel is 11.5 lb bare and a 32" is 14.4 lb, both comfortable, but a 40" ultrawide is 18.4 lb bare and also fails the 32" size rating outright. RE-VERIFIED 30 Jul 2026: $245 confirmed, and the 19 lb PER HEAD rating is now verified rather than assumed. The 40" width recorded here remains a PLANNING ENVELOPE for two 27" panels side by side, not a product dimension - Herman Miller publishes per-arm figures only.`,
     frontClearance: 0,
     wallMounted: true,
     walkable: true, // "never a collision" (see section note): the monitors it carries share this footprint
@@ -1541,7 +1545,7 @@ const DEFS: FurnitureDef[] = [
       'wfh', 'jarvis', 'fully', 'monitor-arm', 'desk-accessory', 'work', 'dual-monitor',
       'ergonomic',
     ],
-    price: 249,
+    price: 245,
   },
   {
     id: 'monitor-27',
@@ -1636,13 +1640,13 @@ const DEFS: FurnitureDef[] = [
     h: IN(12),
     color: NEAR_BLACK,
     accent: STEEL,
-    source: `Under-desk CPU holder archetype (Humanscale CPU200 / Fully under-desk mount class): sling adjusts ~3 1/2"-10" for the case width, ~12" deep x ~12" tall, up to 30 lb; hung with its top just under a 29 1/2" work surface so its base sits at 16" AFF (remembered spec)`,
+    source: `Under-desk CPU holder archetype (Humanscale CPU200 / Fully under-desk mount class): sling adjusts ~3 1/2"-10" for the case width, ~12" deep x ~12" tall, up to 30 lb; hung with its top just under a 29 1/2" work surface so its base sits at 16" AFF (remembered spec) PRICE RE-VERIFIED 30 Jul 2026 against the UPLIFT Desk CPU Holder PDP: $99, supports up to 50 lb, includes a 16" fore-aft track, fits towers 3.75"-8.25" wide, 360-degree swivel for port access, plus a $49 Track Spacer if the desk frame has a crossbar. Note it hangs into the chair pull-back zone, so mount it to one side. Re-verified 30 Jul 2026: $99, 50 lb, 16" track, fits 3.75"-8.25" towers - exact.`,
     frontClearance: 0,
     wallMounted: true,
     walkable: true, // "never a collision" (see section note): it hangs inside the desk footprint
     defaultZ: IN(16), // top of the sling ~28", i.e. just under the top
     tags: ['wfh', 'desk-accessory', 'under-desk', 'work', 'cable-management'],
-    price: 79,
+    price: 99,
   },
   {
     id: 'cable-tray-jarvis',
@@ -1657,13 +1661,13 @@ const DEFS: FurnitureDef[] = [
     h: IN(3.5),
     color: NEAR_BLACK,
     accent: NEAR_BLACK,
-    source: `Fully Jarvis wire management tray, ~25" long x ~5" wide x ~3 1/2" deep, screws to the underside at the rear of the top (remembered spec; Fully quote it as a ~25" tray)`,
+    source: `Fully Jarvis wire management tray, ~25" long x ~5" wide x ~3 1/2" deep, screws to the underside at the rear of the top (remembered spec; Fully quote it as a ~25" tray) PRICE CORRECTED TO 0 ON 30 Jul 2026, and the reason matters for the budget: the standalone Fully wire-management tray SKU no longer exists in the MillerKnoll catalogue - the Jarvis ships with its own cable tray, and the only cable accessory still sold is a Fully Clamp-Mounted Surge Protector at $85. So this line is INCLUDED with the desk rather than an extra. It stays in the catalog as its own entry because it is still a real object that occupies real space under the top, and because a sit-stand desk without one is a mistake, not a saving.`,
     frontClearance: 0,
     wallMounted: true,
     walkable: true, // "never a collision" (see section note): it hangs inside the desk footprint
     defaultZ: IN(24), // hangs below the 29 1/2" top, clear of knees
     tags: ['wfh', 'jarvis', 'fully', 'desk-accessory', 'under-desk', 'cable-management'],
-    price: 39,
+    price: 0,
   },
   {
     id: 'desk-mat-felt',
@@ -2214,6 +2218,1101 @@ const DEFS: FurnitureDef[] = [
     tags: ['seating', 'bar-stool', 'kitchen', 'bar'],
     price: 149,
   },
+
+  // =====================================================================
+  // PROJECTION - projectors, screens, the credenzas that carry them
+  //
+  // WHY THIS SECTION IS DIMENSIONED THE WAY IT IS. A projector scheme is the
+  // one thing in this project that can be drawn perfectly and still not work,
+  // because two invisible numbers decide it:
+  //
+  //   throw distance = throw ratio x IMAGE WIDTH        (does the picture fit?)
+  //   seating distance = f(image width, viewing angle)  (is it watchable?)
+  //
+  // So every projector carries a real `throwRatio` and a real `lensOffset`, and
+  // every screen carries a real `imageDiagonal` - and src/core/analysis.ts does
+  // the arithmetic and errors when a placement cannot produce the picture.
+  //
+  // lensOffset is measured from the face of the cabinet NEAREST THE SCREEN to
+  // the lens's optical axis, which for an ultra-short-throw is a much bigger
+  // number than you expect. A UST sits facing the room with its BACK a few
+  // inches off the wall and throws UP AND BACKWARD over its own body: the lens
+  // is near the FRONT of the cabinet, so on a Hisense PX3-PRO the lens is
+  // 10 5/8" from the rear face and only ~1" from the front. That is why the
+  // published "8 1/2 inches from the wall" and the computed 19" of throw are
+  // both true at the same time.
+  //
+  // THE FINDING THAT GOVERNS THIS WHOLE SECTION, and it is physics rather than
+  // taste: at 100" on a 0.6-gain screen a 2,700-lumen projector makes 54 fL of
+  // peak white, and a screen face taking only 500 lux of ambient (a
+  // conservative figure for a wall 18 ft from an uncurtained full-height west
+  // glass wall at midday) sits at 28 fL of BLACK. That is 1.9:1 in-room
+  // contrast - a grey rectangle. Even a 5,000-lumen unit only reaches 3.6:1.
+  // There is no lumen count purchasable in 2026 that fixes it. Blackout on all
+  // four glazing bays is a co-requisite of every projector below, not an
+  // accessory, and an ALR screen does NOT substitute for it on the bathroom
+  // partition because that wall faces due west, straight down the sightline at
+  // the glazing - the one direction a lenticular screen cannot reject.
+  // =====================================================================
+  {
+    id: 'projector-ust-hisense-px3-pro',
+    name: 'Hisense PX3-PRO TriChroma laser cinema (UST)',
+    kind: 'projector',
+    w: IN(21.7),
+    d: IN(11.7),
+    h: IN(4.8),
+    color: NEAR_BLACK,
+    accent: CHARCOAL,
+    throwRatio: [0.22, 0.22],
+    // 0.22 x 87.16" (a 100" 16:9 image) = 19.18" of throw, and the published
+    // rear-of-cabinet-to-wall gap at 100" is 8 1/2" - so the lens sits
+    // 10 5/8" in from the rear face. The same offset reproduces the published
+    // 4.7" @ 80" and 18.1" @ 150" endpoints to within 1/50", which is the
+    // check that says the number is right rather than plausible.
+    lensOffset: IN(10.65),
+    source: `Hisense PX3-PRO: 21.70 x 11.70 x 4.80 in (551 x 297 x 122 mm), 19.8 lb, throw ratio 0.22:1, no lens shift, 80-150" image, RGB triple laser 25,000 h, 4K UHD 0.47" DMD, 3,000 ANSI rated / 2,669 ANSI measured max / ~2,000 lm in the accurate Theater modes, native contrast measured just over 4,000:1 (the best of any UST in this class), 110% BT.2020, 50 W front-firing Harman Kardon with Dolby Atmos, Google TV with licensed Netflix. Street $2,799 / MSRP $3,499. Dimensions, throw and audio from the ProjectorCentral spec page; the 8 1/2" rear-of-cabinet gap at 100" is INTERPOLATED from ProjectorCentral's published 4.7" @ 80" / 18.1" @ 150" endpoints, not from a manufacturer install table - read Hisense's own table before building millwork. Measured fan noise 39.1 dBA at 3 ft (no published rating). INDEPENDENTLY RE-VERIFIED 30 Jul 2026 against ProjectorCentral: 21.7 W x 11.7 D x 4.8 H, 19.8 lb, 0.22:1, 25,000 h, 50 W Harman Kardon, 2-year warranty, street $2,799 / MSRP $3,499 - every field matches, and the 100"/120" rear-gap interpolations are internally coherent with the review's 80" and 150" endpoints (both imply the same lens position 10.6" in from the rear panel). This is the best-verified projector in the catalog.`,
+    frontClearance: 0,
+    // Lives on a credenza top: the layout MUST set `z` to that top height,
+    // because the whole throw geometry hangs off it. Deliberately no defaultZ -
+    // a default here would be a guess masquerading as a dimension.
+    wallMounted: true,
+    walkable: true, // never a collision: it stands on the credenza inside its footprint
+    tags: ['projector', 'ust', 'laser-tv', 'av', 'screening', 'recommended'],
+    price: 2799,
+  },
+  {
+    id: 'projector-ust-formovie-theater-premium',
+    name: 'Formovie Theater Premium 4K UST triple laser',
+    kind: 'projector',
+    w: IN(21.65),
+    d: IN(13.75),
+    h: IN(4.23),
+    color: CHARCOAL,
+    accent: NEAR_BLACK,
+    throwRatio: [0.21, 0.21],
+    // Published rear-of-cabinet-to-wall 6.25" at 100"; 0.21 x 87.16 = 18.30" of
+    // throw, so the lens is 12.05" in from the rear face.
+    lensOffset: IN(12.05),
+    source: `Formovie (Appotronics) Theater Premium: 21.65 x 13.75 x 4.23 in (550 x 349 x 107 mm), 21.6 lb, throw 0.21:1, 80-150", ALPD RGB+ 4.0 laser 30,000 h, 4K UHD, 2,200 ISO lumens (the DIMMEST unit in this section), 3,000:1 spec / 3,200:1 measured full-on-off, 107% BT.2020 factory calibrated, Dolby Vision + Atmos + DTS-X, 2 x 15 W Bowers & Wilkins, Google TV. PUBLISHED rear-of-cabinet-to-wall: 6.25" at 100", 10.0" at 120". Rated 28 dB but MEASURED 36.9-37.9 dBA at 3 ft. Street $2,799 (ProjectorCentral's spec page says $2,399 street / $3,499 MSRP while its own review says $2,999 street / $2,399 MSRP - self-contradictory, and Formovie's store shows $2,799 sale from $3,499; re-check before quoting). At 120" on a 0.6-gain screen it measured 19.62 fL, only just above the 16 fL dark-cinema floor. PRICE CORRECTED ON AN ADVERSARIAL CHECK, 30 Jul 2026: $2,399 street / $3,499 MSRP is what the ProjectorCentral spec page, its price-comparison page AND Amazon all show. The $2,799 first recorded here matched none of them. The published clearances DO reconcile: 0.21 x 69.7" (an 80" image) = 14.6" of lens-to-screen against a published 2.83" rear gap, and 0.21 x 87.16" (100") = 18.3" against a published 6.25" gap - both imply a lens 11.7-12.05" in from the REAR face, so the lensOffset here is sound. Released Oct 2024, in production.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // never a collision: stands on the credenza inside its footprint
+    tags: ['projector', 'ust', 'laser-tv', 'av', 'screening'],
+    price: 2399,
+  },
+  {
+    id: 'projector-ust-hisense-l9q',
+    name: 'Hisense L9Q TriChroma laser TV (projector only)',
+    kind: 'projector',
+    w: IN(24.6),
+    d: IN(12.5),
+    h: IN(6.5),
+    color: OFF_WHITE,
+    accent: GREIGE,
+    throwRatio: [0.18, 0.18],
+    lensOffset: IN(7.3),
+    source: `Hisense L9Q: 24.60 x 12.50 x 6.50 in, 28.4 lb, throw 0.18:1, 80-200", RGB triple laser 25,000 h, 4K UHD, 5,000 ANSI lumens (the brightest UST here by 25%), 5,000:1 full-on-off, 110% BT.2020, Dolby Vision + Atmos, 116 W Devialet-tuned audio that is genuinely enough on its own, Google TV. Street $4,999 / MSRP $5,999. THE LENS OFFSET IS APPROXIMATE: the only rear-of-cabinet figures I could find ("21 inches for a 200-inch image, exactly 11.5 inches for a 120-inch setup") come from a third-party aggregator and imply a 0.136 throw ratio rather than the published 0.18:1, so at least one of them is wrong. 7 5/16" is derived from the 120" figure against the published ratio. Confirm against Hisense's install table before committing a plinth dimension. No published fan-noise figure. RE-VERIFIED 30 Jul 2026: dimensions, weight, 0.18:1, 1.0-2.6 ft, 5,000 ANSI, 5,000:1, 25,000 h, 116 W audio and street $4,999 / MSRP $5,999 all match ProjectorCentral, and the screen is NOT included. One correction to the earlier caveat: ProjectorCentral's throw data is NOT self-contradictory (0.18 x 174.7" = 31.4" = 2.6 ft at its 200" maximum). The single unsupported number is the third-party "11.5 in at 120 in" rear gap that lensOffset is derived from - at 120" the lens is 18.8" from the wall, so an 11.5" rear gap needs the lens 7.3" in from the rear panel. Not impossible, but aggregator-derived. Treat lensOffset as provisional and read Hisense's own install table before committing millwork.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // never a collision: stands on the credenza inside its footprint
+    tags: ['projector', 'ust', 'laser-tv', 'av', 'screening', 'bright', 'premium'],
+    price: 4999,
+  },
+  {
+    id: 'projector-ust-epson-ls650',
+    name: 'Epson EpiqVision Ultra LS650 (UST)',
+    kind: 'projector',
+    w: IN(18.4),
+    d: IN(15.7),
+    h: IN(6.2),
+    color: NEAR_BLACK,
+    accent: CHARCOAL,
+    throwRatio: [0.26, 0.26],
+    // Published rear-to-wall 10.5" at 100"; 0.26 x 87.16 = 22.66", so 12.16" in.
+    lensOffset: IN(12.16),
+    source: `Epson EpiqVision Ultra LS650 (V11HB07120): 18.4 x 15.7 x 6.2 in, 16.3 lb, throw 0.26:1, 60-120" ONLY, 4K PRO-UHD (1080p 3LCD with 4-phase pixel shift), 3,600 lm ISO white AND colour (3LCD means colour brightness equals white brightness), 3,485 ANSI measured Dynamic / 2,474 Cinema, laser phosphor. Yamaha 2.1 audio (2 x 5 W + 10 W sub). Android TV 11 with Prime Video, YouTube and Disney+ but NO NETFLIX APP - budget an Apple TV. PUBLISHED rear-of-cabinet-to-wall 10.5" at 100". Price $1,799.99 read off Epson.com 30 Jul 2026, but this is END OF LIFE: one reseller already lists it discontinued and Epson has launched the Lifestudio Grand at $2,699.99 into the same slot. Measured 34.9-44.8 dBA at 2.5 ft with the right-side exhaust as the loud face. Verify stock before pricing.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // never a collision: stands on the credenza inside its footprint
+    tags: ['projector', 'ust', 'laser-tv', 'av', 'screening', 'value'],
+    price: 1799,
+  },
+  {
+    id: 'projector-lifestyle-hisense-c2-ultra',
+    name: 'Hisense C2 Ultra triple-laser gimbal projector',
+    kind: 'projector',
+    w: IN(9.7),
+    d: IN(9.7),
+    h: IN(11.3),
+    color: OFF_WHITE,
+    accent: STEEL,
+    // A real 1.67x optical zoom, which is rare at this price and is what lets one
+    // console position serve both a 90" and a 120" image.
+    throwRatio: [0.9, 1.5],
+    lensOffset: IN(2),
+    source: `Hisense C2 Ultra: 4K UHD, RGB triple laser 25,000 h, 3,000 ANSI rated / 2,779 measured max / 2,145 Standard / 1,528 Filmmaker, native contrast only ~1,600:1 measured, throw 0.90-1.50:1 with a 1.67x OPTICAL zoom plus autofocus, auto keystone, obstacle avoidance and wall-colour compensation, NO lens shift, 2 x 10 W JBL plus a 20 W subwoofer in the gimbal base (reviewers call it usable standalone), VIDAA OS (weakest platform of the group but it does carry Netflix, Prime, YouTube, Disney+ and Max), 13.9 lb, measured 34.6-36.0 dB. Street $2,299 / MSRP $2,999. DIMENSIONS CONFLICT between two ProjectorCentral pages - the spec page says 9.70 x 8.50 x 7.10 in and the review says 9.7 W x 11.3 H x 9.7 D; the difference is almost certainly with and without the gimbal base. The larger figure is used here because the base is not removable in normal use. lensOffset is an ESTIMATE of a gimbal-mounted lens's position, not published. DIMENSION CONFLICT RESOLVED EXPLICITLY, 30 Jul 2026. ProjectorCentral prints its dimensions as H x W x D, and its two pages disagree: the spec page gives 7.10 H x 9.70 W x 8.50 D (the BODY) while the review gives 9.7 W x 11.3 H x 9.7 D (WITH the gimbal base). The figures recorded here are the with-base envelope, which is the correct thing for a floor plan because the base is not removable in normal use - but the body alone is 9.7 x 8.5 x 7.1, and a shelf detail should be drawn off whichever of the two actually bears. Price $2,299 street / $2,999 MSRP, 0.90-1.50:1, 1.67x zoom, 25,000 h, 13.9 lb all confirmed. Released Oct 2024.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // never a collision: stands on a console inside its footprint
+    tags: ['projector', 'lifestyle', 'gimbal', 'zoom', 'av', 'screening'],
+    price: 2299,
+  },
+  {
+    id: 'projector-lt-epson-qb1000',
+    name: 'Epson Home Cinema QB1000 (long throw)',
+    kind: 'projector',
+    w: IN(20.5),
+    d: IN(17.6),
+    h: IN(7.6),
+    color: NEAR_BLACK,
+    accent: ANOD_BLACK,
+    throwRatio: [1.35, 2.84],
+    lensOffset: IN(3),
+    source: `Epson Home Cinema QB1000 (QB1000B black): 20.50 x 17.60 x 7.60 in, 4K PRO-UHD (1080p 3LCD + pixel shift), 3,300 lm ISO white AND colour, 5,000,000:1 dynamic, laser phosphor 20,000 h, VRX 15-element glass lens, 2.1x POWERED zoom, powered focus, POWERED LENS SHIFT V +/-96% / H +/-47% with lens memory, throw 1.35-2.84:1, 32 dB / 22 dB eco. NO SPEAKERS AT ALL and no smart OS - an external streamer and real audio are mandatory, not optional. $7,999. THIS IS THE ONLY PROJECTOR IN THIS SECTION WITH REAL LENS SHIFT, which is what makes it the only one that can legitimately go on a high shelf or a drop and still throw a true rectangle; every other candidate has to sit at or just below the bottom edge of the image. lensOffset is an ESTIMATE for a front-mounted zoom barrel, not published. FULLY RE-VERIFIED 30 Jul 2026 with nothing to refute: 20.5 W x 17.6 D x 7.6 H, 28.2 lb, 3,300 ISO, 5,000,000:1, 1.35-2.84:1 over 10.3-29.5 ft, 2.1x powered zoom, lens shift H +/-47% and V +/-96%, 32/22 dB, $7,999 MSRP = street, 20,000 h, 3-year warranty, Epson.com V11HB23120 live, retail spread $7,550-$7,999, and no QB1100 successor exists.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // never a collision: stands on a shelf or console inside its footprint
+    tags: ['projector', 'long-throw', 'lens-shift', 'av', 'screening', 'premium'],
+    price: 7999,
+  },
+  {
+    id: 'projector-portable-xgimi-mogo4-laser',
+    name: 'XGIMI MoGo 4 Laser portable projector',
+    kind: 'projector',
+    w: IN(3.8),
+    d: IN(3.8),
+    h: IN(8.2),
+    color: CHARCOAL,
+    accent: BRASS,
+    throwRatio: [1.2, 1.2],
+    lensOffset: IN(1),
+    source: `XGIMI MoGo 4 Laser: 3.80 x 3.80 x 8.20 in, 2.9 lb, 1080p, RGB LASER 550 ISO lumens with a published 1,000:1 full-on-off (versus the LED portables' 400:1) and a much wider gamut, throw 1.20:1 over 3.5-17.4 ft (100" at 8 ft 9 in), 360-degree integrated gimbal stand, autofocus, auto keystone, 2 x 6 W, 2 h battery, Google TV with licensed Netflix, 28 dB. Street $669 / MSRP $799. Light-source life is NOT published. At 550 lumens this is an EVENING-AND-BLACKOUT-ONLY machine: on a 100" gain-1.0 screen it makes about 11 fL, below the 16 fL cinema reference. It is in the catalog as the honest low-commitment option, not as a rival to the USTs.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // never a collision: stands on a table inside its footprint
+    tags: ['projector', 'portable', 'gimbal', 'av', 'screening', 'value'],
+    price: 669,
+  },
+
+  // ---- the picture -----------------------------------------------------
+  //
+  // Screens are dimensioned as the OVERALL FRAME (that is the object you hang
+  // on the wall and the thing that has to fit between two returns), while
+  // `imageDiagonal` records the PICTURE inside it. The two differ by about 5"
+  // on a thin-bezel 100", which is exactly enough to make a wall that "just
+  // fits" not fit.
+  {
+    id: 'screen-ust-alr-vividstorm-100',
+    name: 'VIVIDSTORM CineVision Pro UST ALR fixed frame, 100" 16:9',
+    kind: 'projection_screen',
+    w: IN(88.4),
+    d: IN(1.5),
+    h: IN(50.2),
+    imageDiagonal: 100,
+    imageAspect: 16 / 9,
+    color: '#0D0D0D',
+    accent: ALR_GREY,
+    source: `VIVIDSTORM CineVision Pro Fixed Frame UST ALR, 100" 16:9 (VCVFFUST100H): lenticular UST ALR, gain 0.6, 170-degree viewing angle, 15 mm / 0.59" ultra-narrow aluminium bezel. Viewing area 87.17" x 49.02" is Vividstorm's published figure; price $1,439.00 and the SKU were read from the live product JSON on vividstormscreen.com. OVERALL 88.4 x 50.2 IS ARITHMETIC (viewing area plus twice the published 0.59" bezel) - Vividstorm publishes no overall frame table - and the 1.5" DEPTH IS AN ESTIMATE. Weight is not published for the lenticular version. WHY VIVIDSTORM AND NOT ELITE: Elite's UST ALR ladder does not offer 100" or 120" AT ALL - Aeon CLR/CLR2/CLR3 come in 103" and 123" (the 115" is discontinued as of 7/9/2026) and CLR5 in 140"/152". Vividstorm (100/120/130), Screen Innovations and Stewart are the only routes to a true 100" UST ALR frame, and this is the most common sizing mistake in UST layouts. On this unit's 9'-6" (114") bathroom partition an 88.4" frame leaves 12.8" of wall each side, which reads as deliberate; a 120" version (105.8" overall) would leave 4.1", which is INSIDE the traced plan's own +/-3.6" tolerance - so 100" is the size to order off a drawing and 120" is the size to order only after someone puts a laser on that wall. 170 degrees of viewing angle also matters more here than gain does, because a congregation area spreads people 8-10 ft wide in front of the picture and the outermost viewer sits about 25 degrees off axis.`,
+    frontClearance: 0,
+    wallMounted: true,
+    defaultZ: IN(28),
+    tags: ['projection', 'screen', 'alr', 'lenticular', 'ust', 'fixed-frame', 'av', 'recommended'],
+    price: 1439,
+  },
+  {
+    id: 'screen-mattewhite-silverticket-100',
+    name: 'Silver Ticket STR-169100 matte-white fixed frame, 100" 16:9',
+    kind: 'projection_screen',
+    w: IN(91.875),
+    d: IN(1.25),
+    h: IN(53.75),
+    imageDiagonal: 100,
+    imageAspect: 16 / 9,
+    color: '#0D0D0D',
+    accent: SCREEN_WHITE,
+    source: `Silver Ticket STR-169100, 100" 16:9 fixed frame: matte white vinyl gain 1.1, viewing area 87.125" x 49.0", OVERALL 91.875" x 53.75", 2.375" black velvet bezel, 1.25" frame depth, 6-piece knock-down aluminium frame, 27 lb, $229.98 - EVERY NUMBER HERE was read off Silver Ticket's own product page, which makes this the best-sourced screen in the catalog. It also publishes a real HALF-GAIN angle of 80 degrees (a 160-degree half-gain cone), which almost nobody else does: Elite and Vividstorm publish "viewing angle" or "viewing cone", which is a different measurement and must not be compared directly in a spec table. STANDARD THROW ONLY. THE CASE FOR SPENDING $230 RATHER THAN $680: with a standard-throw projector, the west wall genuinely blacked out and the lights off, this will look BETTER than an angular-reflective ALR screen whose viewing cone is 45 degrees left and right - brighter, more uniform, no sparkle, three times cheaper - and the difference should go into the projector. THE CASE AGAINST, and it is about the ceiling rather than the window: an exposed concrete soffit is a large mid-grey diffuse reflector sitting directly above the screen, so it bounces the projector's own light back down onto the screen face even with the room dark, which is exactly the failure mode a ceiling-light-rejecting material is built for. Also note that with the downlights on, letterbox bars on a matte-white 1.1 screen glow grey and the picture loses its edge, whereas a 2.375" black velvet bezel visually absorbs them - so "edge-free minimal" and "good letterbox bars" pull in opposite directions.`,
+    frontClearance: 0,
+    wallMounted: true,
+    defaultZ: IN(28),
+    tags: ['projection', 'screen', 'matte-white', 'fixed-frame', 'long-throw', 'wide-cone', 'av', 'value'],
+    price: 230,
+  },
+  {
+    id: 'screen-alr-elite-cinegrey3d-110',
+    name: 'Elite Aeon CineGrey 3D edge-free ALR frame, 110" 16:9',
+    kind: 'projection_screen',
+    w: IN(96.7),
+    d: IN(1.3),
+    h: IN(54.7),
+    imageDiagonal: 110,
+    imageAspect: 16 / 9,
+    color: '#1A1A1A',
+    accent: '#9A9C9E',
+    source: `Elite Screens Aeon CineGrey 3D, 110" 16:9 (AR110DHD3): OVERALL 96.7" x 54.7", viewable 95.9" x 53.9", 0.4" EDGE-FREE bezel, 1.3" frame thickness, net weight 24.2 lb - all read off Elite's own "Aeon CineGrey 3D Dimensions Table - M Type" PDF (rev 7/18/2025). Gain 1.2, viewing cone 90 degrees (45 degrees left and right - a CONE half-angle, not a published half-gain figure), 65% ceiling-light rejection, ISF certified, polarised for passive 3D. Price $628.00 from Elite's own store JSON (variant AR110DHD3); focusedtechnology.com lists the 120" at $695.52. STANDARD THROW ONLY - Elite states explicitly that it is not compatible with UST, short-throw or triple-laser projectors. TWO THINGS TO WEIGH: the 0.4" edge-free bezel is what lets a 110" image fit a 9'-6" wall with a clean 8.6" reveal each side (a 2.2"-bezel Sable Frame at the same diagonal is 100.5" overall), but an edge-free frame has no velvet to absorb letterbox bars; and the 45-degree cone will visibly dim for anyone sitting at the outside of a spread congregation area, where 25 degrees off axis is normal.`,
+    frontClearance: 0,
+    wallMounted: true,
+    defaultZ: IN(28),
+    tags: ['projection', 'screen', 'alr', 'edge-free', 'fixed-frame', 'long-throw', 'av'],
+    price: 628,
+  },
+  {
+    id: 'screen-floorrise-vividstorm-100',
+    name: 'VIVIDSTORM S PRO floor-rising UST ALR screen, 100" 16:9',
+    kind: 'projection_screen',
+    // The def box is the DEPLOYED envelope: the stowed cabinet footprint (98.43"
+    // long x 9.45" deep) with the fabric standing 49.1" above an 8.27" cabinet.
+    w: IN(98.43),
+    d: IN(9.45),
+    h: IN(57.4),
+    imageDiagonal: 100,
+    imageAspect: 16 / 9,
+    color: ANOD_BLACK,
+    accent: ALR_GREY,
+    source: `VIVIDSTORM S PRO Motorized Tension Floor-Rising UST ALR, 100" (VSDSTUST100H): stowed cabinet 98.43" L x 9.45" W x 8.27" H, net weight 59.52 lb, viewable 87.2" x 49.1", lenticular UST ALR gain 0.6, 170-degree viewing angle, DC tubular motor on a wide-voltage 110-220 V supply, RF remote plus app, voice assistant and a projector trigger dongle. NO MOUNTING REQUIRED - it stands on the floor. Sizes 72"-130". Cabinet dimensions, weight and viewable area from the ProjectorScreen.com product page for VSDSTUST100H; price $1,962.00 from the live Shopify JSON on vividstormscreen.com, and note ProjectorScreen.com sells the SAME SKU at $1,649 - Vividstorm pricing differs by channel by up to 19%, so any budget line built on it is soft.
+THIS IS THE CORRECT ANSWER FOR A SCREEN IN FRONT OF THE WEST GLAZING, and the reasons are all structural rather than aesthetic. (1) A ceiling-recessed screen is IMPOSSIBLE here: Elite's own below-ceiling table for a 120" Evanesce needs a 119" x 4.3" opening with 4.7" of clear depth behind the ceiling plane, and you cannot cut that into a structural slab; a furred-down bulkhead would drop that strip to 8'-6 1/2" and throw away the exposed concrete that is the room's best feature. (2) A surface cassette above the glazing head has only 4.0" of concrete to live in (head 8'-8", soffit 9'-0"), and of every cassette surveyed only the Screen Innovations Solo Pro 2 MEDIUM at 3.687" plus a 0.31" bracket actually fits. (3) Overhead anchors into concrete in tension is a code-sensitive application needing a GPR or x-ray scan before drilling, seismic-rated screw anchors and a silica vacuum - usually a landlord "no" in a lease. (4) There is no power in a concrete soffit and every motorised screen plugs in. A floor-riser answers all four: zero anchors, a floor-level outlet, and when it is stowed the view is completely unobstructed, which is the entire point of putting a screen in a window rather than on a wall. It also passes this unit's own 2'-6"-within-1'-0"-of-the-glass rule at 8.27" stowed.
+TWO HONEST CAVEATS. The material is UST ALR, so this screen REQUIRES an ultra-short-throw projector sitting a foot or two in front of it - it will not work with a long throw. And Elite describes its comparable CLR3 backing as "black-backing (NON-OPAQUE)"; Vividstorm does not state opacity either way, and a non-opaque fabric in front of full-height west glazing will be back-lit from mid-afternoon and its black level will collapse. Get opacity confirmed in writing, or plan a blackout shade that closes BEHIND the screen. MODELLING NOTE: the def box treats the fabric plane as the cabinet's front face, which is a 2-4" approximation of where the fabric actually rises - smaller than the plan's own +/-3.6" tolerance, but do not dimension millwork off it.`,
+    frontClearance: 0,
+    // NOT wall-mounted: this one genuinely stands on the floor, and its 9 1/2" of
+    // depth in front of the glazing is real floor that has to be drawn.
+    tags: ['projection', 'screen', 'alr', 'lenticular', 'ust', 'floor-rising', 'retractable', 'glazing', 'av', 'recommended'],
+    price: 1962,
+  },
+  {
+    id: 'screen-painted-wall-118',
+    name: 'Screen paint on a level-5 wall, 118" 16:9',
+    kind: 'projection_screen',
+    // No frame: the panel IS the image. 118" 16:9 = 102.85" x 57.85".
+    w: IN(102.85),
+    d: IN(0.25),
+    h: IN(57.85),
+    imageDiagonal: 118,
+    imageAspect: 16 / 9,
+    color: SCREEN_WHITE,
+    accent: SCREEN_WHITE,
+    source: `Paint On Screen "Digital Theater White": gain 1.4, coverage 170 sq ft per US gallon, minimum 2 coats, roll or spray, no primer explicitly required - all from Paint On Screen's own product page. Their S1 Ultimate Contrast is a 2.0-gain silver at $249/gallon but hot-spots and shifts colour off axis, which is wrong for spread seating. PRICE $189 IS UNVERIFIED BY CONTAINER SIZE: the page uses an "Amount" selector that would not resolve quart versus gallon. QUANTITY MATHS: a 118" 16:9 image is 41.3 sq ft, so one quart (about 42.5 sq ft) is exactly ONE coat - buy the gallon.
+PAINT'S REAL ADVANTAGES HERE ARE SPECIFIC AND WORTH STATING: zero thickness, nothing to look at when it is off, and ANY image size you like - which genuinely matters on the 9'-6" partition, where a 123" frame leaves 3.3" of reveal but a painted 118" image with a 3" flat-black border reads as deliberate.
+IT LOSES ON FIVE THINGS, AND THE FIRST IS THE REAL ONE. (1) FLATNESS: on a 103"-wide 4K image one pixel is about 0.024", so roller stipple, drywall imperfections and telegraphed joints all show; screen fabric is optically flat. (2) PREP: the honest requirement is a level-5 skim over the whole screen area, sanded to 220, high-build primer, then 2-4 rolled coats and a flat-black border - three to five days, and the plastering usually costs more than the paint. This unit's flat white walls with no baseboard are almost certainly level 4. (3) NO ALR EXISTS IN PAINT - lenticular optics cannot be rolled on, so paint is STANDARD-THROW-ONLY; under a UST's grazing light every drywall ripple becomes a visible ridge. (4) No tension, no black backing, no velvet bezel to absorb letterbox bars. (5) High-gain silver paints hot-spot off axis. BOTTOM LINE: paint is right here only with a standard-throw projector, a client who will pay a finisher for level-5 over about 45 sq ft, and a wish for a bigger image than any frame that fits the 9'-6" wall. Otherwise a $628 edge-free ALR frame costs less than the plastering.`,
+    frontClearance: 0,
+    wallMounted: true,
+    defaultZ: IN(28),
+    tags: ['projection', 'screen', 'paint', 'painted', 'renter', 'long-throw', 'av', 'value'],
+    price: 189,
+  },
+  {
+    id: 'projection-image-100',
+    name: 'Projected image, 100" (switched on)',
+    kind: 'projection_screen',
+    w: IN(87.16),
+    d: IN(0.1),
+    h: IN(49.03),
+    imageDiagonal: 100,
+    imageAspect: 16 / 9,
+    color: '#DFE8F5',
+    accent: '#DFE8F5',
+    source: `NOT A PRODUCT - this is the PICTURE, and it exists so a render can show the room in use. Placed coincident with whichever screen the layout specifies, it renders as an emissive rectangle at roughly 300-350 cd/m2 (the estimate for a 2,500 lm projector on a gain-1.0 100" screen) and spills 6500 K light onto the soffit and onto the faces of everyone watching, which is the strongest single cue that a room is occupied. Price 0 - it is the same purchase as the screen. Follows the same convention as bed-murphy-queen-open: one physical object, two catalog entries for its two states. Only place it in a layout intended to be rendered as an EVENING frame; putting a lit screen in a daylight render would assert something this room cannot do - see the projection section header for the foot-lambert arithmetic.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // never a collision: it is coincident with the screen it lights up
+    defaultZ: IN(28),
+    tags: ['projection', 'screen', 'lit', 'projected-image', 'render-only', 'av'],
+    price: 0,
+  },
+  {
+    id: 'soundbar-compact-38',
+    name: 'Compact soundbar, 38"',
+    kind: 'speaker',
+    w: IN(38),
+    d: IN(4.5),
+    h: IN(2.6),
+    color: NEAR_BLACK,
+    accent: CHARCOAL,
+    source: `Compact 2.1 soundbar archetype, 38" x 4 1/2" x 2 5/8" (Sonos Beam / Bose Smart Soundbar 550 class, remembered spec). ONLY specify this where the projector has no usable audio of its own: the Epson QB1000 has NO speakers at all and the Optoma UHZ36 has 15 W mono, whereas the Hisense PX3-PRO (50 W Harman Kardon), the Hisense L9Q (116 W Devialet) and the Hisense C2 Ultra (2 x 10 W JBL + 20 W sub) are all genuinely sufficient alone. In a room whose brief forbids visual clutter, a projector with real built-in audio removes a bar, a subwoofer and their cables - that is a design argument, not just a convenience.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // never a collision: sits on the credenza inside its footprint
+    tags: ['speaker', 'soundbar', 'av'],
+    price: 449,
+  },
+
+  // ---- the plinth the UST stands on ------------------------------------
+  //
+  // TOP HEIGHT and TOP DEPTH are the two numbers that matter and both are
+  // verified for every entry here. A UST body is 11-16" deep and wants an inch
+  // behind it for exhaust and cable, so 15 3/4" is the FLOOR for top depth and
+  // 16 1/2-18" is the safe band. A 25-26" top puts a UST lens near 31-32" AFF
+  // and lands a 100" image roughly 31-80" AFF, clearing both the 8'-8" glazing
+  // head and the 9'-0" soffit; a 28 1/4" top pushes the image top to about 84"
+  // and starts crowding the soffit; a 36" credenza is unusable.
+  {
+    id: 'credenza-besta-tv-71',
+    name: 'BESTA TV unit, 70 7/8" (UST plinth)',
+    kind: 'tv_stand',
+    w: IN(70.875),
+    d: IN(15.75),
+    h: IN(25.25),
+    color: CHARCOAL,
+    accent: NEAR_BLACK,
+    source: `IKEA BESTA TV unit, 70 7/8" x 15 3/4" x 25 1/4", max 55 lb on top, several rear cord outlets, adjustable feet. Read off the IKEA US page (80566037), $110.00 on 30 Jul 2026. CAVEAT: that SKU is an OPEN FRAME - doors, drawers and interiors are separate, so budget frame plus fronts. A closed handleless slab-front combination exists at 70 7/8" x 16 1/2" x 25 5/8" with TIMMERVIKEN black or LAPPVIKEN walnut-effect doors, but every attempt to load a price for it redirected to a category page; note that combination is 25 5/8" tall, not 25 1/4". The published 55 lb top rating is TIGHT for a 20-28 lb UST plus a soundbar.`,
+    frontClearance: IN(24),
+    tags: ['credenza', 'media', 'ust-plinth', 'projection', 'slab-front', 'value'],
+    price: 110,
+  },
+  {
+    id: 'credenza-burrow-carta-48',
+    name: 'Burrow Carta credenza, 48" (UST plinth)',
+    kind: 'tv_stand',
+    w: IN(48),
+    d: IN(16.5),
+    h: IN(26.25),
+    color: WALNUT,
+    accent: NEAR_BLACK,
+    source: `Burrow Carta Credenza: 48" W x 16 1/2" D x 26 1/4" H, reversible SLIDING slab doors with no exterior hardware at all, solid ash and MDF frame, powder-coated steel legs (Hairpin or Straight), tool-free thumbscrew assembly, flat-pack. Read off the Burrow product page: $939.00 regular, $657 sale, 30 Jul 2026. Burrow rates it for 40-55" televisions. TOP WEIGHT CAPACITY IS NOT PUBLISHED - confirm with Burrow before standing a 20-35 lb UST plus a soundbar on it. The 26 1/4" top is the top of the useful UST band: it lifts the image about an inch above a BESTA, so check the image top edge against the 8'-8" glazing head if the diagonal goes past 100".`,
+    frontClearance: IN(24),
+    tags: ['credenza', 'media', 'ust-plinth', 'projection', 'slab-front', 'sliding', 'walnut', 'recommended'],
+    price: 939,
+  },
+  {
+    id: 'credenza-bdi-corridor-8173',
+    name: 'BDI Corridor 8173 low media console',
+    kind: 'tv_stand',
+    w: IN(79.25),
+    d: IN(20.25),
+    h: IN(21),
+    color: WALNUT,
+    accent: BRASS,
+    source: `BDI Corridor 8173: 79 1/4" W x 20 1/4" D x 21" H, interior 13.2 x 38.1 x 15.9", MICRO-PERFORATED "speaker-friendly" slab doors so a soundbar and IR pass through with the doors shut, adjustable shelves, integrated cable management, rated to 85" televisions, ships assembled, Chocolate Stained Walnut or Charcoal Stained Ash. NOT MANUFACTURER-VERIFIED: bdiusa.com returns HTTP 403 to automated fetch, so every figure here comes from retailer listings (World Wide Stereo, Abt). Price is messy - $3,499 at one retailer, $3,271 sale against a cited $4,065 MSRP at another. Its 21" top is BELOW the useful UST band in practice: it drops the image bottom to about 27" AFF, which front-row floor sitters start to occlude. And 79 1/4" is 6'-7" of wall - most of the 9'-6" bathroom partition.`,
+    frontClearance: IN(24),
+    tags: ['credenza', 'media', 'ust-plinth', 'projection', 'acoustic-doors', 'premium'],
+    price: 3499,
+  },
+
+  // ---- blackout ---------------------------------------------------------
+  //
+  // THE CO-REQUISITE. See the projection section header for the arithmetic; the
+  // short version is that without these the projector is a grey rectangle and
+  // the client should buy a television instead.
+  //
+  // The governing number is the 8'-8" (104") glazing head, and it disqualifies
+  // every renter-friendly product on the market: SelectBlinds' Click2Fit Total
+  // Blackout - the ONLY product found with integrated side AND bottom tracks,
+  // i.e. the only genuine no-drill total blackout - maxes out at 78" x 78";
+  // Sleepout's largest suction-cup panel is 86" x 54"; IKEA MAJGULL is 98"
+  // long. Only two families reach 104" at all, and both need brackets screwed
+  // into the head or jamb.
+  //
+  // These are dimensioned per BAY: the layout sets `size.w` to the real bay
+  // width from plan.ts and `size.h` to how far the blind is drawn down, so one
+  // catalog entry serves a bay open, half-drawn or fully closed.
+  {
+    id: 'shade-blackout-cellular-bay',
+    name: 'Blackout cellular shade, per glazing bay',
+    kind: 'shade',
+    w: IN(36),
+    d: IN(3),
+    h: IN(104), // head height; a layout overrides size.h to show the drop
+    color: BLACKOUT,
+    accent: NEAR_BLACK,
+    source: `SelectBlinds Select Blackout Cellular, 3/4" single cell, orderable 13"-120" wide and 12"-120" high - one of only two product families found that actually reaches this unit's 104" glazing head. Blocks 99% of light THROUGH the fabric. Read off the SelectBlinds page: single cell from $161.99, 1/2" double cell from $180.99; lifts include cordless, continuous loop, top-down/bottom-up and motorised; Click2Fit no-drill is INSIDE MOUNT ONLY and is a different, shorter product. PRICE $320 IS AN ESTIMATE for a configured 36" x 106" shade - the site's calculator would not render, and the only verified figure is the $161.99 starting price. At 104" of drop the real number will be materially higher. SelectBlinds' own copy admits a ~1/8" factory deduction per side on an inside mount, so expect a visible halo down every vertical edge; four bays means EIGHT of them. HARD CONSTRAINT FOUND ON AN ADVERSARIAL CHECK, 30 Jul 2026, and it changes the specification: SelectBlinds' PER-LIFT maximum heights are Cordless Lift & Lock 84", no-drill headrail 84", motorised 96", and CONTINUOUS CORD LOOP 120". This unit's glazing head is 104". So a shade tall enough for these bays can ONLY be ordered on a continuous cord loop - it cannot be cordless and it cannot be no-drill. The blanket "12-120 inches high" quoted earlier hid that. Practical consequence: four cord loops hanging down a floor-to-ceiling glass wall, which is a real aesthetic cost in a minimal scheme and should be shown to the client before they choose cellular over a roller. The $161.99 and $180.99 starting prices are confirmed.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // never a collision: it lives in the glazing reveal
+    tags: ['shade', 'blackout', 'cellular', 'honeycomb', 'window', 'projection', 'recommended'],
+    price: 320,
+  },
+  {
+    id: 'shade-blackout-roller-bay',
+    name: 'Blackout roller shade, per glazing bay',
+    kind: 'shade',
+    w: IN(36),
+    d: IN(3.5),
+    h: IN(104),
+    color: BLACKOUT,
+    accent: ANOD_BLACK,
+    source: `Blinds.com Classic Roller with a blackout fabric: height 12"-144" across all lift types (the most headroom of anything found), width 8"-118" on a cord loop, 18"-96" cordless, 16"-96" motorised - so the 33"-42" bays here are fine cordless and it still reaches 144" tall. Starting price read off the page at $29.82 after 30% off (reg. $42.60). "Light Guard" side light blockers are listed as an add-on but ARE NOT PRICED on the page, and the page states plainly that an inside mount "creates a light gap on each side". PRICE $210 IS AN ESTIMATE for a configured 36" x 106" blackout - get a quote. A roller stack at the head is far less visually present than a cellular stack, which matters when the shade sits 4" below a 9'-0" exposed concrete soffit.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // never a collision: it lives in the glazing reveal
+    tags: ['shade', 'blackout', 'roller', 'window', 'projection', 'value'],
+    price: 210,
+  },
+  {
+    id: 'shade-side-channels-bay',
+    name: 'Blackout side channels, per glazing bay (pair)',
+    kind: 'shade',
+    w: IN(1.5),
+    d: IN(1.75),
+    h: IN(104),
+    color: ANOD_BLACK,
+    accent: ANOD_BLACK,
+    source: `Sleepy Time Tracks blackout side channels / L-tracks, in a removable-magnetic or permanent-adhesive version; ship in two pieces and are "easily trimmed to fit" with scissors or tin snips, so 104" is reachable by joining sections. Their page publishes NEITHER lengths NOR prices NOR a light-blocking percentage - the $120 per bay is an ESTIMATE and the widely-quoted "97-99% of side light blocked" is vendor and blog marketing, not a tested spec. Renter-relevant caveat straight off their page: on the removable version "the adhesive-backed magnetic strip attached to the wall is intended to remain in place long term", so it is the CHANNEL that comes off, not the strip. Only the jamb face is touched, never the mullion. This is the piece that converts a 98-99% shade into a room a projector can actually work in - and on four bays with only 4" of mullion between them it means EIGHT channel runs.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // never a collision: it lives in the glazing reveal
+    tags: ['shade', 'blackout', 'side-channel', 'window', 'projection', 'light-leak'],
+    price: 120,
+  },
+  // =====================================================================
+  // MODERN / MINIMAL, 2026 — real products, re-sourced 30 Jul 2026
+  //
+  // Everything in this section was picked against one brief: low, quiet, few
+  // materials, slab fronts, no visible hardware, warm-dark neutrals that sit
+  // with a dark walnut floor, an exposed concrete soffit and black anodised
+  // glazing. Nothing ornate, no rolled arms, no nailheads, no chrome.
+  //
+  // TWO FILTERS DID MOST OF THE WORK, and they eliminated more good-looking
+  // furniture than taste did:
+  //
+  //   THE 30" GLAZING RULE. Nothing over 2'-6" tall may stand within 1'-0" of
+  //   the west glass (faces.ts GLASS_MAX_H / GLASS_BAND_E). Published overall
+  //   heights that PASS: KLIPPAN 26", JATTEBO 28", Cleon 28", Gus Mix 28.5",
+  //   Otio 29", Reid armless on the 1" BLOCK leg 29", Muuto Fiber 29 3/8",
+  //   EKENASET 29 7/8". FAIL: SODERHAMN 32 5/8", Floyd The Sofa 2.0 32",
+  //   LANGARYD 32 1/4", Burrard 33", Luva Modular 40 3/4". Note the Reid trap:
+  //   the SAME module is 29" on the 1" block leg and 32" on the 4" tubular leg.
+  //
+  //   THE DEPTH BUDGET. Seat depth + a 16" gap + a 24" coffee table + a 30"
+  //   walkway. At 38-41" deep that is 9'-0" to 9'-3" consumed out of the
+  //   19'-10" north-south dimension before the bed, the desk or a table get an
+  //   inch. Verified deep offenders: DWR Como 41 1/4", Luva 39 1/2", Reid 39",
+  //   SODERHAMN 39", Gus Mix 38", JATTEBO 37 3/8". Verified shallow winners
+  //   that buy the depth back: Cleon 34", KLIPPAN 34 5/8", Otio 34 1/2",
+  //   Burrard 35", Muuto Fiber 27 1/4".
+  //
+  // PRICE HONESTY: mid-2026 pricing on this list is visibly promotional. Where
+  // both a sale and a list price were visible the LIST price is recorded, and
+  // every entry's source says which figure was actually read off a page and
+  // which was not. Several IKEA prices could not be read directly at all and
+  // say so in as many words.
+  // =====================================================================
+
+  // ---- beds: a real queen, low enough to live under a glass wall --------
+  {
+    id: 'bed-queen-floyd-walnut',
+    name: 'Floyd Bed (Original), queen — walnut, no headboard',
+    kind: 'bed',
+    w: IN(67),
+    d: IN(86),
+    // Deck 7 1/2" + a 10" mattress = a 17 1/2" sleeping height, the lowest real
+    // queen available. `h` is the made-up bed, which is what the drawings need;
+    // `price` is the FRAME, which is what you actually buy.
+    h: IN(17.5),
+    seatHeight: IN(17.5),
+    color: WALNUT,
+    accent: OFF_WHITE,
+    source: `Floyd The Floyd Bed (Original), Queen: 67" W x 86" L x 7 1/2" H frame, 6" underbed clearance, 750 lb capacity, tool-free assembly (nylon ratchet straps, no screws), walnut / white oak / birch veneer on black or white powder-coated steel, 100 lb without a headboard. Read directly off the Floyd product page dimensions block; $1,070 regular / $856 member, 30 Jul 2026 (a "Summer Final Sale up to 60% off" was live). The headboard add-on takes overall height to 31 1/2", which FAILS the 30" glazing rule - specify it without. h here is the frame deck plus a 10" mattress; the price is the frame only. Re-verified 30 Jul 2026: $1,070 / $856 member, 67 x 86 x 7.5, 6" clearance, 750 lb - exact.`,
+    frontClearance: 0,
+    tags: ['bed', 'queen', 'platform', 'low', 'walnut', 'flat-pack', 'modern', 'recommended'],
+    price: 1070,
+  },
+  {
+    id: 'bed-queen-thuma-classic',
+    name: 'Thuma The Classic Bed, queen — no headboard',
+    kind: 'bed',
+    w: IN(65),
+    d: IN(85),
+    h: IN(23), // 13" frame + 10" mattress
+    seatHeight: IN(23),
+    color: WALNUT,
+    accent: OFF_WHITE,
+    source: `Thuma The Classic Bed, Queen: 65" W x 85" D x 13" H frame with 9" of underbed clearance, exposed Japanese joinery, no tools and no screws - the genuine five-minute flat-pack, which is the difference between a bed you can get into a lift and one you cannot. Finishes Walnut / Natural / Grey / Espresso; Espresso is the closest to this floor. MIXED SOURCING, stated plainly: only the 9" underbed figure, the finish list and "sets up in minutes, no tools required" were read off thuma.co - the PDP is JS-rendered and the dimensions accordion never resolved. The 65 x 85 x 13, the 35" overall-with-headboard figure and the $1,195 queen price all come from 2026 third-party reviews. Do not confuse this with Thuma's separate Essential Bed, whose PDP showed $2,395. With the PillowBoard or Classic Headboard it reaches 35" and FAILS the 30" glazing rule. Its 9" clearance is also the only low queen here that takes real drawers (Classic Underbed Storage Drawers, 35" x 19", $590 a pair, up to four under a queen). h is the frame plus a 10" mattress; the price is the frame. UPGRADED FROM THIRD-PARTY TO SOURCED, 30 Jul 2026: the Queen at $1,195 is now confirmed off thuma.co's own queen collection page, and the 9" underbed figure off the PDP. The 65 x 85 x 13 remains corroborated rather than read off a spec table. The Underbed Storage Drawers are sold singly at $295 each (so $590 for two), not as a set SKU, and the 8" drawer height is still not published anywhere.`,
+    frontClearance: 0,
+    tags: ['bed', 'queen', 'platform', 'low', 'walnut', 'flat-pack', 'modern', 'premium'],
+    price: 1195,
+  },
+  {
+    id: 'bed-queen-grimsbu',
+    name: 'GRIMSBU queen bed frame (with Luröy base)',
+    kind: 'bed',
+    w: IN(61),
+    d: IN(80.375),
+    // 21 5/8" is the HEADBOARD, and it is the tallest part of the piece. That is
+    // the whole point of this entry.
+    h: IN(21.625),
+    seatHeight: IN(20),
+    color: OFF_WHITE,
+    accent: CREAM,
+    source: `IKEA GRIMSBU bed frame, Queen, with the Luroy slatted base: length 80 3/8", width 61", HEIGHT 21 5/8", footboard 10 5/8", headboard 21 5/8", 8 1/4" of clearance under the frame for flat bins. Powder-coated steel in white or grey. Dimensions are IKEA's own measurement list quoted verbatim and I trust them. PRICE NOT VERIFIED: one IKEA listing snippet said $79.00 and an aggregator said $59.00 - treat $79 as approximate. THIS IS THE ONLY QUEEN IN THE CATALOG WHOSE HEADBOARD CLEARS THE 30" GLAZING RULE OUTRIGHT, so it is the only one that can be pushed hard against the west glass with its head toward the window rather than turned to face a solid wall. IKEA's own copy says as much: "the low height is perfect under windows". At roughly $79 it also frees the entire bed budget for the desk and the blackout. IMPORTANT CORRECTION, 30 Jul 2026: the $79 is IKEA US for the white Queen FRAME ONLY (art. 90508513) - THE SLATTED BASE IS A SEPARATE PURCHASE, so this line is not a complete bed and the earlier "with Luroy base" description was wrong. Budget a Luroy or Lonset base on top, and re-price both at the till. The DIMENSIONS are IKEA's own and stand, including the 21 5/8" headboard that is the entire reason this frame is in the catalog.`,
+    frontClearance: 0,
+    tags: ['bed', 'queen', 'low', 'glazing-safe', 'flat-pack', 'value'],
+    price: 79,
+  },
+  {
+    id: 'bed-queen-malm-storage-2box',
+    name: 'MALM queen bed with 2 storage boxes, dark brown',
+    kind: 'bed',
+    w: IN(66.125),
+    d: IN(83.125),
+    h: IN(39.375), // the headboard governs
+    seatHeight: IN(25),
+    color: WALNUT,
+    accent: OFF_WHITE,
+    source: `IKEA MALM high bed frame with 2 storage boxes, Queen, dark brown veneer: length 83 1/8", width 66 1/8", footboard 15", HEADBOARD 39 3/8", mattress area 59 7/8" x 79 1/2"; drawer interior 38 5/8" W x 23 1/4" D x 5 7/8" H. Read directly off the IKEA PDP with the measurements quoted verbatim; $399.00 for the Queen on the same page, 30 Jul 2026. This is the under-bed-storage answer at a real price - two full-width drawers on castors built into the frame, which in 448 sq ft replaces a whole dresser. The costs are honest and large: it is the biggest footprint of any queen here, the 15" deck puts the sleeping surface at about 25", and the 39 3/8" headboard FAILS the 30" glazing rule, so it has to go against a solid wall and it eats an aisle. Re-verified 30 Jul 2026: Queen dark brown veneer $399 corroborated; dimensions hold.`,
+    frontClearance: 0,
+    tags: ['bed', 'queen', 'storage', 'drawers', 'value'],
+    price: 399,
+  },
+  {
+    id: 'mattress-queen-10in',
+    name: 'Queen mattress, 10"',
+    kind: 'bed',
+    w: IN(60),
+    d: IN(80),
+    h: IN(10),
+    color: OFF_WHITE,
+    accent: OFF_WHITE,
+    source: `US queen mattress, 60" x 80" x 10". Three verified price points at the same 10" profile, which is the only dimension this layout cares about because every extra inch raises the sleeping height and pushes the bed's silhouette up toward the glazing: Zinus Original Green Tea memory foam $499 (sale, from $718 - read off the Zinus PDP, only 10" offered); Tuft & Needle Original ~$926 (Home Depot's listed price, not T&N's own, so indicative; the 10" thickness is confirmed across four retailers); Avocado Green Hybrid $1,999 at 11" (search summaries of their PDP - and AVOID their 13" Pillow Top variant, which would put a Thuma's sleeping surface at 26" and start to read as a tall bed in a room where the bed is visible from the whole plan). $699 recorded here as the planning figure. NOTE: the bed frames in this catalog already include a 10" mattress in their `+'`h`'+`, so do NOT place this as a second item in a layout unless the mattress is on the floor or in a Murphy cabinet - it is here to be a BUDGET line.`,
+    frontClearance: 0,
+    tags: ['bed', 'mattress', 'queen', 'budget-line'],
+    price: 699,
+  },
+  {
+    id: 'nightstand-floating-walnut',
+    name: 'Floating nightstand, walnut (wall-mounted)',
+    kind: 'nightstand',
+    w: IN(15.7),
+    d: IN(12.4),
+    h: IN(9),
+    color: WALNUT,
+    accent: WALNUT,
+    source: `Nathan James Jackson wood floating nightstand: 15.7" W x 12.4" D x 9" H, concealed drawer over an open shelf, cord pass-through, 33 lb top load, 11 lb drawer, walnut laminate on engineered wood, bolts for drywall installation, about 70 minutes to assemble. Read directly off the Nathan James PDP; $89.99 sale / $109.99 regular. WALL-MOUNTED, so it costs ZERO FLOOR - which is the answer to the actual constraint in this apartment. Two of them give both bedsides for under $200. Mount the top at 22-26" to sit just above a low mattress. AVAILABILITY FLAG, 30 Jul 2026: price ($89.99 sale / $109.99 regular) and dimensions are confirmed, but the product page is currently OUT OF STOCK with a "Notify Me When Available" button - so it is specifiable but not buyable today. Any floating nightstand of roughly these dimensions substitutes.`,
+    frontClearance: 0,
+    wallMounted: true,
+    defaultZ: IN(22),
+    tags: ['nightstand', 'floating', 'wall-mounted', 'walnut', 'zero-footprint', 'value'],
+    price: 90,
+  },
+  {
+    id: 'nightstand-malm-2drawer',
+    name: 'MALM 2-drawer nightstand, black-brown',
+    kind: 'nightstand',
+    w: IN(15.75),
+    d: IN(18.875),
+    h: IN(21.625),
+    color: CHARCOAL,
+    accent: CHARCOAL,
+    source: `IKEA MALM 2-drawer chest / nightstand, black-brown: 15 3/4" W x 18 7/8" D x 21 5/8" H, slab drawer fronts with no visible hardware. Dimensions are IKEA's measurement text as quoted in search results and corroborated by resale listings of the same SKU. PRICE NOT DIRECTLY VERIFIED - the $199.99 came from a search summary of the IKEA US PDP, which would not load, and it reads high for a MALM 2-drawer; re-check before quoting. At 21 5/8" it clears the 30" glazing rule and matches a 17-19" mattress top on a low frame. PRICE CORRECTED, 30 Jul 2026: the $199.99 recorded earlier is NOT a MALM price - it appears on IKEA's nightstand CATEGORY page, not the MALM product page. MALM 2-drawer is an entry-price chest (IKEA AU $69.99; US historically $99-$129). $129 is used here as the top of that band and it is still UNVERIFIED - check at the till. Dimensions are corroborated.`,
+    frontClearance: IN(24),
+    tags: ['nightstand', 'slab-front', 'glazing-safe', 'value'],
+    price: 129,
+  },
+
+  // ---- the congregation: modular and low-backed seating ----------------
+  {
+    id: 'modular-jattebo-1seat-storage',
+    name: 'JÄTTEBO 1-seat module with storage',
+    kind: 'sectional',
+    w: IN(27.5),
+    d: IN(37.375),
+    h: IN(28),
+    seatHeight: IN(18.125),
+    color: SLATE,
+    accent: GREIGE,
+    source: `IKEA JATTEBO 1-seat module with storage, Tonerud grey: 27 1/2" W x 37 3/8" D x 28" H, seat depth 27 1/8", seat height 18 1/8". Read directly off the IKEA US measurements table (s09471492); $580.00, 30 Jul 2026. Gas-strut lift-up storage under every seat. Three modules make 82 1/2" x 37 3/8" ($1,740) and four make 110" ($2,320). This is the only value-tier modular that is BOTH under 30" tall - so it can stand inside the 1'-0" glazing zone - and hides bedding and throws in a studio with no closet to spare. Narrow 27 1/2" modules let a run be tuned to a wall in 27 1/2" steps. The cost is depth: 27 1/8" of seat is lounge-deep and it eats floor.`,
+    frontClearance: IN(16),
+    tags: ['seating', 'modular', 'armless', 'storage', 'low-back', 'glazing-safe', 'flat-pack', 'value'],
+    price: 580,
+  },
+  {
+    id: 'modular-gus-mix-armless',
+    name: 'Gus* Modern Mix Modular armless chair',
+    kind: 'sectional',
+    w: IN(38),
+    d: IN(38),
+    h: IN(28.5),
+    seatHeight: IN(16.5),
+    color: NEAR_BLACK,
+    accent: CHARCOAL,
+    source: `Gus* Modern Mix Modular Armless Chair: 38" W x 38" D x 28 1/2" H, seat height 16 1/2". A seven-component system (Left Arm, Right Arm, Armless, Corner, Ottoman, Block Table, Prism Table) with integrated underside connectors, so it breaks into three separate 38" cubes for a viewing arrangement and pushes back into a sofa afterwards. Made to order, 10-12 week lead, ships assembled in 38" cubes - the easiest assembled form to get round an angled entry door. Price $1,425 list / $1,140 sale read off gusmodern.com, 30 Jul 2026; three armless modules make a 114" run at $4,275. DIMENSIONS NOT MANUFACTURER-VERIFIED: Gus does not publish its dimension table in page HTML, so the 38 x 38 x 28.5 / 16.5" seat comes from an authorised dealer page plus a corroborating dealer summary. Verify against Gus's spec PDF before drawing. Most fabrics showed as backordered on 30 Jul 2026.`,
+    frontClearance: IN(16),
+    tags: ['seating', 'modular', 'armless', 'low-back', 'glazing-safe', 'modern', 'recommended'],
+    price: 1425,
+  },
+  {
+    id: 'modular-gus-mix-ottoman',
+    name: 'Gus* Modern Mix Modular ottoman',
+    kind: 'ottoman',
+    w: IN(38),
+    d: IN(38),
+    h: IN(16.5),
+    seatHeight: IN(16.5),
+    color: NEAR_BLACK,
+    accent: CHARCOAL,
+    source: `Gus* Modern Mix Modular Ottoman: 38" x 38" x 16 1/2", connects to any Mix Modular unit, ships assembled. Price $955 list / $764 sale read off gusmodern.com, 30 Jul 2026; the DIMENSIONS come from a dealer/search summary of the component set, not from Gus's spec PDF - flagged as unverified. In a 448 sq ft studio the ottoman is the single most useful piece in the room: coffee table for four, extra seat for the fifth guest, footrest the rest of the time. Its 16 1/2" top matches the module seat height exactly, so the pair reads as one plane, and at 16 1/2" it never crosses a projected sightline.`,
+    frontClearance: 0,
+    walkable: false,
+    lowProfile: true,
+    tags: ['seating', 'ottoman', 'modular', 'coffee-table', 'low', 'recommended'],
+    price: 955,
+  },
+  {
+    id: 'sofa-cleon-56-armless',
+    name: 'Blu Dot Cleon 56" armless sofa',
+    kind: 'loveseat',
+    w: IN(56),
+    d: IN(34),
+    h: IN(28),
+    seatHeight: IN(17),
+    color: CHARCOAL,
+    accent: SLATE,
+    source: `Blu Dot Cleon 56" Armless Sofa: 56" W x 34" D x 28" H, seat depth 26", seat height 17", 2" base, kiln-dried hardwood frame, sinuous springs, made in USA, 5-year warranty. Price $1,960 in Maharam fabric / $3,390 in leather, read off bludot.com 30 Jul 2026. THE DEPTH IS CONTESTED: Blu Dot suppresses its dimension table in plain page HTML; a listing quoting their spec gives 56 x 34 x 28 while Hive Modern's page for the same product says 56 x 36 x 28. Resolve it before drawing - 2" matters here. Best answer to "compact two-seat under 72 inches": armless, 28" tall so it clears the glazing rule, and simultaneously a sectional module, so one purchase serves the layouts that fit a sectional and the ones that do not. Its 34" depth buys back 4-5" over every 38-39" modular. DELIVERY CONSTRAINT: the 56" frame does NOT knock down and ships freight - measure the angled front door, the corridor turn and the lift car first.`,
+    frontClearance: IN(16),
+    tags: ['seating', 'loveseat', 'armless', 'modular', 'low-back', 'glazing-safe', 'shallow', 'premium'],
+    price: 1960,
+  },
+  {
+    id: 'armchair-ekenaset',
+    name: 'EKENÄSET armchair, black',
+    kind: 'armchair',
+    w: IN(25.25),
+    d: IN(30.75),
+    h: IN(29.875),
+    seatHeight: IN(17.75),
+    color: NEAR_BLACK,
+    accent: NEAR_BLACK,
+    source: `IKEA EKENASET armchair, Jonsbyn black: 25 1/4" W x 30 3/4" D x 29 7/8" H, seat 22" W x 19 5/8" D x 17 3/4" H, arm height 24 3/4", backrest 18 1/8", 8 5/8" of clearance underneath. Read directly off the IKEA US measurements table (80539015); $349. The narrowest occasional chair in the catalog, and 29 7/8" is JUST inside the 30" glazing rule - by an eighth of an inch, so do not let anyone specify a thicker cushion. Cheap enough to buy two and still fund the projector: two of them add only 4'-2" to a viewing arrangement and they drag out of the way for the desk. Fixed, non-removable cover.`,
+    frontClearance: IN(16),
+    tags: ['seating', 'armchair', 'narrow', 'glazing-safe', 'flat-pack', 'value'],
+    price: 349,
+  },
+  {
+    id: 'armchair-otio-26',
+    name: 'Article Otio 26" lounge chair, walnut frame',
+    kind: 'armchair',
+    w: IN(26.5),
+    d: IN(34.5),
+    h: IN(29),
+    seatHeight: IN(18.5),
+    color: GREIGE,
+    accent: WALNUT,
+    source: `Article Otio 26" Lounge Chair: 26.5" W x 34.5" D x 29" H, seat height 18.5", seat depth 20.5", arm height 22", 44 lb, exposed walnut frame, one carton, about 10 minutes to assemble. Read directly off the Article product page; $699 in fabric, $899 in leather. THE BEST "DRAG IT INTO THE VIEWING ARRANGEMENT" CHAIR IN THE CATALOG: 44 lb is genuinely movable by one person, 29" clears the glazing rule, and the exposed walnut frame repeats the floor instead of fighting it. Its 34 1/2" depth matches the Cleon, so the two line up in plan. The 22" arm sits below the 29" back, so the chair reads low from the side.`,
+    frontClearance: IN(16),
+    tags: ['seating', 'armchair', 'walnut', 'movable', 'glazing-safe', 'modern', 'recommended'],
+    price: 699,
+  },
+  {
+    id: 'armchair-muuto-fiber-lounge',
+    name: 'Muuto Fiber lounge chair, wood base',
+    kind: 'armchair',
+    w: IN(22),
+    d: IN(27.25),
+    h: IN(29.375),
+    seatHeight: IN(15),
+    color: SLATE,
+    accent: WALNUT,
+    source: `Muuto Fiber Lounge Chair (Iskos-Berlin): 22" W x 27 1/4" D x 29 3/8" H, seat height 15". Read directly off the DWR product page; $1,465. Composite shell with wood-fibre content, base in solid wood or tubular steel (Black, Black Oak, Oak, Dark Brown Ash), Remix fabric or Refine Leather shells. Light enough to move one-handed. THE SMALLEST LOUNGE CHAIR IN THE CATALOG AND THE LOWEST SEAT: 22" x 27 1/4" disappears in plan and a 15" seat never blocks a sightline. In a 448 sq ft studio the premium spend should buy a SMALLER object, not a bigger one, and this is the piece that does that.`,
+    frontClearance: IN(16),
+    tags: ['seating', 'armchair', 'small', 'low', 'glazing-safe', 'modern', 'premium'],
+    price: 1465,
+  },
+  {
+    id: 'pouf-jarrestad-18',
+    name: 'JÄRRESTAD pouf with storage, 18"',
+    kind: 'ottoman',
+    w: IN(18.125),
+    d: IN(18.125),
+    h: IN(16.5),
+    seatHeight: IN(16.5),
+    color: NEAR_BLACK,
+    accent: CHARCOAL,
+    source: `IKEA JARRESTAD pouf with storage, Djuparp dark blue (reads almost black in low light) or Tonerud dark beige: 18 1/8" diameter x 16 1/2" high, 13 lb 10 oz, hollow so it stores a throw or spare cushions inside itself. Read directly off the IKEA US page; $99.99 sale / $129.99 regular, 30 Jul 2026. Overflow seating that is also its own storage. Buy three: they stack against a partition when not in use, and at a 16 1/2" seat an occupant's eye lands around 40" AFF, which is ABOVE the bottom of a projected image sitting at 27-32" - so unlike a floor cushion, a pouf can go in the second row.`,
+    frontClearance: 0,
+    lowProfile: true,
+    tags: ['seating', 'pouf', 'storage', 'overflow', 'round', 'value'],
+    price: 130,
+  },
+  {
+    id: 'floor-cushion-alseda-24',
+    name: 'ALSEDA banana-fibre stool, 23 1/2"',
+    kind: 'ottoman',
+    w: IN(23.5),
+    d: IN(23.5),
+    h: IN(6.75),
+    seatHeight: IN(6.75),
+    color: JUTE,
+    accent: JUTE,
+    source: `IKEA ALSEDA stool, hand-woven banana leaf over a steel frame with rattan binding: 23 1/2" x 23 1/2" x 6 3/4", 8 lb 13 oz, and they stack. Dimensions and the $29.99 price come from a SEARCH-ENGINE READING of the IKEA US page, not a direct page load - confirm on ikea.com. Effectively a firm floor cushion, and the one warm-natural texture in a palette that is otherwise walnut, concrete and black metal. $30 and 9 lb: four live under the credenza and come out only on film night. IMPORTANT SEATING RULE - at 6 3/4" an occupant's eye is around 30" AFF, i.e. AT OR BELOW the bottom edge of a projected image, so floor seating goes in the FRONT row on the rug, never behind the sofa. That is the opposite of how overflow seating is usually planned.`,
+    frontClearance: 0,
+    walkable: false,
+    lowProfile: true,
+    tags: ['seating', 'floor-cushion', 'overflow', 'stackable', 'jute', 'front-row', 'value'],
+    price: 30,
+  },
+  {
+    id: 'ottoman-bumper-26-round',
+    name: 'Blu Dot Bumper large ottoman, 26" round',
+    kind: 'ottoman',
+    w: IN(26),
+    d: IN(26),
+    h: IN(15.125),
+    seatHeight: IN(15.125),
+    color: CHARCOAL,
+    accent: OATMEAL,
+    source: `Blu Dot Bumper Large Ottoman: 26" diameter x 15 1/8" high, cylindrical, fully upholstered, no visible legs. The $595 regular price IS from bludot.com ($387-$995 depending on textile); the DIMENSIONS came from dimensions.com's entry for the Bumper OUTDOOR Ottoman (Large), which shares the form - Blu Dot's own table for the indoor version was not readable. Verify. Blu Dot sells a matching Bumper Large Ottoman Tray at $250, which converts it into a hard-topped 26" round coffee table - so it is a coffee table on film night and a fifth seat when the tray comes off. At 15 1/8" it never crosses a sightline, and a round object is the right thing to have in the middle of a tight walkway.`,
+    frontClearance: 0,
+    lowProfile: true,
+    tags: ['seating', 'ottoman', 'round', 'coffee-table', 'low', 'premium'],
+    price: 595,
+  },
+
+  // ---- low tables that do not block a projected sightline ---------------
+  {
+    id: 'coffee-listerby-55',
+    name: 'LISTERBY coffee table, 55 1/8" x 23 5/8"',
+    kind: 'coffee_table',
+    w: IN(55.125),
+    d: IN(23.625),
+    h: IN(14.625),
+    color: WALNUT,
+    accent: WALNUT,
+    source: `IKEA LISTERBY coffee table, dark-brown beech veneer: 55 1/8" L x 23 5/8" W x 14 5/8" H, max 44 lb on the top and 22 lb on the lower ribbed shelf, solid beech legs. Read directly off the IKEA US measurements table (90562246); $399.99. At 14 5/8" it is BELOW every seat height in this catalog, so it never crosses a sightline, and at 23 5/8" deep the sofa front plus a 16" gap plus the table only consumes about 74" of depth. The lower shelf absorbs remotes and spare cable, which is how a minimal room stays minimal.`,
+    frontClearance: 0,
+    lowProfile: true,
+    tags: ['table', 'coffee-table', 'low', 'walnut', 'sightline-safe', 'recommended'],
+    price: 400,
+  },
+  {
+    id: 'side-vittsjo-nesting-glass',
+    name: 'VITTSJÖ nesting tables, glass, set of 2',
+    kind: 'side_table',
+    w: IN(35.375),
+    d: IN(19.625),
+    h: IN(19.625),
+    color: ANOD_BLACK,
+    accent: ANOD_BLACK,
+    source: `IKEA VITTSJO nesting tables, set of 2, black-brown steel with TEMPERED GLASS tops: 35 3/8" x 19 5/8" x 19 5/8" for the pair, max 22 lb per top, one 37 x 21.5 x 3.5" carton, 41.5 lb. Read directly off the IKEA US page (80215332); $149.99. Two tables in one footprint, nesting to 19 5/8". The black steel matches the anodised window frames exactly, and the glass top means this is the ONLY table in the catalog that literally does not interrupt a projected sightline or the view to the west glazing - you see the floor through it. Pull the small one out as a drink table for the fifth guest and push it back afterwards.`,
+    frontClearance: 0,
+    lowProfile: true,
+    tags: ['table', 'side-table', 'nesting', 'glass', 'sightline-safe', 'value'],
+    price: 150,
+  },
+  {
+    id: 'side-stockholm-nesting-walnut',
+    name: 'STOCKHOLM nesting tables, walnut, set of 2',
+    kind: 'side_table',
+    w: IN(28.375),
+    d: IN(18.5),
+    h: IN(14.125),
+    color: WALNUT,
+    accent: WALNUT,
+    source: `IKEA STOCKHOLM nesting tables, set of 2, walnut veneer: 28 3/8" L x 18 1/2" W, max height 14 1/8", leaf-shaped tops, legs screw on. Read directly off the IKEA US page (10239713); $399.99. Honest caveat straight from IKEA's own copy and the reviews: the two leaf-shaped tops only PARTIALLY nest. A real walnut face in a room whose floor is walnut, at 14 1/8" so it disappears - use the pair as a split coffee table you can pull apart into two drink tables when the viewing arrangement changes, instead of one big block to drag.`,
+    frontClearance: 0,
+    lowProfile: true,
+    tags: ['table', 'side-table', 'nesting', 'walnut', 'low', 'sightline-safe'],
+    price: 400,
+  },
+
+  // ---- rugs: define the viewing zone on a dark floor -------------------
+  {
+    id: 'rug-stoense-6x10',
+    name: 'STOENSE low-pile rug, 6\'7" x 9\'10"',
+    kind: 'rug',
+    w: FTIN(6, 7),
+    d: FTIN(9, 10),
+    h: IN(0.75),
+    color: RUG_ALT,
+    accent: RUG_ALT,
+    source: `IKEA STOENSE rug, low pile, medium grey: 6'7" x 9'10", pile thickness 1/2", TOTAL thickness 3/4", surface density 7.98 oz/sq ft, 100% polypropylene with a synthetic rubber backing so no separate pad is needed on satin LVP. Read directly off the IKEA US page (30426836); $159.99, with 4'4"x6'5" $99.99, 5'7"x7'10" $129.99 and 7'10"x10' $229.99 on the same page. A 3/4" total build is safe under every low sofa here and will not bind flat-pack leg bolts. On an espresso floor a MID-TONE rug defines the viewing zone; an off-white rug reads as a high-contrast island and fights the minimal brief. 7.98 oz/sq ft is also dense enough to damp footfall, which matters under a bare concrete soffit that will otherwise ring.`,
+    walkable: true,
+    lowProfile: true,
+    tags: ['rug', 'low-pile', 'acoustic', 'viewing-zone', 'value'],
+    price: 160,
+  },
+  {
+    id: 'rug-jute-lohals-6x10',
+    name: 'LOHALS flatwoven jute rug, 6\'7" x 9\'10"',
+    kind: 'rug',
+    w: FTIN(6, 7),
+    d: FTIN(9, 10),
+    h: IN(0.5),
+    color: JUTE,
+    accent: JUTE,
+    source: `IKEA LOHALS rug, flatwoven, natural jute: 6'7" x 9'10", thickness 1/2", 100% jute. Read directly off the IKEA US page (00277395); $179.99, with 4'4"x6'5" $99.99 and 5'3"x7'7" $129.99 on the same page. IKEA's own copy says it suits a dining area, so it takes chair legs. No backing is supplied - add a pad on satin LVP. Flat-woven, so it slides under a 2" sofa base without lifting the frame, and jute is the honest warm-natural material in a room whose only other warm note is the floor.`,
+    walkable: true,
+    lowProfile: true,
+    tags: ['rug', 'jute', 'flatweave', 'natural', 'value'],
+    price: 180,
+  },
+  {
+    id: 'rug-nordicknots-desert-8x10',
+    name: 'Nordic Knots Desert flatweave rug, 8x10 — Earth',
+    kind: 'rug',
+    w: FTIN(8, 0),
+    d: FTIN(10, 0),
+    h: IN(0.28),
+    color: '#9C7B5C',
+    accent: RUG_BASE,
+    source: `Nordic Knots "Desert" in Earth, 8x10: 50% wool / 50% jute flatweave, 7 mm (0.276") TOTAL thickness - the thinnest rug in the catalog - hand-woven in Bhadohi, GoodWeave-certified, jute fringe, free US delivery quoted at 3-6 business days. Composition, thickness and the colour description ("a softly faded brown with gentle warm undertones") were read off the Nordic Knots product page. PRICE CAVEAT: both the product page and the 8x10 filter page show only "From $395.00" and no size-specific 8x10 price could be extracted - treat $395 as a FLOOR. At 0.28" it can run under the seating AND continue under a 15 3/4"-deep credenza without shimming anything, and warm brown is the right value against espresso LVP: a half-tone lighter than the floor, which is exactly how you read a rug edge on a dark floor.`,
+    walkable: true,
+    lowProfile: true,
+    tags: ['rug', 'flatweave', 'wool', 'jute', 'thin', 'viewing-zone', 'recommended'],
+    price: 395,
+  },
+
+  // ---- dining and guest seating that stows ------------------------------
+  {
+    id: 'dining-docksta-40-round',
+    name: 'DOCKSTA table, 40 1/2" round, black',
+    kind: 'dining_table',
+    w: IN(40.5),
+    d: IN(40.5),
+    h: IN(29.5),
+    color: NEAR_BLACK,
+    accent: NEAR_BLACK,
+    source: `IKEA DOCKSTA table, black/black, 40 1/2" round pedestal: diameter 40 1/2", height 29 1/2", "seats 4", laminate top on a powder-coated steel underframe, two cartons. Read directly off the IKEA US page (s99418848); $279.99. The 23 5/8" base diameter comes from a corroborating dimension source, not the IKEA page. A round pedestal is the right dining geometry for 448 sq ft: chairs tuck from any angle, there is no corner leg to bark a shin on in a walkway, and a round table needs less clear surround than a rectangle. THE REAL COST, stated: 40 1/2" plus a 36" pull-out on two sides is a 9'-4" clear diameter, which makes it the largest space consumer in the unit after the bed. A matte black tulip base is also the most restrained dining move available and it echoes the glazing frames.`,
+    frontClearance: IN(36),
+    tags: ['dining', 'round', 'pedestal', 'black', 'value'],
+    price: 280,
+  },
+  {
+    id: 'chair-frosvi-folding',
+    name: 'FRÖSVI folding chair, black',
+    kind: 'chair',
+    w: IN(17.375),
+    d: IN(20.125),
+    h: IN(30.375),
+    seatHeight: IN(18.125),
+    color: NEAR_BLACK,
+    accent: NEAR_BLACK,
+    source: `IKEA FROSVI folding chair, black solid beech: 17 3/8" W x 20 1/8" D x 30 3/8" H, seat 15" W x 13" D x 18 1/8" H; FOLDED 17 1/4" x 34 3/4" x 3", with a hanging hole in the back for wall storage. Max load 243 lb. ARRIVES PRE-ASSEMBLED, so it goes through an angled entry door edge-on with nothing to build. Read directly off the IKEA US page (10534318); $35. The real answer for guest seating in a studio: four stack to 12" against the laundry closet wall, come out for dinner or a screening, and cost $140 all in. At 30 3/8" it is just OVER the 30" glazing rule, so store them away from the glass.`,
+    frontClearance: IN(30),
+    tags: ['chair', 'folding', 'guest', 'stows', 'value'],
+    price: 35,
+  },
+  {
+    id: 'stool-stig-counter',
+    name: 'STIG counter stool with backrest, black',
+    kind: 'bar_stool',
+    w: IN(15.75),
+    d: IN(16.5),
+    h: IN(35.375),
+    seatHeight: IN(24.75),
+    color: NEAR_BLACK,
+    accent: NEAR_BLACK,
+    source: `IKEA STIG bar stool with backrest, black/black: 15 3/4" W x 16 1/2" D x 35 3/8" H, seat height 24 3/4" (COUNTER height, needing a 35-36" counter), seat 14 1/8" x 13 3/8", max load 220 lb, powder-coated steel frame with a recycled-content polypropylene shell, STACKABLE - which is the whole point. Read directly off the IKEA US page (30498418); $34.99. Two stools at the galley counter is the zero-floor-area dining option, but HARD CHECK FIRST: a galley run with a slab base and no counter overhang will not take stools at all - you need 10-12" of knee overhang past the cabinet base, and the reference photograph of this unit does not show one. Verify before specifying.`,
+    frontClearance: IN(18),
+    tags: ['seating', 'bar-stool', 'counter', 'stackable', 'value'],
+    price: 35,
+  },
+
+  // ---- storage: the only free storage here is wall-hung -----------------
+  //
+  // A 63" dresser costs 8.2 sq ft of a 448 sq ft plan - about 1.8% of the whole
+  // apartment for one piece. Against that, everything wall-hung is free.
+  {
+    id: 'wardrobe-pax-mehamn-sliding-59',
+    name: 'PAX / MEHAMN sliding wardrobe, 59" — walnut effect',
+    kind: 'wardrobe',
+    w: IN(59),
+    d: IN(26),
+    h: IN(79.125),
+    color: WALNUT,
+    accent: CHARCOAL,
+    source: `IKEA PAX / MEHAMN wardrobe with SLIDING doors, dark grey-black frame with double-sided walnut-effect fronts: 59" W x 26" D x 79 1/8" H, $1,125.00, read directly off the IKEA US PDP. Included in that combination: wall-mounted frame, sliding door frames with rail, clothes rail, drawers (one glass-front), pull-out trays, glass shelf, pull-out pants hanger. A 93 1/8"-tall version of the same combination exists and still clears a 9'-0" ceiling with 15" to spare, as does a 78 3/4" width. SLIDING IS NOT A PREFERENCE HERE, IT IS THE DECISION: sliding at 26" deep versus a hinged PAX frame at 22 7/8" costs 3 1/8" of permanent depth and saves about 24" of swing, and in a leg where the bed aisle and the desk chair zone already compete, 24" of intermittent swing is worse than 3" of permanent depth every time. A 24"-wide hinged door needs roughly 47" of clear floor in front of it. Slab MEHAMN fronts, no visible hardware. PARTIALLY CONFIRMED, 30 Jul 2026: $1,125 remains unconfirmed directly, but the taller sibling combination is listed at $1,155, which makes it plausible. One correction: that taller version is 92 7/8" high, not the 93 1/8" quoted earlier.`,
+    frontClearance: IN(24),
+    tags: ['storage', 'wardrobe', 'sliding', 'slab-front', 'walnut', 'recommended'],
+    price: 1125,
+  },
+  {
+    id: 'shelf-string-wall-3bay',
+    name: 'String wall shelving, 3 bays x 24" — white/walnut',
+    kind: 'shelf',
+    w: IN(69.375),
+    d: IN(11.875),
+    h: IN(29.625),
+    color: WALNUT,
+    accent: OFF_WHITE,
+    source: `String Furniture String Wall Shelving via Design Within Reach, 30" high / 3 bays / 24" shelves: 29 5/8" H x 69 3/8" W x 11 7/8" D, 55 lb per 24" shelf (33 lb per 32" shelf), powder-coated steel side panels with lacquered or veneered MDF shelves, White/Walnut or Black/Walnut. Read directly off the DWR configuration table; $645.00. The same table lists a 1-bay at 23 3/8" wide, a 2-bay at 46 3/8" and 32"-shelf variants up to 93". WALL-HUNG, so it costs ZERO FLOOR - and it is modular, so extension bays, cabinets and drawer units clip into the same side panels, which is how you keep a studio from looking like five different catalogues. Re-verified 30 Jul 2026: $645, 29 5/8 x 69 3/8 x 11 7/8, 55 lb per shelf - exact.`,
+    frontClearance: IN(24),
+    wallMounted: true,
+    defaultZ: IN(30),
+    tags: ['storage', 'shelf', 'wall-mounted', 'zero-footprint', 'walnut', 'modular', 'premium'],
+    price: 645,
+  },
+  {
+    id: 'entry-trones-shoe',
+    name: 'TRONES shoe cabinet, wall-mounted',
+    kind: 'cabinet',
+    w: IN(20.5),
+    d: IN(7.125),
+    h: IN(15.375),
+    color: NEAR_BLACK,
+    accent: NEAR_BLACK,
+    source: `IKEA TRONES shoe / storage cabinet, black: 20 1/2" x 7 1/8" x 15 3/8" (52 x 18 x 39 cm), wall-mounted, tilt-out, holds about four pairs, stackable so two or three give 8-12 pairs in 20 1/2" of wall, slab front with no visible hardware. Dimensions are IKEA's own, quoted verbatim across listing snippets. PRICE NOT VERIFIED - no snippet showed a US price; $45 is a recollection of the two-pack and must be confirmed. At 7 1/8" deep it does not project into a door swing, which is what makes it the right answer for an entry nook with an ANGLED front door where nothing with real depth works. PRICE CORRECTED, 30 Jul 2026: IKEA US official is $39.99 for a TWO-PACK (art. 803.973.13), not the $45 recollection. Dimensions confirmed.`,
+    frontClearance: 0,
+    wallMounted: true,
+    defaultZ: IN(4),
+    tags: ['storage', 'entry', 'shoes', 'wall-mounted', 'shallow', 'value'],
+    price: 40,
+  },
+  {
+    id: 'dresser-malm-6drawer-63',
+    name: 'MALM 6-drawer chest, 63" — black-brown',
+    kind: 'dresser',
+    w: IN(63),
+    d: IN(18.875),
+    h: IN(30.75),
+    color: CHARCOAL,
+    accent: CHARCOAL,
+    source: `IKEA MALM 6-drawer chest, black-brown: 63" W x 18 7/8" D x 30 3/4" H, slab fronts with no visible hardware. Dimensions corroborated across IKEA's measurement text and an independently measured drawing. PRICE NOT VERIFIED - search results gave only a MALM series range of "$79-$279 (US)" and $279 is the top of that range, i.e. a guess; confirm. 63" of drawer is the most storage per square foot of anything in the catalog, and the slab fronts are exactly the brief. ONE HARD CONSTRAINT: at 30 3/4" it is 3/4" OVER the 30" glazing limit, so it cannot stand within a foot of the west glass. PRICE CORRECTED, 30 Jul 2026: live US listings for the 63" black-brown SKU (60403579) return $299.99, with one conflicting $179. $300 is used here. Dimensions 63 x 18 7/8 x 30 3/4 confirmed.`,
+    frontClearance: IN(30),
+    tags: ['storage', 'dresser', 'slab-front', 'value'],
+    price: 300,
+  },
+
+  // ---- desk kit additions ----------------------------------------------
+  {
+    id: 'desk-standing-jarvis-laminate-60x27-walnut',
+    name: 'Fully Jarvis laminate standing desk, 60" x 27" — walnut',
+    kind: 'desk',
+    w: IN(60),
+    d: IN(27),
+    h: IN(29.5),
+    seatHeight: IN(29.5),
+    color: WALNUT,
+    accent: NEAR_BLACK,
+    source: `Fully (by MillerKnoll) Jarvis LAMINATE Standing Desk, 27" x 60", walnut laminate on a black 3-Stage frame: travel 25.75"-51.25", 350 lb capacity, waterproof scratch-resistant laminate over a core of 84%+ pre-consumer recycled wood fibre. Read directly off the Herman Miller PDP: sizes 27x48, 27x60, 30x72; laminate colours Black, White, Maple, Oak, Stone, WALNUT; "Ready to Ship"; PDP price $1,325.00, with the brand index page showing $1,095-$1,575 across the laminate range. WHY THIS RATHER THAN THE BAMBOO: if the desk is going to stand in the open in a studio rather than in a corner, walnut laminate reads as furniture instead of as office equipment - and it is the only Jarvis top that matches this floor outright. The cost is 3" of depth, which is the difference between a 27" monitor being comfortable and a 32" being too close: 27" of top leaves a 32" panel on its own stand only about 18" of viewing distance.`,
+    frontClearance: IN(30),
+    tags: ['wfh', 'jarvis', 'fully', 'sit-stand', 'desk', 'work', 'walnut', 'laminate'],
+    price: 1325,
+  },
+  {
+    id: 'monitor-dell-u2725qe-27',
+    name: 'Dell UltraSharp 27 4K Thunderbolt hub — U2725QE',
+    kind: 'tv',
+    w: IN(24.11),
+    d: IN(7.44),
+    h: IN(21.09),
+    color: ANOD_BLACK,
+    accent: STEEL,
+    source: `Dell UltraSharp U2725QE: with stand 24.11" W x 7.44" D x 15.18"-21.09" H, 15.56 lb; WITHOUT stand 24.11" x 2.19" x 13.92", 11.51 lb; 5.91" of stand height travel; VESA 100x100. 27" 4K UHD 3840x2160, IPS Black, 120 Hz, DisplayHDR 600, 99% DCI-P3, Thunderbolt 4 hub with up to 140 W power delivery. Read directly off Dell's own product page spec block; $699.99 (from $849.99). Fits a 27"-deep top WITHOUT a monitor arm, and a single Thunderbolt cable to the laptop means one wire crossing the desk - which is the whole game when the desk is visible from the lounge area. At 11.51 lb bare it is comfortably inside the Jarvis arm's 19 lb rating. Price and every dimension re-verified against dell.com, 30 Jul 2026 - exact.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // never a collision: it stands on the desk inside its footprint
+    defaultZ: IN(29.5),
+    tags: ['wfh', 'monitor', 'screen', 'work', 'desk-accessory', '4k', 'recommended'],
+    price: 700,
+  },
+  {
+    id: 'monitor-dell-u3225qe-32',
+    name: 'Dell UltraSharp 32 4K Thunderbolt hub — U3225QE',
+    kind: 'tv',
+    w: IN(28.08),
+    d: IN(8.46),
+    h: IN(24.37),
+    color: ANOD_BLACK,
+    accent: STEEL,
+    source: `Dell UltraSharp U3225QE: with stand 28.08" W x 8.46" D x 18.46"-24.37" H, 20.59 lb; WITHOUT stand 28.08" x 2.26" x 16.16", 14.37 lb; VESA 100x100. 31.5" 4K UHD, IPS Black, 120 Hz, DisplayHDR 600, 99% DCI-P3 / 100% sRGB, two Thunderbolt 4 ports, 2.5GbE, built-in KVM. Read directly off Dell's own product page spec block; $1,029.99. THE RIGHT SINGLE-MONITOR ANSWER ONLY IF THE DESK IS 30" DEEP: at 30" plus an arm pushing the panel back over the rear edge you get roughly 28-30" of viewing distance, which a 31.5" 4K needs. On a 27"-deep top it is too close. 14.37 lb bare is inside the Jarvis arm's 19 lb. Price and every dimension re-verified against dell.com, 30 Jul 2026 - exact.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // never a collision: it stands on the desk inside its footprint
+    defaultZ: IN(29.5),
+    tags: ['wfh', 'monitor', 'screen', 'work', 'desk-accessory', '4k'],
+    price: 1030,
+  },
+  {
+    id: 'chair-branch-ergonomic-pro',
+    name: 'Branch Ergonomic Chair Pro',
+    kind: 'chair',
+    w: IN(25),
+    d: IN(24),
+    h: IN(41.2),
+    seatHeight: IN(17),
+    color: NEAR_BLACK,
+    accent: ANOD_BLACK,
+    source: `Branch Ergonomic Chair Pro: 25" W x 24" D x 38"-41.2" H (41.5"-45" with the tall cylinder), seat height 17"-19.9" (19.3"-22.9" tall cylinder), seat depth 16.7"-19.7", armrest 24"-29.8", 14 points of adjustment, 5D armrests, forward tilt, adjustable lumbar. $599 base, +$79 headrest. SPECS AND PRICE ARE FROM SUMMARIES of Branch's own PDP plus press reviews, not read off a spec table line by line. Real adjustability at half an Aeron, in a 25" x 24" footprint that will roll back into a 36" aisle. SKIP THE HEADREST - it adds visual bulk in a room where you see the chair from the sofa.`,
+    frontClearance: IN(30),
+    tags: ['chair', 'task', 'office', 'ergonomic', 'wfh', 'recommended'],
+    price: 599,
+  },
+  {
+    id: 'desk-acc-surge-clamp-fully',
+    name: 'Fully clamp-mounted surge protector',
+    kind: 'box',
+    w: IN(12),
+    d: IN(2.5),
+    h: IN(2),
+    color: NEAR_BLACK,
+    accent: NEAR_BLACK,
+    source: `Fully Clamp-Mounted Surge Protector, $85 - price read off the MillerKnoll Fully brand index page, 30 Jul 2026. This is now the ONLY cable-management accessory MillerKnoll still sells for the Jarvis (the standalone wire tray SKU is gone; the desk ships with its own tray). Dimensions are an ESTIMATE of a clamp-mounted strip, not published. It matters on a sit-stand desk for a reason that is not obvious: every cable has to survive 25 1/2" of vertical travel every day, so the power strip has to travel WITH the top or the slack drags on the floor and eventually pulls something off the desk.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // never a collision: clamped under the top, inside its footprint
+    defaultZ: IN(26),
+    tags: ['wfh', 'jarvis', 'fully', 'desk-accessory', 'cable-management'],
+    price: 85,
+  },
+  {
+    id: 'mat-standing-topo',
+    name: 'Standing-desk mat, contoured 29" x 26"',
+    kind: 'rug',
+    w: IN(29),
+    d: IN(26.25),
+    h: IN(2.7),
+    color: NEAR_BLACK,
+    accent: NEAR_BLACK,
+    source: `Ergodriven Topo Not-Flat standing desk mat, Obsidian Black: 29" L x 26.25" W x 2.7" thick, 8 lb, non-toxic polyurethane foam with a contoured "terrain" surface, no PFAS or PVC. Dimensions corroborated across Ergodriven and retailer listings; PRICE NOT VERIFIED - $99 appeared on one listing and $39.99 for the smaller Topo Mini, and Ergodriven's own price was not read. Obsidian Black is the only colourway that does not read as a gym mat on a walnut floor. 29" x 26" is a real footprint that has to be drawn: it sits INSIDE the chair pull-back zone, so the chair must be rolled clear before the mat is used - treat it as walkable in the plan, not as an obstruction. PRICE CORRECTED, 30 Jul 2026: ergodriven.com shows $119.00 sale / $139.00 REGULAR, not the $99 first recorded. List price is used here. Dimensions 29 x 26.25 x 2.7 and 8 lb are confirmed; stock was flagged "Low".`,
+    frontClearance: 0,
+    wallMounted: false,
+    walkable: true,
+    lowProfile: true,
+    tags: ['wfh', 'desk-accessory', 'standing', 'mat'],
+    price: 139,
+  },
+
+  // ---- the plinth that does not exist off the shelf ---------------------
+  //
+  // THIS IS A GENUINE SOURCING FAILURE AND IT IS WORTH STATING PLAINLY. An
+  // ultra-short-throw projector's image bottom lands at roughly
+  //
+  //     image bottom AFF = plinth top height + 14 1/2"        (100" 16:9)
+  //
+  // and the picture wants its VERTICAL CENTRE at 45-55" AFF for people on a
+  // 16-18" seat, i.e. an image bottom of 21-30". That needs a plinth top at
+  // 12-16". Every "media console" on the market is 21-36" tall: the lowest one
+  // sourced was a BDI Corridor 8173 at 21", which puts the image centre at 60"
+  // and reads as a television hung too high. A UST also needs 20-26" of top
+  // depth (rear gap plus body) and 60-72" of width to read as a base under the
+  // picture rather than a box beside it. Nothing sold in 2026 is all three.
+  //
+  // So this is millwork: a plain slab plinth, 66" x 24" x 14", in a finish that
+  // matches the floor. The price is a joinery ALLOWANCE, not a product price.
+  // It is also the one piece in these schemes that has to be dead flat, square
+  // and parallel to the wall within a couple of millimetres, because a UST
+  // amplifies any yaw straight into visible trapezoid - and digital keystone on
+  // a UST is a resolution crop, not a fix.
+  {
+    id: 'plinth-ust-bespoke-66',
+    name: 'UST plinth, bespoke 66" x 24" x 14"',
+    kind: 'tv_stand',
+    w: IN(66),
+    d: IN(24),
+    h: IN(14),
+    color: WALNUT,
+    accent: NEAR_BLACK,
+    source: `BESPOKE MILLWORK, not a product. 66" W x 24" D x 14" H slab plinth with two push-open bays, walnut veneer or a dark stained ash to match the floor, sitting flush to the wall. Dimensions are DERIVED, and each one from a real constraint: 14" of height because image bottom = plinth top + ~14 1/2" for a 100" 16:9 UST image (Formovie's published install table for the 0.23:1 Theater, the only manufacturer table found that gives the vertical relationship) and a 45-55" image centre is what suits a 16-18" seat; 24" of depth because a UST's cabinet front lands 20-26" from the wall for a 100" image (PX3-PRO 20.2", Formovie Theater Premium 20.0", Hisense L9Q ~20.9", Epson LS650 26.2") and the whole body must be supported; 66" of width so it reads as a base under the picture. PRICE $650 IS A JOINERY ALLOWANCE for a simple veneered slab carcass with two push-open doors, not a quotation - get a real number from a cabinetmaker. WHY IT IS NOT A PRODUCT: every off-the-shelf media console sourced is 21-36" tall (BDI Corridor 8173 21", BESTA 25 1/4", Burrow Carta 26 1/4", BDI 8179 28 1/4", Blu Dot Shale 36"), and a 21" top already puts the image centre at 60" AFF. This unit's ABSENCE OF BASEBOARD is what makes a flush plinth possible at all: a standard 3/4" base would push the cabinet 3/4" further out, which on a 0.21:1 lens costs about 3 1/2" of image width.`,
+    frontClearance: IN(24),
+    tags: ['credenza', 'media', 'ust-plinth', 'projection', 'millwork', 'bespoke', 'low', 'recommended'],
+    price: 650,
+  },
+  {
+    id: 'projector-st-optoma-uhz36',
+    name: 'Optoma UHZ36 4K laser (short/standard throw)',
+    kind: 'projector',
+    w: IN(10.8),
+    d: IN(8.5),
+    h: IN(4.5),
+    color: OFF_WHITE,
+    accent: STEEL,
+    throwRatio: [1.21, 1.59],
+    lensOffset: IN(2),
+    source: `Optoma UHZ36: 10.80 x 8.50 x 4.50 in, 7.8 lb, 4K UHD (0.47" DMD, 4-phase shift), 3,500 ISO lumens, 1,500,000:1 dynamic, DuraCore laser phosphor 20,000 h (30,000 h eco), Filmmaker Mode, throw 1.21-1.59:1 with a 1.3x MANUAL zoom and NO LENS SHIFT, throw distance range 3.5-26.4 ft, 33 dB / 28 dB eco, 15 W MONO audio. Read off the ProjectorCentral spec page; $1,146, shipping as of Feb 2026. TWO HARD CONSEQUENCES OF "NO LENS SHIFT": the lens has to sit at or just below the bottom edge of the image, so this goes on a credenza and not on a high shelf; and its only geometry correction is digital keystone, which is a CROP - it throws away pixels and light and visibly softens a 4K DLP image. Also 15 W mono is not usable audio for a group, so budget a soundbar. lensOffset is an ESTIMATE for a front-mounted zoom barrel, not published. RE-VERIFIED 30 Jul 2026: 10.8 W x 8.5 D x 4.5 H, 7.8 lb, 3,500 ISO, 1,500,000:1, 1.21-1.59:1, 3.5-26.4 ft (self-consistent with a 29.9-300.4" image range), 1.3x manual zoom, no lens shift, 33/28 dB, street $1,146, laser 20,000/30,000 h - all match ProjectorCentral, which lists no MSRP. Two nits on the earlier note: ProjectorCentral's "February 2026" is a listing-date field, not evidence of shipping, and the vertical offset is genuinely not published anywhere - so do not fix a shelf height for this unit until someone reads the manual's install table.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // never a collision: stands on a credenza inside its footprint
+    tags: ['projector', 'short-throw', 'zoom', 'av', 'screening', 'value'],
+    price: 1146,
+  },
+
 ];
 
 // ---------------------------------------------------------------- exports

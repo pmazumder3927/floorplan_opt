@@ -31,7 +31,9 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 import { analyzeLayout, formatReport } from '@/core/analysis';
+import { buildBudget, money as fmtMoney, type BudgetResult } from '@/core/budget';
 import { getDef } from '@/core/catalog';
+import { briefNote, FINISH_SCHEDULE, TRIM_RULES } from '@/core/finishes';
 import { studio } from '@/core/plan';
 import { renderPlanSVG } from '@/render2d/svg';
 import { formatShort } from '@/core/units';
@@ -138,7 +140,53 @@ function heroDataUri(png: string): { uri: string; bytes: number } | null {
   }
 }
 
-const money = (n: number): string => `$${Math.round(n).toLocaleString('en-US')}`;
+const money = fmtMoney;
+
+/**
+ * A budget as a CSV, because a budget's real destination is a spreadsheet and no
+ * amount of nice HTML changes that. One row per catalog line, then one row per
+ * allowance with its low/high band, then the totals — so the client can sort it,
+ * delete the lines they disagree with and see the number move.
+ */
+function budgetCsv(layout: Layout, b: BudgetResult): string {
+  const q = (s: string): string => `"${s.replace(/"/g, '""')}"`;
+  const rows: string[] = [
+    'section,item,catalog_id,qty,unit_usd,total_usd,low_usd,high_usd,tier,price_verified,note',
+  ];
+  for (const s of b.sections) {
+    for (const l of s.lines) {
+      rows.push(
+        [
+          q(s.label),
+          q(l.name),
+          q(l.id),
+          l.qty,
+          l.unit,
+          l.total,
+          '',
+          '',
+          l.tier,
+          l.priceUnverified ? 'no' : 'yes',
+          q(l.priceUnverified ? 'catalog source flags this price as unverified' : ''),
+        ].join(','),
+      );
+    }
+    rows.push([q(s.label + ' — SUBTOTAL'), '', '', '', '', s.subtotal, '', '', '', '', ''].join(','));
+  }
+  rows.push([q('FURNITURE TOTAL'), '', '', '', '', b.furnitureTotal, '', '', '', '', ''].join(','));
+  for (const a of b.allowances) {
+    rows.push(
+      [q('ALLOWANCE'), q(a.label), q(a.id), a.qty, '', '', a.low, a.high, '', 'band', q(a.why)].join(','),
+    );
+  }
+  rows.push(
+    [q('ALLOWANCES TOTAL'), '', '', '', '', '', b.allowanceLow, b.allowanceHigh, '', '', ''].join(','),
+  );
+  rows.push(
+    [q('ALL-IN'), '', '', '', '', '', b.allInLow, b.allInHigh, '', '', q(`layout ${layout.id}`)].join(','),
+  );
+  return rows.join('\n') + '\n';
+}
 
 /**
  * WHICH CAMERA HEADLINES WHICH SCHEME — an editorial choice, per layout.
@@ -166,8 +214,14 @@ const money = (n: number): string => `$${Math.round(n).toLocaleString('en-US')}`
  * is recorded rather than left in someone's head.
  */
 const HERO: Record<string, CameraPreset> = {
-  'a-window-desk': 'eye-hero',
+  // The projector schemes: the picture is on the EAST wall in three of the four,
+  // so the frame that has to show the scheme is the one looking east.
+  'a-night-wall': 'eye-window',
   'b-fold-away': 'eye-living',
+  'c-second-row': 'eye-window',
+  'd-paint-and-go': 'eye-window',
+  // Superseded schemes, kept so an old id still resolves rather than throwing.
+  'a-window-desk': 'eye-hero',
   'c-lounge-wall': 'eye-hero',
   'd-two-rooms': 'eye-living',
 };
@@ -301,6 +355,55 @@ nav.briefs .n {
   color: var(--accent); text-transform: uppercase;
 }
 nav.briefs .d { color: var(--muted); font-size: .88rem; margin-top: .25rem; }
+
+/*
+ * BUDGET AND SCHEDULE TABLES.
+ *
+ * Both are wide, both are read by scanning down a column of numbers, and both
+ * have to survive being printed. So: group headers are the only thing that
+ * carries weight, the numbers stay mono and tabular, and the reasoning goes in
+ * a .sub line under the item rather than in a column of its own — a
+ * five-column table of prose is unreadable at any width.
+ * (No backticks in here: this whole block is inside a template literal.)
+ */
+table.budget tbody + tbody { border-top: 1px solid var(--rule); }
+table.budget tr.grp th {
+  text-align: left; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--accent); padding-top: 1.1rem; border-bottom: 1px solid var(--rule);
+}
+table.budget tr.grp th.num { text-align: right; color: var(--ink); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+table.budget tr.tot th {
+  border-top: 1px solid var(--ink); border-bottom: none; text-align: left;
+  font-size: .82rem; text-transform: none; letter-spacing: 0; color: var(--ink);
+}
+table.budget tr.tot th.num { text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
+table.budget tr.allin th { border-top: 2px solid var(--accent); font-weight: 700; }
+.flag {
+  display: inline-block; margin-left: .45rem; padding: 0 .35rem; border-radius: 2px;
+  font: 600 .62rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--warn); border: 1px solid var(--warn); white-space: nowrap;
+}
+.tier {
+  display: inline-block; margin-left: .4rem; font: 600 .62rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+}
+.tier.t-premium { color: var(--accent); }
+table.finish td { font-size: .84rem; }
+table.finish td:first-child { min-width: 11rem; }
+.swatchcell { white-space: nowrap; }
+.swatch {
+  display: inline-block; width: .95rem; height: .95rem; border-radius: 2px; vertical-align: -.15rem;
+  border: 1px solid var(--rule); margin-right: .35rem;
+}
+.trim { max-width: var(--measure); margin: 0 0 1.6rem; }
+.trim h3 { font-size: .82rem; letter-spacing: .06em; margin: 0 0 .5rem; }
+.trim p { margin: 0 0 .5rem; text-wrap: pretty; }
+.trim p.avoid { color: var(--warn); }
+.trim .lbl {
+  font: 600 .66rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--muted); display: inline-block; min-width: 3.6rem;
+}
+.trim p.sub { color: var(--muted); font-size: .82rem; }
 `;
 
 interface Built {
@@ -315,6 +418,7 @@ interface Built {
 function buildBrief(layout: Layout, opts: { renders: string; hero: boolean }): {
   html: string;
   hero: boolean;
+  csv: string;
 } {
   const result = analyzeLayout(studio, layout);
   const st = result.stats;
@@ -364,6 +468,92 @@ function buildBrief(layout: Layout, opts: { renders: string; hero: boolean }): {
   const errs = result.issues.filter((i) => i.severity === 'error').length;
   const warns = result.issues.filter((i) => i.severity === 'warn').length;
 
+  // ---- the budget, grouped by purpose --------------------------------------
+  const budget = buildBudget(layout);
+  const band = (lo: number, hi: number): string =>
+    lo === hi ? money(lo) : `${money(lo)} – ${money(hi)}`;
+
+  const budgetHtml = [
+    `<div class="scroller"><table class="budget">`,
+    `<thead><tr><th>Line</th><th class="num">Qty</th><th class="num">Unit</th><th class="num">Total</th></tr></thead>`,
+    budget.sections
+      .map(
+        (s) =>
+          `<tbody><tr class="grp"><th colspan="3">${esc(s.label)}</th><th class="num">${esc(
+            money(s.subtotal),
+          )}</th></tr>` +
+          s.lines
+            .map(
+              (l) =>
+                `<tr><td>${esc(l.name)}${
+                  l.priceUnverified
+                    ? '<span class="flag" title="the catalog entry\'s own source string flags this price as unverified">price unverified</span>'
+                    : ''
+                }${l.tier !== 'unspecified' ? `<span class="tier t-${l.tier}">${l.tier}</span>` : ''}</td>` +
+                `<td class="num">${l.qty}</td><td class="num">${
+                  l.unit ? esc(money(l.unit)) : 'incl.'
+                }</td><td class="num">${l.total ? esc(money(l.total)) : '—'}</td></tr>`,
+            )
+            .join('') +
+          `</tbody>`,
+      )
+      .join(''),
+    `<tbody><tr class="tot"><th colspan="3">Furniture, fittings and AV — catalogue total</th><th class="num">${esc(
+      money(budget.furnitureTotal),
+    )}</th></tr></tbody>`,
+    `</table></div>`,
+  ].join('');
+
+  const allowanceHtml = budget.allowances.length
+    ? [
+        `<div class="scroller"><table class="budget">`,
+        `<thead><tr><th>Allowance — real cost with no catalogue page</th><th class="num">Low</th><th class="num">High</th></tr></thead><tbody>`,
+        budget.allowances
+          .map(
+            (a) =>
+              `<tr><td>${esc(a.label)}<span class="sub">${esc(nice(a.why))}</span></td><td class="num">${esc(
+                money(a.low),
+              )}</td><td class="num">${esc(money(a.high))}</td></tr>`,
+          )
+          .join(''),
+        `<tr class="tot"><th>Allowances</th><th class="num">${esc(
+          money(budget.allowanceLow),
+        )}</th><th class="num">${esc(money(budget.allowanceHigh))}</th></tr>`,
+        `<tr class="tot allin"><th>ALL-IN</th><th class="num">${esc(
+          money(budget.allInLow),
+        )}</th><th class="num">${esc(money(budget.allInHigh))}</th></tr>`,
+        `</tbody></table></div>`,
+      ].join('')
+    : '';
+
+  // ---- the finish + trim schedule ------------------------------------------
+  const finishHtml = [
+    `<div class="scroller"><table class="finish">`,
+    `<thead><tr><th>Surface</th><th>Material</th><th>Colour / sheen</th><th>Rule for anything new</th></tr></thead><tbody>`,
+    FINISH_SCHEDULE.map(
+      (f) =>
+        `<tr><td><strong>${esc(f.surface)}</strong>${
+          f.verified ? '' : '<span class="flag">not in the photo</span>'
+        }<span class="sub">${esc(nice(f.evidence))}</span></td>` +
+        `<td>${esc(nice(f.material))}${f.trade ? `<span class="sub">${esc(f.trade)}</span>` : ''}</td>` +
+        `<td class="swatchcell">${
+          f.hex
+            ? `<span class="swatch" style="background:${esc(f.hex)}"></span><code>${esc(f.hex)}</code>`
+            : '<em>none</em>'
+        }<span class="sub">${esc(f.sheen)}${f.gloss ? `, ${esc(f.gloss)}` : ''}</span></td>` +
+        `<td>${esc(nice(f.rule))}</td></tr>`,
+    ).join(''),
+    `</tbody></table></div>`,
+  ].join('');
+
+  const trimHtml = TRIM_RULES.map(
+    (t) =>
+      `<div class="trim"><h3>${esc(t.title)}</h3>` +
+      `<p><span class="lbl">use</span>${esc(nice(t.use))}</p>` +
+      `<p class="avoid"><span class="lbl">never</span>${esc(nice(t.avoid))}</p>` +
+      `<p class="sub">${esc(nice(t.why))}</p></div>`,
+  ).join('');
+
   const html = `<title>${esc(layout.name)} — 508 sq ft studio</title>
 <style>${CSS}</style>
 <div class="wrap">
@@ -390,7 +580,9 @@ ${stat('Interior', `${st.interiorAreaSqft.toFixed(0)} sq ft`)}
 ${stat('Free floor', `${Math.round(st.freeFraction * 100)}%`)}
 ${stat('Narrowest route', st.narrowestPath ? formatShort(st.narrowestPath) : '—')}
 ${stat('Pieces', String(st.itemCount))}
-${stat('Furniture', money(st.budget ?? total))}
+${stat('Furniture', money(budget.furnitureTotal))}
+${stat('Screening + blackout', money(budget.screeningTotal))}
+${stat('All-in', band(budget.allInLow, budget.allInHigh))}
 ${stat('Analyzer', errs ? `${errs} error${errs > 1 ? 's' : ''}` : warns ? `${warns} warn` : 'clean')}
 </dl>
 
@@ -422,7 +614,34 @@ ${rows
   )}</td></tr></tfoot>
 </table>
 </div>
-<p class="caveat">Catalogue prices are furniture only, and bed frames are frames — add a mattress, window shades and bedding on top. Sizes are the manufacturer's real published dimensions; see <code>source</code> on each catalog entry for where each number came from.</p>
+<p class="caveat">Sizes are the manufacturer's real published dimensions; every catalog entry's <code>source</code> string says exactly which page each number and price was read off, which ones are interpolations, and which ones are still unverified. ${
+    budget.unverifiedCount
+      ? `<strong>${budget.unverifiedCount} price${
+          budget.unverifiedCount > 1 ? 's' : ''
+        } in this schedule ${budget.unverifiedCount > 1 ? 'are' : 'is'} flagged unverified by the catalog itself</strong> — they are marked in the budget below and must be re-quoted before anyone commits.`
+      : ''
+  }</p>
+
+<h2>Budget</h2>
+<p class="note">Grouped by purpose rather than by shop, because in 448 sq ft the interesting question is never how much but how much of it went where. ${esc(
+    `Of ${money(budget.furnitureTotal)} of catalogue spend, ${money(
+      budget.screeningTotal,
+    )} is the picture and the light control that makes it work.`,
+  )}</p>
+${budgetHtml}
+
+<h2>What the catalogue total leaves out</h2>
+<p class="note">A furniture total is always wrong in the same direction: it is the cost of the things that have a product page. A bed frame is not a bed, screen paint is not a screen, and a projector with no streaming app is not a streaming device. These are the lines that apply to <em>this</em> layout, as bands.</p>
+${allowanceHtml}
+<p class="caveat">Every band above is a class estimate for US mid-2026 with its reasoning stated, not a quotation. Anything that says get a quote means get a quote.</p>
+
+<h2>Finish and trim schedule</h2>
+<p class="note">${esc(briefNote())}</p>
+${finishHtml}
+
+<h2>Trim rules — what a new piece has to obey</h2>
+<p class="note">The half of the schedule a furniture decision actually consults. A room is defined as much by what is missing as by what is there, and in this unit the missing things are the design.</p>
+${trimHtml}
 
 <h2>Analyzer report</h2>
 <pre>${esc(formatReport(result, { color: false }))}</pre>
@@ -434,7 +653,7 @@ computed, not transcribed.
 </footer>
 </div>`;
 
-  return { html, hero: !!hero };
+  return { html, hero: !!hero, csv: budgetCsv(layout, budget) };
 }
 
 // -------------------------------------------------------------------- main
@@ -472,12 +691,15 @@ function main(): void {
 
   const built: Built[] = [];
   for (const layout of layouts) {
-    const { html, hero } = buildBrief(layout, {
+    const { html, hero, csv } = buildBrief(layout, {
       renders,
       hero: wantHero,
     });
     const file = path.join(outDir, `${layout.id}.html`);
     fs.writeFileSync(file, html);
+    // The budget also goes out as a CSV, because a budget's real destination is
+    // a spreadsheet and no amount of nice HTML changes that.
+    fs.writeFileSync(path.join(outDir, `${layout.id}-budget.csv`), csv);
     const bytes = Buffer.byteLength(html);
     built.push({
       id: layout.id,
@@ -490,7 +712,7 @@ function main(): void {
     console.log(
       `  ${c.green('✓')} ${layout.id.padEnd(15)} ${fmtBytes(bytes).padStart(9)}  ${
         hero ? 'with hero frame' : c.yellow('no hero frame')
-      }`,
+      }  + budget.csv`,
     );
   }
 
@@ -500,11 +722,24 @@ function main(): void {
     const index = `<title>508 sq ft studio — four layouts</title>
 <style>${CSS}</style>
 <div class="wrap">
-<p class="eyebrow">508 sq ft L-shaped studio · 448 sq ft interior</p>
+<p class="eyebrow">508 sq ft L-shaped studio · 448 sq ft interior · 213 sq ft of usable open floor</p>
 <h1>Four layouts</h1>
-<p class="strap">One apartment, four schemes. Every one carries the same hard requirement — a real
-Fully Jarvis sit-stand desk with an ergonomic chair, monitors on an arm and cable management — and
-each spends the remaining floor differently.</p>
+<p class="strap">One apartment, four schemes. Every one carries the same four hard requirements — a
+real queen bed, a real Fully Jarvis sit-stand desk, a projector viewing area whose throw geometry
+and seating distance both actually work, and a modern-minimal palette taken off a photograph of
+the unit itself. They differ in how they answer the projector, because that is the requirement
+that reorganises the plan: a 100&quot; image needs 9 to 11 ft of viewing distance plus a plinth
+zone, which consumes most of the 18'-4&quot; east-west axis.</p>
+<p class="caveat">One finding applies to all four and it is arithmetic rather than taste:
+<strong>daytime viewing is not possible in this unit without blackout on all four glazing
+bays.</strong> A 2,700-lumen projector on a 0.6-gain 100&quot; screen makes 54 fL of peak white;
+a screen face taking only 500 lux of ambient — conservative for a wall 18 ft from an uncurtained
+full-height west glass wall at midday — sits at 28 fL of black. That is 1.9:1 in-room contrast.
+Even a 5,000-lumen unit reaches only 3.6:1. There is no lumen count purchasable in 2026 that
+fixes it, and an ALR screen does not substitute, because the projection wall faces due west —
+straight down the sightline at the glazing, the one direction a lenticular screen cannot reject.
+If the blackout is not in the budget, buy a television and spend the projector money on the desk
+and the seating.</p>
 <nav class="briefs">
 ${built
   .map(
