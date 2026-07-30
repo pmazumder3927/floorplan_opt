@@ -1,0 +1,37 @@
+{
+  "name": "floor-test",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "To-scale floor plan design + render environment for a 508 sq ft L-shaped studio",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4317",
+    "typecheck": "tsc --noEmit",
+    "check": "tsx scripts/check.ts",
+    "svg": "tsx scripts/export-svg.ts",
+    "render": "tsx scripts/render.ts"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.185.1",
+    "@vitejs/plugin-react": "^6.0.4",
+    "playwright": "^1.62.0",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}

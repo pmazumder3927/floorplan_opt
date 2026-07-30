@@ -1,0 +1,71 @@
+{
+  "_description": "Structured geometry for a 508 sq ft studio apartment, derived by tracing the supplied floor-plan image and scaling so the outer footprint equals the stated 508 sq ft. THIS IS THE RAW INPUT — src/core/plan.ts is the authoritative model derived from it.",
+  "_coordinate_system": {
+    "origin": "top-left outer corner of the footprint",
+    "x_axis": "east / rightward, feet",
+    "y_axis": "south / downward, feet (image convention; NOT math y-up)",
+    "units": "feet (decimal). *_ftin fields give feet-inches strings.",
+    "scale_px_per_ft": 28.587,
+    "accuracy": "scaled from a listing graphic; treat as +/- ~0.3 ft. Fixtures flagged approximate."
+  },
+  "metadata": {
+    "type": "studio apartment",
+    "stated_area_sqft": 508,
+    "footprint_area_sqft": 507.9,
+    "interior_area_sqft": 448.1,
+    "overall_width_ft": 30.36,
+    "overall_width_ftin": "30'-4\"",
+    "overall_depth_ft": 19.8,
+    "overall_depth_ftin": "19'-10\"",
+    "shape": "L-shaped"
+  },
+  "footprint": {
+    "reference": "outer wall face",
+    "vertices": [[0.0, 0.0], [10.53, 0.0], [10.53, 2.59], [26.9, 2.59], [26.9, 11.65], [30.36, 11.65], [30.36, 18.99], [17.35, 18.99], [17.35, 19.8], [0.0, 19.8]],
+    "area_sqft": 507.9
+  },
+  "interior_boundary": {
+    "reference": "inside face of exterior walls",
+    "vertices": [[0.59, 0.63], [9.93, 0.63], [9.93, 3.22], [26.27, 3.22], [26.27, 12.28], [29.73, 12.28], [29.73, 18.36], [17.95, 18.36], [17.95, 19.17], [0.59, 19.17]],
+    "area_sqft": 448.1
+  },
+  "exterior_walls": [
+    { "id": "W1", "name": "N wall (living, upper)", "start": [0.0, 0.0], "end": [10.53, 0.0], "length_ft": 10.53, "length_ftin": "10'-6\"", "orientation": "horizontal" },
+    { "id": "W2", "name": "step (S) at living/bath", "start": [10.53, 0.0], "end": [10.53, 2.59], "length_ft": 2.59, "length_ftin": "2'-7\"", "orientation": "vertical" },
+    { "id": "W3", "name": "N wall (bath)", "start": [10.53, 2.59], "end": [26.9, 2.59], "length_ft": 16.37, "length_ftin": "16'-4\"", "orientation": "horizontal" },
+    { "id": "W4", "name": "E wall (bath)", "start": [26.9, 2.59], "end": [26.9, 11.65], "length_ft": 9.06, "length_ftin": "9'-1\"", "orientation": "vertical" },
+    { "id": "W5", "name": "step (E) out to entry", "start": [26.9, 11.65], "end": [30.36, 11.65], "length_ft": 3.46, "length_ftin": "3'-6\"", "orientation": "horizontal" },
+    { "id": "W6", "name": "E wall (entry)", "start": [30.36, 11.65], "end": [30.36, 18.99], "length_ft": 7.34, "length_ftin": "7'-4\"", "orientation": "vertical" },
+    { "id": "W7", "name": "S wall (right)", "start": [30.36, 18.99], "end": [17.35, 18.99], "length_ft": 13.01, "length_ftin": "13'-0\"", "orientation": "horizontal" },
+    { "id": "W8", "name": "step (S) at kitchen", "start": [17.35, 18.99], "end": [17.35, 19.8], "length_ft": 0.81, "length_ftin": "0'-10\"", "orientation": "vertical" },
+    { "id": "W9", "name": "S wall (kitchen)", "start": [17.35, 19.8], "end": [0.0, 19.8], "length_ft": 17.35, "length_ftin": "17'-4\"", "orientation": "horizontal" },
+    { "id": "W10", "name": "W wall (windows)", "start": [0.0, 19.8], "end": [0.0, 0.0], "length_ft": 19.8, "length_ftin": "19'-10\"", "orientation": "vertical" }
+  ],
+  "rooms_and_zones": [
+    { "name": "Living / Dining", "type": "living", "note": "open studio area, L-shaped, includes kitchen & entry", "approx_area_sqft": 381.5 },
+    { "name": "Kitchen", "type": "kitchen", "note": "galley counter along south wall, west end", "approx_bbox": { "x": 0.59, "y": 17.07, "w": 12.42, "h": 2.1 } },
+    { "name": "Bathroom", "type": "bath", "polygon": [[19.24, 3.22], [26.27, 3.22], [26.27, 12.7], [19.24, 12.7]], "area_sqft": 66.6, "approx_size": "7'-0\" x 9'-6\"" },
+    { "name": "Entry", "type": "circulation", "note": "angled front door, SE corner", "approx_bbox": { "x": 25.96, "y": 12.28, "w": 3.77, "h": 6.71 } }
+  ],
+  "windows": [
+    { "id": "WIN1", "wall": "W wall (west)", "on": "x=0.0", "y_start": 2.8, "y_end": 5.53, "width_ft": 2.73, "width_ftin": "2'-9\"" },
+    { "id": "WIN2", "wall": "W wall (west)", "on": "x=0.0", "y_start": 5.88, "y_end": 8.57, "width_ft": 2.69, "width_ftin": "2'-8\"" },
+    { "id": "WIN3", "wall": "W wall (west)", "on": "x=0.0", "y_start": 9.93, "y_end": 12.7, "width_ft": 2.77, "width_ftin": "2'-9\"" },
+    { "id": "WIN4", "wall": "W wall (west)", "on": "x=0.0", "y_start": 13.05, "y_end": 16.55, "width_ft": 3.5, "width_ftin": "3'-6\"" }
+  ],
+  "doors": [
+    { "id": "D1", "type": "interior", "name": "Bathroom door", "wall": "bath S wall", "x_start": 19.73, "x_end": 22.81, "y": 12.87, "width_ft": 3.08, "width_ftin": "3'-1\"", "swing": "into living, hinged left" },
+    { "id": "D2", "type": "entry", "name": "Unit entry door", "wall": "E wall (entry)", "y_start": 13.12, "y_end": 16.3, "x": 30.33, "width_ft": 3.18, "width_ftin": "3'-2\"", "swing": "inward, angled" }
+  ],
+  "fixtures": [
+    { "id": "DW", "name": "Dishwasher", "category": "kitchen", "bbox": { "x": 0.8, "y": 17.77, "w": 1.82, "h": 1.82 }, "approximate": true },
+    { "id": "SINK", "name": "Kitchen sink", "category": "kitchen", "bbox": { "x": 3.15, "y": 17.77, "w": 2.38, "h": 1.75 }, "approximate": true },
+    { "id": "RANGE", "name": "Cooktop / range", "category": "kitchen", "bbox": { "x": 5.88, "y": 17.77, "w": 3.04, "h": 1.75 }, "approximate": true },
+    { "id": "REF", "name": "Refrigerator", "category": "kitchen", "bbox": { "x": 10.67, "y": 17.35, "w": 2.34, "h": 2.24 }, "approximate": true },
+    { "id": "WD", "name": "Washer / dryer", "category": "laundry", "bbox": { "x": 13.57, "y": 17.07, "w": 2.45, "h": 2.62 }, "approximate": true },
+    { "id": "CLO", "name": "Reach-in closets (run of 4)", "category": "storage", "bbox": { "x": 16.37, "y": 17.25, "w": 9.59, "h": 2.27 }, "approximate": true },
+    { "id": "TUB", "name": "Bathtub / shower", "category": "bath", "bbox": { "x": 19.41, "y": 3.53, "w": 7.42, "h": 2.42 }, "approximate": true },
+    { "id": "WC", "name": "Toilet", "category": "bath", "bbox": { "x": 23.79, "y": 6.75, "w": 2.03, "h": 2.35 }, "approximate": true },
+    { "id": "VAN", "name": "Vanity / sink", "category": "bath", "bbox": { "x": 24.56, "y": 9.3, "w": 1.78, "h": 2.59 }, "approximate": true }
+  ]
+}
