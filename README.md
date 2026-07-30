@@ -1,0 +1,225 @@
+# floor_test
+
+A to-scale design and render environment for **one real apartment**: a 508 sq ft
+L-shaped studio (448 ft² inside the walls) with a single west-facing glazed wall
+and an exposed concrete soffit.
+
+The apartment is modelled once, in code. Everything else — the architectural
+plan, the clearance analysis, the WebGL preview, the path-traced hero frames, the
+furniture schedule and the client brief — is **generated from that one model**, so
+no drawing can quietly disagree with the layout it describes.
+
+Four schemes are designed against the same brief. All four carry the same four
+hard requirements — a real queen bed, modern/minimal decor, a real Fully Jarvis
+sit-stand desk, and a congregation area for watching things on a projector with
+the throw geometry and the seating distances both actually correct. What differs
+is **where the picture goes**; every other decision falls out of that.
+
+---
+
+## Sample renders
+
+All frames below are GPU path-traced in Blender Cycles from the same glTF export
+the WebGL preview uses, at the same 1600×1000, with a physically-scaled Nishita
+sky. They are dark on purpose: blackout on all four glazing bays is a
+co-requisite of every scheme (a screen face taking 500 lux of ambient sits at
+1.9:1 in-room contrast — a grey rectangle), so the shades are down in the model
+and the room is lit by its own downlights.
+
+### A — Night wall
+
+The recommended scheme. A 100" UST ALR frame on the bathroom partition — the only
+blank, west-facing wall in the unit — a Hisense PX3-PRO on a 14" plinth, and a
+queen head-to-the-glazing in the notch. The best picture this apartment can make;
+the cost is that it is an evening room.
+
+![Layout A, looking east from the glazing: 100" screen on the bathroom partition, Jarvis desk on the left](docs/renders/a-night-wall.jpg)
+
+### B — Fold away
+
+The picture goes **in the west glazing** on a floor-rising screen that stows to an
+8¼" cabinet, so the view comes back when the film ends. Paid for by a queen
+Murphy on the wide leg: the floor exists sixteen hours a day. The cost is a
+one-ended bed and an audience facing the glass.
+
+![Layout B, looking west: the floor-rising screen deployed in front of the west glazing](docs/renders/b-fold-away.jpg)
+
+### C — Second row
+
+The picture is on the bathroom partition again, but **the bed is the back row**: a
+17½" Floyd queen lies head-to-the-glass across the middle of the floor, under the
+46" seated-eye line, with four floor seats in front of it. Six seats, no sofa. The
+cost is that the bed is public.
+
+![Layout C, the bed lying low across the middle of the floor with poufs in front of it](docs/renders/c-second-row.jpg)
+
+### D — Paint and go
+
+118" of screen **paint** and a 2.9 lb portable that lives in a closet — an $858 AV
+kit, nothing anchored, nothing framed, nothing millwork. With the projector off,
+this is what you own: a faint white rectangle on a white wall. That is the point
+of it, and the honest cost is a standard-throw lens standing in front of the
+audience at 550 lumens, i.e. after dark only.
+
+![Layout D, looking east: the painted screen area reads as a faint rectangle on the partition](docs/renders/d-paint-and-go.jpg)
+
+### The 2D side of the same model
+
+Same layout, same numbers, drawn to scale with dimensions, door swings, a
+furniture key, a graphic scale and the analyzer's own findings marked in place:
+
+![To-scale architectural plan of layout A with dimensions, furniture key and analysis callouts](docs/renders/a-night-wall-plan.png)
+
+> `renders/` is gitignored — every PNG, SVG and GLB in it is regenerable from the
+> layouts and the plan, which *are* committed. The images above are a small,
+> deliberate copy kept in `docs/renders/` so this page works on GitHub.
+
+---
+
+## The unit
+
+| | |
+|---|---|
+| Plan | `studio-508`, 30'-4" × 19'-10" overall, L-shaped |
+| Area | 508 ft² gross · **448 ft² interior** |
+| Glazing | one west wall, four bays (2'-8¾", 2'-8¼", 2'-9¼", 3'-6") |
+| Soffit | exposed structural concrete — no ceiling mounting anywhere, in any scheme |
+| Ceiling | 9'-0", **assumed** (not on the source plan) |
+| Source | traced from the listing graphic at 28.587 px/ft — treat all coordinates as **±0.3 ft** |
+
+Where the trace disagreed with a real manufactured size, the real size wins and
+the substitution is recorded in `PLAN_NOTES` (`src/core/plan.ts`) — twelve entries
+saying exactly what is measured and what is inferred. `data/reference/` holds the
+photograph of the real living/west corner that the material table is calibrated
+against, so the renders' finishes are matched to the unit rather than invented.
+
+---
+
+## The four schemes
+
+| | Layout | Where the picture goes | The cost |
+|---|---|---|---|
+| **A** | `a-night-wall` | 100" UST ALR frame on the bathroom partition | an evening room, and no dresser |
+| **B** | `b-fold-away` | floor-rising screen in the west glazing | one-ended Murphy bed, audience faces the glass |
+| **C** | `c-second-row` | bathroom partition, with the bed as the back row | the bed is public |
+| **D** | `d-paint-and-go` | 118" of screen paint, portable projector | 550 lumens and a lens in front of the audience |
+
+Live figures — item counts, free floor, narrowest circulation path, warnings and
+budget — come out of `pnpm check`, which is also the CI gate: it exits 1 if any
+layout has an error-severity issue (things overlap, a door cannot open, a route is
+impassable). Sample output:
+
+```
+  LAYOUT          ITEMS  FREE %  FREE AREA  NARROWEST  ERR  WARN   BUDGET
+  ──────────────  ─────  ──────  ─────────  ─────────  ───  ────  ───────
+  a-night-wall       35   79.7%    357 ft²       2'7"    0     1  $15,562
+  b-fold-away        34   82.8%    371 ft²         3'    0     3  $16,848
+  c-second-row       28   79.5%    356 ft²       3'6"    0     2  $11,825
+  d-paint-and-go     26   83.6%    375 ft²       2'6"    0     1   $7,609
+
+  4 layouts · 448 ft² interior · walkway min 3' (tight 2'6")
+  no errors, 7 warnings, 2 info
+```
+
+`BUDGET` is the catalogue total only. `src/core/budget.ts` additionally produces
+an **all-in band** — furniture plus low/high allowances for every real cost with
+no catalog page (mattresses, slatted bases, level-5 plastering, freight) — and it
+flags which prices in the schedule are unverified rather than quoted.
+
+---
+
+## Getting started
+
+```bash
+pnpm install
+pnpm check          # analyze all four layouts; exits 1 on an error-severity issue
+pnpm dev            # the interactive lab at http://localhost:4317
+```
+
+## The pipeline
+
+`data/source-plan.json` is the raw trace and is not imported by anything —
+`src/core/plan.ts` is the authoritative model derived from it by hand, which is
+where the twelve `PLAN_NOTES` substitutions get made.
+
+```
+  src/core/plan.ts          src/core/catalog.ts
+  (the apartment)           (169 furniture defs)
+          └───────────────┬───────────────┘
+                          ▼
+                  src/layouts/*.ts                  the four schemes
+                          │
+    ┌─────────────────────┼─────────────────────┐
+    ▼                     ▼                     ▼
+ analysis.ts          render2d/            render3d/build.ts
+ clearances,          to-scale SVG         one three.js scene
+ door swings,         plan + PNG           ├─► WebGL preview + PNG
+ circulation,         capture              └─► .glb ─► Blender Cycles
+ sightlines,              │                        │
+ throw geometry           │                        ▼
+    │                     │                 path-traced frames
+    ▼                     │                        │
+ pnpm check               │                        │
+    └─────────────────────┴────────────────────────┘
+                          ▼
+                   scripts/brief.ts
+            one self-contained HTML per layout
+```
+
+| Command | What it does |
+|---|---|
+| `pnpm dev` | the interactive lab — layout picker, 2D/3D views, camera and theme presets, live analysis, item schedule, catalog browser |
+| `pnpm check` | clearance / collision / circulation report. `--json` for machine-readable, `--quiet` for the summary table only |
+| `pnpm svg` | to-scale architectural plan as SVG (vector, diffable, prints) |
+| `pnpm render` | headless PNGs of the 2D plan and the WebGL 3D view — how an agent looks at its own work |
+| `pnpm glb` | export the three.js scene as `.glb`; the only thing Blender ever sees |
+| `pnpm raytrace` | GPU path-traced hero frames in Blender Cycles (Nishita sky, real sun disc, per-camera exposure bias) |
+| `pnpm brief` | one self-contained HTML brief per layout: hero frame, plan, reasoning, schedule, analyzer verdict |
+| `pnpm typecheck` | `tsc --noEmit` |
+
+Reproducing the frames on this page:
+
+```bash
+npx tsx scripts/raytrace.ts --layout a-night-wall   --camera eye-window --res 1600x1000 --samples 200 --exposure 2.2
+npx tsx scripts/raytrace.ts --layout b-fold-away    --camera eye-living --res 1600x1000 --samples 200 --exposure 2.2
+npx tsx scripts/raytrace.ts --layout c-second-row   --camera eye-hero   --res 1600x1000 --samples 256 --exposure 2.9
+npx tsx scripts/raytrace.ts --layout d-paint-and-go --camera eye-window --res 1600x1000 --samples 200 --exposure 2.2
+npx tsx scripts/render.ts   --view 2d
+```
+
+`raytrace` expects Blender at `~/.local/opt/blender/blender` (override with
+`BLENDER=/path/to/blender`) and prefers OptiX, falling back to CUDA. The headless
+2D/3D renderer needs no GPU: it boots vite in-process on an OS-assigned port and
+drives Chromium with software WebGL, so `pnpm render` works in a container.
+
+## Repo layout
+
+```
+src/core/        the apartment, the catalog, the units, the analyzer, the money
+src/layouts/     the four schemes — one file each, plus faces.ts for shared datums
+src/render2d/    to-scale plan: SVG writer + React view
+src/render3d/    three.js scene builder, materials, camera presets, city backdrop
+src/app/         the interactive lab, and the chrome-less capture mode scripts drive
+scripts/         CLI drivers (check, svg, render, glb, raytrace, brief)
+scripts/blender/ Cycles render script, physically-based material table, sky/world
+data/            traced source plan + the reference photograph
+docs/renders/    the committed sample images used by this README
+```
+
+## Conventions worth knowing before you edit
+
+- **Decimal feet everywhere** internally; `src/core/units.ts` owns every
+  real-world clearance minimum and all feet-and-inches formatting.
+- **Every number carries its provenance.** Catalog entries have a `source` string
+  that says where the price and the dimensions came from, and says so plainly when
+  a price is an estimate rather than a quotation. Layout files argue their
+  trade-offs in prose next to the geometry that implements them.
+- **Shared datums live in `src/layouts/faces.ts`.** If two layouts cite the same
+  wall face or the same desk-orientation rule, neither of them owns it.
+- **`src/render3d/build.ts` is the single source of truth for the 3D model.** The
+  WebGL preview, the `.glb` and every path-traced frame come from that one scene
+  graph, and the ray tracer computes its camera with the same `cameraFor()` the
+  preview uses — so a hero frame and a preview frame of the same layout frame the
+  unit identically.
+- **Generated output is not committed** (`renders/`, `briefs/`, `tmp/`). If you
+  need a picture in the repo, put a deliberate copy in `docs/`.

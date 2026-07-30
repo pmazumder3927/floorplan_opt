@@ -14,6 +14,39 @@
  *     rot  90  front faces WEST    (back against an east wall)
  *     rot 180  front faces NORTH   (back against a south wall)
  *     rot 270  front faces EAST    (back against a west wall)
+ *
+ * ---------------------------------------------------------------------------
+ * THE DESK ORIENTATION RULE — every layout in this folder obeys it
+ * ---------------------------------------------------------------------------
+ *
+ * The rule lives here rather than in one layout's header because all of them
+ * cite it and none of them owns it.
+ *
+ * The glazing faces WEST, so it takes direct sun from roughly 3pm to sunset.
+ * There are only three ways to point a screen in this room:
+ *
+ *   screen facing WEST  -> the low sun lands on the panel; unreadable daily.
+ *   screen facing EAST  -> you sit facing east with the sun over your shoulder
+ *                          and get the same reflection, plus the window is a
+ *                          bright hole behind the screen that your eyes have to
+ *                          fight all afternoon.
+ *   screen facing NORTH or SOUTH -> the glazing is off to one side. Daylight
+ *                          rakes ACROSS the desktop, which is what you want on
+ *                          paper and hands, and never down the barrel of the
+ *                          panel.
+ *
+ * So the Jarvis top runs east-west against a north wall, the user sits SOUTH of
+ * it facing NORTH, the screens face SOUTH, and the glass is on the user's LEFT.
+ * There are only two north walls available: the notch (x W_FACE..STEP_X at
+ * N_FACE) and the wide leg (x STEP_X..BATH_W_FACE at N_FACE_WIDE).
+ *
+ * PULL-BACK. Reserve the full CLEARANCE.deskChair (30") of clear floor in front
+ * of the top and draw the chair PARKED inside that zone rather than tucked under
+ * it — the desks in this model are solid boxes with no legroom void, so a tucked
+ * chair reads as a collision to the analyzer and as a lie to a reader. Stated
+ * honestly: the sourced real-world minimum for a task chair to roll back and let
+ * the user stand is nearer 36", and 42"-48" is comfortable. Where a layout only
+ * achieves 30" it says so.
  */
 
 // ---------------------------------------------------------------- wall faces

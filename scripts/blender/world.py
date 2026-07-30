@@ -225,6 +225,61 @@ def _ground_bounce(nt, sky, bearing_deg: float):
     makes the horizon a soft band, and a hard step there shows up as a visible line
     in glossy reflections (the tower's glass, and our own floor).
 
+    ----------------------------------------------------------------------------
+    DO NOT COME HERE TO FIX THE SOFFIT. It has been tried and it is measured.
+    ----------------------------------------------------------------------------
+    The standing complaint about this frame is that the exposed concrete soffit is
+    darker than the walls where the photograph's is brighter. This hemisphere is the
+    ONLY term in world.py that moves that relationship at all, because the ceiling's
+    only direct view of the outdoors is DOWNWARD: a ray reaching a ceiling point
+    from outside must pass through glazing that stops 4" below the slab, so it enters
+    the room rising, which means it left the world below the horizon. Every other
+    lever (dome strength, dust, ozone, the sun) lights the walls and the ceiling in
+    the same proportion — swept and measured, see build_world() and render.py.
+
+    But the term is far too small to be the answer. Measured on eye-living at 128
+    spp with view_transform=Standard (so the numbers are scene-linear, not AgX):
+    sweeping GROUND_ALBEDO 0.0 / 0.22 / 1.0 / 5.0 gives soffit luminance 0.0266 /
+    0.0265 / 0.0279 / 0.0456 and east-wall luminance 0.0364 / 0.0359 / 0.0355 /
+    0.0430. So at the physical 0.22 this whole hemisphere is worth ~3% of the
+    soffit's light and ~1% of the wall's — killing it outright (0.0) is invisible.
+    It is 4x more effective on the soffit than on the wall, which confirms the
+    mechanism, and useless anyway at any honest radiance:
+
+      soffit/wall ILLUMINANCE ratio (dividing by albedo Y 0.5065 and 0.858):
+        render, GROUND_ALBEDO 0.22 ... 1.25       <- we are here
+        render, GROUND_ALBEDO 5.0  ... 1.80
+        photograph                 ... 2.25
+    Closing the gap from here needs GROUND_ALBEDO ~5.8, i.e. a city that is nearly
+    six times BRIGHTER than the sky above it. That is not a lower hemisphere, it is
+    a light box.
+
+    Two refinements were built, measured and thrown away, so nobody rebuilds them:
+      * AERIAL PERSPECTIVE on this hemisphere (a per-direction 1-exp(-H/(-Z * D))
+        ramp from albedo*sky straight down to AIRLIGHT_DEPRESSION*sky at the
+        horizon, which is what _haze_wrap() does to the city we DRAW and is
+        genuinely more correct). Effect on every interior patch: below 0.5%, i.e.
+        inside the sampling noise. The reason is geometric — the cosine weight for a
+        ceiling is sin(depression), so the near-horizon band where the airlight
+        lives is 2% of the hemisphere's contribution.
+      * making the tint cool instead of warm (1.06/1.00/0.92 -> 0.86/0.98/1.18).
+        Also below noise. The warm bias is worth questioning on its own terms — the
+        DEFAULT weather has --sun-intensity 0.04, so there is no "low afternoon sun
+        landing" on this ground at all — but it changes nothing measurable, so it is
+        left alone rather than churned.
+
+    WHERE THE SOFFIT'S LIGHT ACTUALLY COMES FROM, measured by replacing one material
+    at a time with a black diffuse and re-rendering (eye-living, demo-openloft,
+    linear): the floor is worth 8% of the soffit, all the wall-paint surfaces
+    together 21%, this hemisphere 3%. The remaining ~68% is the rest of the interior
+    and multi-bounce. In particular the FLOOR IS NOT THE SOFFIT'S LIGHT SOURCE — the
+    bright blue glare sheet in front of the glazing is a near-grazing SPECULAR
+    reflection, and a specular lobe does not redirect light to the surface directly
+    above it; only the walnut's diffuse albedo (linear Y 0.11) goes up. Measured
+    corroboration: our glare sheet is already BLUER than the photograph's (linear
+    B/R 1.52 against 1.27) while our soffit is far less blue (1.49 against 2.31), so
+    the sheet cannot be what makes the photograph's ceiling blue.
+
     Returns the RGB socket to feed the Background node.
     """
     coord = nt.nodes.new("ShaderNodeTexCoord")
@@ -272,12 +327,8 @@ def _ground_bounce(nt, sky, bearing_deg: float):
     nt.links.new(hsky.outputs["Color"], _socket(ground, "A", "RGBA"))
     # A shade warmer than neutral: the ground is brick, asphalt and gravel, and it
     # is where the low afternoon sun is landing.
-    import os as _os
-    _ga = float(_os.environ.get("XP_GROUND_ALBEDO", GROUND_ALBEDO))
-    _tr, _tg, _tb = (float(v) for v in _os.environ.get("XP_GROUND_TINT", "1.06,1.0,0.92").split(","))
-    print(f"[xp] ground_albedo={_ga} tint={_tr},{_tg},{_tb}", flush=True)
     _socket(ground, "B", "RGBA").default_value = (
-        _ga * _tr, _ga * _tg, _ga * _tb, 1.0)
+        GROUND_ALBEDO * 1.06, GROUND_ALBEDO, GROUND_ALBEDO * 0.92, 1.0)
 
     mix = nt.nodes.new("ShaderNodeMix")
     mix.data_type = "RGBA"
@@ -362,11 +413,19 @@ def build_world(
     # crisp dark-blue mountain sky and would read as a different climate; much past
     # 3 and the direct sun goes amber enough to look like late evening at 4 pm.
     # Ozone mainly tints the zenith; 1.0 is the default and is right.
-    import os as _os
-    sky.air_density = float(_os.environ.get("XP_AIR", 1.0))
-    sky.dust_density = float(_os.environ.get("XP_DUST", dust_density))
-    sky.ozone_density = float(_os.environ.get("XP_OZONE", 1.0))
-    print(f"[xp] air={sky.air_density} dust={sky.dust_density} ozone={sky.ozone_density}", flush=True)
+    sky.air_density = 1.0
+    sky.dust_density = dust_density
+    # OZONE STAYS AT 1.0, and it was swept rather than assumed. Ozone's Chappuis band
+    # is the one Nishita knob that blues the sky without whitening the horizon, and
+    # the near-glass illuminant IS short of blue against the photograph (see the
+    # measurements in _ground_bounce). But it is a GLOBAL change: measured on
+    # eye-living at ozone 1 -> 6, the linear B/R of the pier beside the glazing went
+    # 0.885 -> 1.017 (photo: 1.570) while the far east wall went 0.861 -> 0.986 — and
+    # the far wall already matched the photograph at 1.0 (render 0.892 vs photo 0.919
+    # on the a-window-desk frame). Ozone buys 1/5 of the blue we are missing at the
+    # glass and overshoots the one surface materials.py calibrated its wall-paint hex
+    # against. So: not here. See the report in _ground_bounce.
+    sky.ozone_density = 1.0
     # The real sun subtends 0.545 deg. Keep it: with the OptiX denoiser there is no
     # reason to fake a soft sun, and a true-size disc gives the correct shadow
     # penumbra through the full-height glazing.
@@ -430,19 +489,64 @@ class Mulberry32:
 
 # --------------------------------------------------------------------------- palettes
 
+# THESE ARE THE OUTLOOK'S ONLY LIVE ALBEDOS. scripts/blender/materials.py also
+# defines six `context-*` Surfaces (context-roof, context-wall, ...) and they are
+# DEAD CODE on every real frame: render.py's build_outlook() imports world.py and
+# only falls back to its own build_context() if that import RAISES, and world.py's
+# build_city() bakes the two tables below into a per-vertex 'albedo' attribute read
+# by the private _city_material(). Every frame that has ever shipped logs
+# "outlook: world.py city". Tune here; tuning materials.py's context-* block changes
+# nothing.
+#
 # Wall and roof albedos, the same two palettes and the same order as backdrop.ts.
 # Walls are masonry/stucco/concrete and mid-tone; roofs are dark. Keeping them
 # separate is not cosmetic: one colour per building makes every near facade a black
 # silhouette, because a tar albedo on a vertical surface that sees half the sky
 # renders near zero.
+#
+# A CITY WITH NO WARM SURFACES READS AS STYROFOAM, and that is what these two tables
+# were producing. MEASURED on the reference photo, roofscape through the left bay
+# with the mullion excluded (x212-336, y292-478, 8x6 blocks): R-B ranges -47 to +59,
+# sd 20.5, and 14.8% of the blocks are warm (R-B > +5) — a run of ochre parapet
+# panels, a terracotta cap flashing, red-brown brick flanks among the grey membrane.
+# The Cycles render of the same city measured R-B sd 6.3 with max -1.5 and ZERO warm
+# blocks: EVERY pixel of the outlook sat between -25 and -1. It was never a value
+# problem (median L 184 against the photo's 227, i.e. we are if anything DARKER, not
+# blown out) — it was monochrome.
+#
+# WHY the chroma that was already in these tables did not survive to the frame, in
+# order of size (all three are real, and the third is the biggest):
+#   1. the airlight in _haze_wrap() mixes every surface toward the horizon sky, which
+#      is neutral-to-cool. At the mid-field distances that fill this view (200-1000
+#      ft against haze_dist 4858 ft) that is only a 4-19% mix, so it desaturates but
+#      does not explain the result;
+#   2. R/B ratios of 1.3-1.4 on a DARK albedo produce almost no absolute R-B once
+#      rendered: chroma in display units is roughly (R/B - 1) x brightness, so a dark
+#      roof needs a much bolder hue than a wall to read at all;
+#   3. we are on floor 14 looking DOWN, so the visible area is roofs, parapet rims
+#      and mechanical penthouses. The warm entries were all in WALL_COLORS, on
+#      vertical faces that are barely in frame. Warmth has to be in ROOF_COLORS or it
+#      is not in the picture.
+# There is also no direct sun on this city at the default weather (--sun-intensity
+# 0.04), so unlike the photograph — where the warm surfaces are the SUNLIT ones and
+# the cool ones are in shade — nothing here gets a bright warm face for free. All of
+# the hue has to come out of the albedo.
 WALL_COLORS = (
     "#8f857a",  # warm grey stucco — the commonest wall in the reference photo
     "#9c9489",
     "#a89e91",  # pale render
     "#7f7468",  # shaded / dirty stucco
-    "#8a6f5e",  # red brick
+    "#94733e",  # red brick / raw sienna. Was #8a6f5e, R/B 2.27 in linear — a
+                # brick-COLOURED grey. Real common brick is R/B 5-7; this is 6.2 at
+                # Y 0.19. It is pulled toward OCHRE rather than pure red on purpose:
+                # measured, the photograph's warm roofscape blocks are yellow-
+                # dominant (R-G +10..+27, G-B +25..+45), not red-dominant, and a
+                # high-R/low-G brick renders as candy pink through AgX at this
+                # brightness.
     "#a2a099",  # concrete
-    "#b0a898",  # light painted brick
+    "#c2a878",  # light painted brick, warmed to the ochre of the photo's parapet
+                # panel run (measured there at R-B +50..+59 where it is sunlit).
+                # Was #b0a898 at R/B 1.38; this is 2.87 at the same Y (0.41).
     "#77706a",  # dark grey render
     "#8d9195",  # cool grey precast
     "#6e7276",  # dark cool grey / glazed office block
@@ -465,15 +569,26 @@ WALL_COLORS = (
 # the reference photo through its own pipeline. The LENGTH and ORDER, however,
 # must stay identical: both scatterers index their table with the same seeded
 # PRNG, so entry i must mean the same kind of roof in both.
+# HUE, added at constant VALUE. The darkness above is not being undone: every entry
+# below keeps its predecessor's linear Y to within 0.01 (the ladder goes 0.047, 0.061,
+# 0.084, 0.110, 0.197, 0.265, 0.063, 0.029 against the old 0.046, 0.062, 0.085, 0.111,
+# 0.186, 0.252, 0.055, 0.029, so the palette mean moves +3%). What changes is R/B, and
+# only on the slots whose own comment already names a warm material: pea gravel on a
+# built-up roof is buff-brown, ballast is tan, and slot 6 is gravel over a BRICK
+# building. Slots 2 and 7 are pushed the other way — weathered concrete and fresh
+# bitumen really are neutral-to-cool — because the photograph's roofscape is a SPREAD
+# (R-B -47 to +59), and a spread needs both ends, not a warm bias.
 ROOF_COLORS = (
-    "#3f3c37",  # built-up tar and gravel
-    "#4a4640",
-    "#565249",  # weathered concrete deck
-    "#625d54",
-    "#7c776c",  # pale membrane / ballast
-    "#8e897e",
-    "#4c4038",  # gravel ballast over a brick building
-    "#332f2c",  # dark bitumen, freshly done
+    "#4a3a2c",  # built-up tar and BUFF PEA GRAVEL. R/B 1.30 -> 2.72.
+    "#4b453c",
+    "#4f5350",  # weathered concrete deck — the cool end of the spread
+    "#665c48",
+    "#847a63",  # pale membrane / ballast — tan gravel ballast, not grey
+    "#8e8d86",
+    "#5f4023",  # gravel ballast over a brick building. R/B 1.83 -> 6.8: this is the
+                # one entry that is unambiguously a warm ROOF, and at this viewing
+                # angle roofs are what the frame is made of.
+    "#302f2f",  # dark bitumen, freshly done — neutral-cool
 )
 
 
@@ -732,6 +847,15 @@ def _haze_wrap(nt, shader_out, frame: CityFrame, strength: float):
     # filled in by haze that should not be there. 0.55 is the ratio of downward to
     # horizontal airlight for a hazy day, and it is the difference between a city
     # you can read the roofs of and a pale card behind the glass.
+    #
+    # AND IT IS NOT WHAT DESATURATES THE OUTLOOK. That was the leading suspect for
+    # the monochrome city (see the palette note) and it is measured innocent: on
+    # eye-living, roofscape through the uncurtained pane (demo-openloft, x354-450,
+    # y338-410, 8x6 blocks), dropping this from 0.55 to 0.40 to 0.25 moved the R-B
+    # spread only sd 6.3 -> 6.8 -> 7.3 and the median luminance 184 -> 182 -> 180.
+    # At the 200-1000 ft depths that fill this view the haze mix is 4-19%, so the
+    # airlight tints the far skyline and does essentially nothing to the near roofs.
+    # The chroma had to come out of the albedos, and it did.
     emit.inputs["Strength"].default_value = strength * AIRLIGHT_DEPRESSION
     nt.links.new(sky.outputs["Color"], emit.inputs["Color"])
 

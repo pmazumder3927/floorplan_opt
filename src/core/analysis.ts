@@ -746,10 +746,21 @@ function requiredRoutes(plan: FloorPlan, g: Grid, entries: Entry[]): Route[] {
 /** 55" TV, in inches. Real diagonals are printed on the box; guess if not. */
 function tvDiagonalInches(def: FurnitureDef): number {
   const hay = [def.name, def.id, def.source ?? '', ...(def.tags ?? [])].join(' ');
-  // 24"-199": the top of the range is for PROJECTION screens, which really are
-  // sold at 120" and 150" — a TV never gets near it, so widening the pattern
-  // costs nothing and stops a 120" screen silently falling to the hypot guess.
-  const m = hay.match(/\b(2[4-9]|[3-9]\d|1\d\d)\s*(?:"|in\b|inch)/i);
+  /*
+   * 24"-199": the top of the range is for PROJECTION screens, which really are
+   * sold at 120" and 150" — a TV never gets near it.
+   *
+   * THE LOOKBEHIND IS NOT OPTIONAL, and it was a real bug. `\b` matches between
+   * a decimal point and the digits after it, so `7.44"` in the Dell U2725QE's
+   * source string ("with stand 24.11" W x 7.44" D") matched as a 44-inch
+   * diagonal — and this function then handed a desk monitor a living-room
+   * viewing distance, producing a `tv-distance` warning on a correctly placed
+   * 27" panel 2 ft from the user's face. One layout worked around it with
+   * `ignoreAnalysis` and another by picking a different monitor; both were
+   * treating the symptom. Rejecting a match preceded by a digit or a point is
+   * the fix: a real diagonal is never the fractional part of another number.
+   */
+  const m = hay.match(/(?<![\d.])(2[4-9]|[3-9]\d|1\d\d)\s*(?:"|in\b|inch)/i);
   if (m) return parseFloat(m[1]);
   // Fallback: a panel is measured corner to corner, and for a bare screen the
   // catalog w/h are close enough to the panel size.
@@ -1141,6 +1152,21 @@ export function analyzeLayout(plan: FloorPlan, layout: Layout): AnalysisResult {
   // ---- warn: TV viewing distance ---------------------------------------
   for (const e of entries) {
     if (e.def.kind !== 'tv') continue;
+    /*
+     * A DESK MONITOR IS NOT A TELEVISION. The catalog files monitors under `tv`
+     * because they are the same object to the renderer, but CLEARANCE.tvViewingMin
+     * / Max are living-room multipliers (1.2 to 2.5 feet of distance per inch of
+     * diagonal) and a monitor's viewing distance is set by the depth of the desk
+     * it stands on, not by where a sofa is. Applied to a 27" panel the rule
+     * demands the user sit 2'-9" to 5'-8" away, which is not how anyone works.
+     *
+     * Two layouts had already worked around this — one with `ignoreAnalysis`, one
+     * by substituting a different monitor — which is the signal that the check was
+     * wrong rather than the layouts. Skipping anything the catalog tags 'monitor'
+     * is the honest fix, and it means a layout no longer has to opt a correctly
+     * placed piece out of analysis to silence a rule that should not see it.
+     */
+    if ((e.def.tags ?? []).includes('monitor')) continue;
     const diag = tvDiagonalInches(e.def);
     const min = CLEARANCE.tvViewingMin * diag;
     const max = CLEARANCE.tvViewingMax * diag;

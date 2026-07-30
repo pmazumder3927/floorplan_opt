@@ -990,6 +990,23 @@ def parse_args(argv: list[str]) -> Args:
     # compensate the same crop measures L ~163 / p95 ~208 / 0% clipped.
     # Pass --sun-intensity 1.0 for a sunny hero frame; it is a creative choice, and
     # the photo does not support it as the default.
+    #
+    # RE-TESTED as a candidate fix for the dark soffit, and it is NOT one. The theory
+    # was that a 4% sun plus a 2.2x dome has no source of small angular size, so the
+    # floor smears where the photo's mirrors, and that starves the ceiling. Swept on
+    # eye-living at 128 spp (sun/sky, then soffit L / east-wall L / floor R-B /
+    # % of the floor clipped):
+    #     0.04 / 2.2 ... 115 / 135 / -10 / 0.00%     <- the default
+    #     0.25 / 2.0 ... 151 / 168 /  -2 / 0.00%
+    #     0.60 / 1.5 ... 165 / 179 /  +1 / 0.31%
+    #     1.00 / 1.0 ... 166 / 179 /  +4 / 1.62%
+    #     1.00 / 2.2 ... 192 / 194 /  +2 / 4.61%
+    # The soffit/wall RATIO does improve (0.85 -> 0.99), but only because everything
+    # rises into AgX's shoulder, and it costs the two things the photograph is
+    # unambiguous about: the floor clips (the photo clips nothing anywhere) and every
+    # near-glass surface goes WARM (R-B -10 -> +4) where the photo goes strongly cool.
+    # The sun is not what is missing. See the block in world.py's _ground_bounce for
+    # where the soffit deficit actually lives.
     p.add_argument('--sun-intensity', type=float, default=0.04,
                    help='multiplier on the sun DISC. 1.0 = clear sky; default matches the photo.')
     p.add_argument('--sky-strength', type=float, default=2.2,
