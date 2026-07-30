@@ -24,6 +24,18 @@
  * CHEAPNESS RULES (headless swiftshader): no post-processing, ONE shadow-casting
  * directional light with a 2048 map, no shadow casting on point lights,
  * primitives only, and geometry/material reuse via ./furniture + ./materials.
+ *
+ * WHAT THE REFERENCE PHOTO CHANGES (data/reference/unit-photo-living-west.jpeg)
+ *   - The west openings are FLOOR-TO-CEILING glazed assemblies in black anodised
+ *     aluminium, not punched windows: plan.ts now gives them sill = 0 and
+ *     head = ceiling - 4". So a window with sill ~= 0 goes down the
+ *     addGlazedAssembly() path (frame + mullions + one operable leaf + inset
+ *     glass, set back into the outer third of the wall so the jamb reveal
+ *     reads). Anything with a real sill keeps the old punched-window path.
+ *   - The ceiling is an EXPOSED CONCRETE soffit with small recessed circular
+ *     downlights, so opts.showCeiling uses the concrete material and scatters
+ *     4" downlights over the living area plus one over the kitchen run.
+ *   - There is effectively NO baseboard: what is left here is a minimal reveal.
  */
 
 import * as THREE from 'three';
@@ -51,11 +63,36 @@ import {
 import { getDef } from '@/core/catalog';
 import { MAT, matFor } from './materials';
 import { addBar, addBox, addCyl, addPanels, addPlanBox, addSphere, buildFurniture } from './furniture';
+import type { PartOpts } from './furniture';
 
-/** Mid-height of a typical window opening here (sill 2'-6", head 7'-0"). */
+/**
+ * Fallback aim height for a camera pointed at the glazing, used only when a plan
+ * declares no windows at all. It is the mid-height of a conventional punched
+ * window (sill 2'-6", head 7'-0"); the real number for THIS unit comes from the
+ * openings themselves via glazingMidHeight().
+ */
 const WIN_MID_H = FTIN(4, 9);
 
 const D2R = Math.PI / 180;
+
+/**
+ * The exposed structural soffit.
+ *
+ * materials.ts is gaining a MAT.concrete for the board-formed slab that the
+ * reference photo shows overhead. That module is being rewritten in parallel with
+ * this one, so the material is resolved BY NAME at runtime — `MAT.concrete` when
+ * it exists, else `MAT.ceiling`, else a local grey — which keeps this file
+ * compiling and rendering against either version of materials.ts.
+ */
+const MAT_BY_NAME = MAT as unknown as Record<string, THREE.MeshStandardMaterial | undefined>;
+function soffitMaterial(): THREE.MeshStandardMaterial {
+  return (
+    MAT_BY_NAME.concrete ??
+    MAT_BY_NAME.ceiling ??
+    // Fair-faced grey concrete: albedo ~#b8b6b2, high roughness, not metal.
+    matFor('#b8b6b2', { roughness: 0.88, metalness: 0.02, name: 'soffit-concrete' })
+  );
+}
 
 // ---------------------------------------------------------------- small helpers
 
@@ -178,7 +215,14 @@ function wallPoint(f: WallFrame, s: number, v: number): Vec2 {
   ];
 }
 
-/** Add a box spanning s0..s1, y0..y1, v0..v1 in a wall's local frame. */
+/**
+ * Add a box spanning s0..s1, y0..y1, v0..v1 in a wall's local frame.
+ *
+ * Degenerate spans are DROPPED, not clamped: that is what lets the caller write
+ * the wall's interval arithmetic without special-casing every collapse (a header
+ * over a head-at-ceiling opening, an apron under a sill-at-floor opening, a
+ * reveal in a wall too thin to have one).
+ */
 function wallBox(
   parent: THREE.Object3D,
   mat: THREE.Material,
@@ -190,13 +234,14 @@ function wallBox(
   v0: number,
   v1: number,
   name: string,
+  opt: PartOpts = {},
 ): void {
   const len = s1 - s0;
   const h = y1 - y0;
   const thick = Math.abs(v1 - v0);
   if (len <= 1e-4 || h <= 1e-4 || thick <= 1e-4) return;
   const c = wallPoint(f, (s0 + s1) / 2, (v0 + v1) / 2);
-  addPlanBox(parent, mat, len, h, thick, c, f.dir, (y0 + y1) / 2, { name });
+  addPlanBox(parent, mat, len, h, thick, c, f.dir, (y0 + y1) / 2, { ...opt, name });
 }
 
 // ---------------------------------------------------------------- walls
@@ -216,9 +261,14 @@ interface WallOpening {
  *
  *   PIERS   full-height boxes on the gaps  [cursor, o.s0]  and finally
  *           [cursor, L]. `cursor` starts at 0 and jumps to each o.s1.
- *   HEADERS a box over each opening, from o.head up to the top of the wall.
- *   APRONS  a box under each opening, from 0 up to o.sill (windows only;
- *           doors and passages have sill = 0 so the box collapses to nothing).
+ *   HEADERS a box over each opening, from o.head up to the top of the wall —
+ *           EMITTED ONLY when there is real wall left above the head. The west
+ *           glazing heads at ceiling - 4", so that strip is 4" of real wall; an
+ *           opening whose head reaches (or is cut above) `top` gets nothing.
+ *   APRONS  a box under each opening, from 0 up to o.sill — EMITTED ONLY when
+ *           the opening really has a sill. Doors, passages and the corrected
+ *           full-height glazing all sit on the slab (sill = 0), so there is no
+ *           apron below the glass at all.
  *
  * Everything is clamped to `top` (= wall.height, or opts.wallCutHeight when the
  * caller wants to see inside), so a cut wall just loses its headers.
@@ -230,20 +280,68 @@ function addWall(root: THREE.Object3D, plan: FloorPlan, w: Wall, top: number, cu
   g.name = `wall:${w.id}`;
   root.add(g);
 
-  const ops: WallOpening[] = plan.openings
-    .filter((o) => o.wall === w.id)
-    .map((o) => ({ o, s0: Math.max(0, o.offset), s1: Math.min(L, o.offset + o.width) }))
+  /**
+   * The intervals to subtract. Full-height glazing is subtracted PER BAY, not per
+   * opening: the 4" gaps between lites of one assembly are mullions, so emitting
+   * a full-height plaster pier there would split one glazed bay into two framed
+   * slots. Everything else (doors, passages, punched windows) is subtracted as
+   * itself.
+   */
+  interface Cut {
+    id: string;
+    s0: number;
+    s1: number;
+    head: number;
+    sill: number;
+  }
+
+  const bays = glazingBays(plan, w, L);
+  const glazed = new Set(bays.flatMap((b) => b.members.map((m) => m.id)));
+  const ops: Cut[] = [
+    ...bays.map((b) => ({
+      id: b.members[0]!.id,
+      s0: b.s0,
+      s1: b.s1,
+      head: b.head,
+      sill: b.sill,
+    })),
+    ...plan.openings
+      .filter((o) => o.wall === w.id && !glazed.has(o.id))
+      .map((o) => ({
+        id: o.id,
+        s0: Math.max(0, o.offset),
+        s1: Math.min(L, o.offset + o.width),
+        head: o.head,
+        sill: o.sill,
+      })),
+  ]
     .filter((x) => x.s1 > x.s0)
     .sort((a, b) => a.s0 - b.s0);
 
   let cursor = 0;
-  for (const { o, s0, s1 } of ops) {
+  for (const o of ops) {
+    const { s0, s1 } = o;
     // PIER between the previous opening (or the wall start) and this one
     if (s0 > cursor) wallBox(g, MAT.wall, f, cursor, s0, 0, top, f.vLo, f.vHi, `wall:${w.id}/pier`);
-    // HEADER above the opening
-    if (o.head < top) wallBox(g, MAT.wall, f, s0, s1, o.head, top, f.vLo, f.vHi, `wall:${w.id}/header:${o.id}`);
-    // APRON below a window sill
-    if (o.sill > 0) wallBox(g, MAT.wall, f, s0, s1, 0, Math.min(o.sill, top), f.vLo, f.vHi, `wall:${w.id}/apron:${o.id}`);
+    /**
+     * HEADER above the opening. `head` is clamped to `top` first, so an opening
+     * whose head is AT the top of the wall (head-at-ceiling glazing) or ABOVE it
+     * (sliced by opts.wallCutHeight) yields headerH <= 0 and the box collapses to
+     * nothing instead of being emitted zero- or negative-height.
+     */
+    const headerH = top - Math.min(o.head, top);
+    if (headerH > 0.01) {
+      wallBox(g, MAT.wall, f, s0, s1, Math.min(o.head, top), top, f.vLo, f.vHi, `wall:${w.id}/header:${o.id}`);
+    }
+    /**
+     * APRON below a window sill — CONDITIONAL, because with sill = 0 there is no
+     * apron below the glass at all. The 0.01' (1/8") epsilon also stops a
+     * rounding-noise sill from emitting a sliver box that would z-fight the
+     * glazing track sitting on the slab.
+     */
+    if (o.sill > 0.01) {
+      wallBox(g, MAT.wall, f, s0, s1, 0, Math.min(o.sill, top), f.vLo, f.vHi, `wall:${w.id}/apron:${o.id}`);
+    }
     cursor = Math.max(cursor, s1);
   }
   // final PIER out to the end of the wall
@@ -257,12 +355,21 @@ function addWall(root: THREE.Object3D, plan: FloorPlan, w: Wall, top: number, cu
     wallBox(g, MAT.wallTop, f, 0, L, top - capT, top + 0.005, f.vLo + 0.005, f.vHi - 0.005, `wall:${w.id}/cut-cap`);
   }
 
-  // Baseboard on every room-facing face, broken only by FLOOR-level openings
-  // (doors/passages). Window aprons run behind their baseboard, so windows do
-  // not interrupt it.
-  const BASE_H = IN(4.5);
-  const BASE_T = IN(0.625);
-  const floorOps = ops.filter((x) => x.o.sill <= 0.05);
+  /**
+   * BASEBOARD — a MINIMAL REVEAL, not a moulding.
+   *
+   * The reference photo shows essentially no base: where the wall meets the dark
+   * plank floor there is at most a thin flush reveal, and at the glazing there is
+   * nothing at all (the aluminium track lands straight on the slab). So this is
+   * 2 1/2" tall and only 1/4" proud — enough to catch a shadow line and hide the
+   * floor/wall joint, far too slim to read as trim.
+   *
+   * It breaks across every FLOOR-level opening (sill <= 0.05'), which now
+   * includes the full-height glazing, so the glass runs to the floor uninterrupted.
+   */
+  const BASE_H = IN(2.5);
+  const BASE_T = IN(0.25);
+  const floorOps = ops.filter((x) => x.sill <= 0.05);
   for (const face of f.faces) {
     let c = 0;
     const runs: [number, number][] = [];
@@ -278,12 +385,163 @@ function addWall(root: THREE.Object3D, plan: FloorPlan, w: Wall, top: number, cu
   }
 }
 
+// ------------------------------------------------ re-entrant corner fills
+
+/**
+ * RE-ENTRANT CORNER FILLS — the 3D twin of the poché corner clean-up in
+ * render2d/svg.ts.
+ *
+ * Every wall solid stops dead at its own endpoint. At a CONVEX corner the two
+ * solids overlap and the corner is made for free; at a RE-ENTRANT (inside)
+ * corner they only touch at a point and leave an empty square the size of the
+ * two thicknesses. In the 2D drawing that is a notch in the poché. In 3D it is
+ * a FULL-HEIGHT HOLE STRAIGHT THROUGH THE BUILDING ENVELOPE:
+ *
+ *   north step  W2 ends at (10.53, 2.59), W3 starts there   -> 7 1/2" x 7 1/2"
+ *   east step   W4 ends at (26.90, 11.65), W5 starts there  -> 7 1/2" x 7 1/2"
+ *                                            (P3 fills part of it)
+ *   south step  W7 ends at (17.35, 18.99), W8 starts there  -> 7 1/2" x 7 1/2"
+ *
+ * A flood fill at 5'-0" AFF walks from the street into the flat through the
+ * first two, and the path-traced top view shows daylight down them. So they get
+ * filled with a plain box each.
+ *
+ * The test for "is this corner already made" is not a turn-direction rule but
+ * the thing itself: build the candidate square and ask whether either wall's
+ * solid already contains its centre. That is assumption-free — it stays correct
+ * for a wall list in any order, any winding, and either `interiorSide`.
+ *
+ * The square is then trimmed against every OTHER wall solid (the east step is
+ * half-filled by partition P3) so a fill never lands inside existing geometry:
+ * overlapping coplanar faces are exactly what z-fights.
+ */
+interface PlanRect {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}
+
+const RECT_EPS = 1e-4;
+
+/** Plan-space AABB of a wall's solid, or null if the wall is not axis-aligned. */
+function wallRect(w: Wall): PlanRect | null {
+  const dx = w.end[0] - w.start[0];
+  const dy = w.end[1] - w.start[1];
+  if (Math.abs(dx) > RECT_EPS && Math.abs(dy) > RECT_EPS) return null;
+  const f = wallFrame(w);
+  const xs: number[] = [];
+  const ys: number[] = [];
+  for (const s of [0, f.length]) {
+    for (const v of [f.vLo, f.vHi]) {
+      const p = wallPoint(f, s, v);
+      xs.push(p[0]);
+      ys.push(p[1]);
+    }
+  }
+  return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+}
+
+function rectHas(r: PlanRect, p: Vec2): boolean {
+  return p[0] > r.x0 + RECT_EPS && p[0] < r.x1 - RECT_EPS && p[1] > r.y0 + RECT_EPS && p[1] < r.y1 - RECT_EPS;
+}
+
+/** `a` minus `b`, as up to four axis-aligned pieces. */
+function rectSubtract(a: PlanRect, b: PlanRect): PlanRect[] {
+  const ix0 = Math.max(a.x0, b.x0);
+  const iy0 = Math.max(a.y0, b.y0);
+  const ix1 = Math.min(a.x1, b.x1);
+  const iy1 = Math.min(a.y1, b.y1);
+  if (ix1 - ix0 <= RECT_EPS || iy1 - iy0 <= RECT_EPS) return [a]; // no real overlap
+  const out: PlanRect[] = [];
+  if (ix0 - a.x0 > RECT_EPS) out.push({ x0: a.x0, y0: a.y0, x1: ix0, y1: a.y1 });
+  if (a.x1 - ix1 > RECT_EPS) out.push({ x0: ix1, y0: a.y0, x1: a.x1, y1: a.y1 });
+  if (iy0 - a.y0 > RECT_EPS) out.push({ x0: ix0, y0: a.y0, x1: ix1, y1: iy0 });
+  if (a.y1 - iy1 > RECT_EPS) out.push({ x0: ix0, y0: iy1, x1: ix1, y1: a.y1 });
+  return out;
+}
+
+/** Inward unit normal of a wall (the side the interior is on). */
+function inwardNormal(w: Wall): Vec2 {
+  const ax = wallAxis(w);
+  const s = (w.interiorSide ?? 'right') === 'right' ? 1 : -1;
+  return [ax.normal[0] * s, ax.normal[1] * s];
+}
+
+function addCornerFills(root: THREE.Object3D, plan: FloorPlan, top: number, cut: boolean): void {
+  const ext = plan.walls.filter((w) => w.kind === 'exterior');
+  const rects = new Map<string, PlanRect>();
+  for (const w of plan.walls) {
+    const r = wallRect(w);
+    if (r) rects.set(w.id, r);
+  }
+  const g = new THREE.Group();
+  g.name = 'wall:corner-fills';
+
+  for (const a of ext) {
+    for (const b of ext) {
+      if (a === b) continue;
+      if (Math.hypot(a.end[0] - b.start[0], a.end[1] - b.start[1]) > 1e-3) continue;
+      const ra = rects.get(a.id);
+      const rb = rects.get(b.id);
+      if (!ra || !rb) continue; // a non-axis-aligned wall: leave the corner alone
+      const ia = inwardNormal(a);
+      const ib = inwardNormal(b);
+      const p = a.end;
+      const q: Vec2 = [
+        p[0] + ia[0] * a.thickness + ib[0] * b.thickness,
+        p[1] + ia[1] * a.thickness + ib[1] * b.thickness,
+      ];
+      const fill: PlanRect = {
+        x0: Math.min(p[0], q[0]),
+        y0: Math.min(p[1], q[1]),
+        x1: Math.max(p[0], q[0]),
+        y1: Math.max(p[1], q[1]),
+      };
+      if (fill.x1 - fill.x0 <= RECT_EPS || fill.y1 - fill.y0 <= RECT_EPS) continue;
+      const mid: Vec2 = [(fill.x0 + fill.x1) / 2, (fill.y0 + fill.y1) / 2];
+      // Already made? A convex corner's two solids overlap right here.
+      if (rectHas(ra, mid) || rectHas(rb, mid)) continue;
+
+      // Trim against everything else so no fill overlaps existing geometry.
+      let pieces: PlanRect[] = [fill];
+      for (const [id, r] of rects) {
+        if (id === a.id || id === b.id) continue;
+        pieces = pieces.flatMap((piece) => rectSubtract(piece, r));
+      }
+      for (const r of pieces) {
+        const w = r.x1 - r.x0;
+        const d = r.y1 - r.y0;
+        if (w <= RECT_EPS || d <= RECT_EPS) continue;
+        const c: Vec2 = [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2];
+        addPlanBox(g, MAT.wall, w, top, d, c, [1, 0], top / 2, {
+          name: `wall:corner-fill:${a.id}-${b.id}`,
+        });
+        if (cut) {
+          const capT = 0.05;
+          addPlanBox(g, MAT.wallTop, w - 0.01, capT + 0.005, d - 0.01, c, [1, 0], top - capT / 2 + 0.0025, {
+            name: `wall:corner-fill:${a.id}-${b.id}/cut-cap`,
+          });
+        }
+      }
+    }
+  }
+  if (g.children.length) root.add(g);
+}
+
+/** A window that starts on the slab is a full-height glazed assembly, not a punched hole. */
+function isFullHeightGlazing(o: Opening): boolean {
+  return o.kind === 'window' && o.sill <= 0.01;
+}
+
 /**
  * Casing (trim) + glazing + sill for one opening.
- *   - casing: 3" flat stock, 1/2" proud of each room-facing face, on both jambs
- *     and across the head.
- *   - glass: a single pane on the wall CENTRE plane.
- *   - sill: a slab at o.sill projecting 1 1/2" into the room, with a 1" apron.
+ *
+ * TWO PATHS:
+ *   sill  > 0  PUNCHED WINDOW (and every door/passage): 3" flat casing 1/2" proud
+ *              of each room face, a single pane on the wall centre plane, a stool
+ *              at the sill. Kept working for any future plan.
+ *   sill == 0  FULL-HEIGHT GLAZING: a real assembly, see addGlazedAssembly().
  */
 function addOpeningDetails(root: THREE.Object3D, plan: FloorPlan, o: Opening, top: number): void {
   const w = plan.walls.find((x) => x.id === o.wall);
@@ -295,6 +553,19 @@ function addOpeningDetails(root: THREE.Object3D, plan: FloorPlan, o: Opening, to
   if (s1 <= s0) return;
   const head = Math.min(o.head, top);
   if (head <= o.sill + 0.05) return; // fully swallowed by a wall cut
+
+  if (isFullHeightGlazing(o)) {
+    /**
+     * One assembly per BAY, not per opening. The bay's first member builds it
+     * across the whole merged span and every other member returns silently,
+     * otherwise each lite would get its own perimeter frame and plaster return
+     * where the building has only a slim mullion.
+     */
+    const bay = glazingBays(plan, w, L).find((b) => b.members.some((m) => m.id === o.id));
+    if (!bay || bay.members[0]!.id !== o.id) return;
+    addGlazedAssembly(root, plan, w, f, o, bay.s0, bay.s1, top, bay.joints);
+    return;
+  }
 
   const g = new THREE.Group();
   g.name = `opening:${o.id}`;
@@ -349,6 +620,307 @@ function addOpeningDetails(root: THREE.Object3D, plan: FloorPlan, o: Opening, to
       cast: false,
     });
   }
+}
+
+// ------------------------------------------------- full-height glazed assembly
+
+/**
+ * Dimensions of the glazed assembly, from the reference photo cross-checked
+ * against real slim-profile aluminium slider stock (Milgard AX550 / Fleetwood
+ * 3070-class: 2" faces, ~3" deep frames, 1" IGUs, 4"-6" leaf bottom rails).
+ */
+const GLZ = {
+  /** Perimeter frame FACE width — "slim" is the whole point of this system. */
+  FACE: IN(2),
+  /** Frame depth front-to-back (a thermally broken 2 x 3 tube). */
+  DEPTH: IN(3),
+  /**
+   * How far the frame is set back from the EXTERIOR face of the wall.
+   *
+   * 3 1/2" in a 7" wall lands the frame's ROOM face about 1/2" behind the room
+   * face of the wall — i.e. very nearly flush, which is what the photo shows.
+   * At the old 1" the frame sat in the outer third and left a 3" white plaster
+   * return around every opening; that bright outline was the most CAD-looking
+   * thing left in the render. Clamped below against the real wall thickness, so
+   * a thinner future wall still cannot push the frame out of its own faces.
+   */
+  SETBACK: IN(3.5),
+  /** Plaster return lining the hole from the room face back to the frame. */
+  LINER: IN(0.75),
+  /** Intermediate vertical mullion — a shade beefier than the perimeter face. */
+  MULLION: IN(2.5),
+  /** Target daylight panel width; panel count = round(glass width / this). */
+  PANEL: FTIN(3, 3),
+  /** 1" double-glazed IGU. */
+  GLASS: IN(1),
+  /** Operable leaf: stile width, bottom rail, top rail. */
+  STILE: IN(1.75),
+  RAIL: IN(6),
+  TOP_RAIL: IN(2.25),
+} as const;
+
+/**
+ * A gap between two full-height openings up to this wide is a MULLION inside one
+ * glazed assembly, not a structural pier.
+ *
+ * This is the difference between the drawing and the building. The traced plan
+ * lists four separate openings on the west wall, but the gaps between them are
+ * 4", 16" and 4" — and a 4" gap is not a piece of wall you could build, it is the
+ * mullion between two lites of one assembly. Only the 16" gap is real structure.
+ * So the west wall is really TWO glazed bays (5'-9" and 6'-8") split by a single
+ * 1'-4" pier, which is exactly what the photograph shows. Modelling the 4" gaps
+ * as wall gave four narrow framed slots instead.
+ */
+const MULLION_GAP_MAX = IN(6);
+
+interface GlazingBay {
+  members: Opening[];
+  /** span along the wall, in wallFrame S coordinates */
+  s0: number;
+  s1: number;
+  /** centres of the internal mullion gaps, in S coordinates */
+  joints: number[];
+  head: number;
+  sill: number;
+}
+
+/**
+ * Group the full-height glazing on one wall into buildable bays by merging any
+ * openings separated by less than a real pier. `L` is the wall's frame length.
+ */
+function glazingBays(plan: FloorPlan, w: Wall, L: number): GlazingBay[] {
+  const ops = plan.openings
+    .filter((o) => o.wall === w.id && isFullHeightGlazing(o))
+    .map((o) => ({ o, s0: Math.max(0, o.offset), s1: Math.min(L, o.offset + o.width) }))
+    .filter((x) => x.s1 > x.s0)
+    .sort((a, b) => a.s0 - b.s0);
+
+  const bays: GlazingBay[] = [];
+  for (const cur of ops) {
+    const last = bays[bays.length - 1];
+    if (last && cur.s0 - last.s1 <= MULLION_GAP_MAX + 1e-9) {
+      last.joints.push((last.s1 + cur.s0) / 2);
+      last.s1 = Math.max(last.s1, cur.s1);
+      last.members.push(cur.o);
+      last.head = Math.max(last.head, cur.o.head);
+      last.sill = Math.min(last.sill, cur.o.sill);
+    } else {
+      bays.push({
+        members: [cur.o],
+        s0: cur.s0,
+        s1: cur.s1,
+        joints: [],
+        head: cur.o.head,
+        sill: cur.o.sill,
+      });
+    }
+  }
+  return bays;
+}
+
+/**
+ * Which opening on a wall carries the OPERABLE (sliding) leaf.
+ *
+ * In the photo exactly one panel of the run has a rail across it, and it is the
+ * inner panel of the southern pair — the one next to the wide structural pier,
+ * i.e. the panel closest to the middle of the glazed run. That is also how these
+ * assemblies are really laid out: the slider lands beside the pier so the fixed
+ * lites take the ends of the run. So: nearest-to-mid-run wins, one per wall.
+ */
+function isOperableOpening(plan: FloorPlan, w: Wall, o: Opening, L: number): boolean {
+  const sibs = plan.openings.filter((x) => x.wall === o.wall && isFullHeightGlazing(x));
+  if (!sibs.length) return false;
+  const lo = Math.min(...sibs.map((x) => x.offset));
+  const hi = Math.max(...sibs.map((x) => x.offset + x.width));
+  const mid = (lo + hi) / 2;
+  let best = sibs[0];
+  let bestD = Infinity;
+  for (const x of sibs) {
+    const d = Math.abs(x.offset + x.width / 2 - mid);
+    if (d < bestD - 1e-9) {
+      bestD = d;
+      best = x;
+    }
+  }
+  /**
+   * Answer for the BAY, not the lite. Assemblies are built once per bay by the
+   * bay's first member, and the lite nearest the middle of the run is usually NOT
+   * that first member — asking about the lite directly returns false for every
+   * bay lead and the run silently loses its sliding leaf altogether. So: the bay
+   * that contains the middle-most lite is the operable one, and its lead builds
+   * the leaf (in the panel nearest the run's middle, i.e. beside the pier).
+   */
+  const bay = glazingBays(plan, w, L).find((b) => b.members.some((m) => m.id === best!.id));
+  return bay ? bay.members[0]!.id === o.id : best!.id === o.id;
+}
+
+/**
+ * A REAL full-height glazed assembly: black anodised aluminium perimeter frame,
+ * vertical mullions at ~3'-3" centres, one operable leaf with a bottom rail, glass
+ * inset into the frame, and a plaster reveal returning into the wall thickness.
+ *
+ * DEPTH IS THE WHOLE POINT. The old code put a single pane on the wall's CENTRE
+ * plane and then covered the jambs with applied casing, so the opening read as a
+ * sticker. Here the frame is pushed into the OUTER third of the wall
+ * (SETBACK 1" in from the exterior face, 3" deep), which leaves ~3" of wall depth
+ * between the room face and the frame. That depth is lined with a plaster return
+ * (LINER) on both jambs and across the head, exactly as the photo shows, so from
+ * inside you see: white reveal returning away from you, then the slim black frame,
+ * then glass sitting a further ~1 1/2" back. No casing anywhere.
+ *
+ * `v` bookkeeping: wallFrame() puts the solid in [vLo, vHi] with the room-facing
+ * face at faces[0].v, so depths are measured INWARD FROM THE EXTERIOR FACE via
+ * depthAt(); that works for interiorSide 'left' and 'right' and for a partition
+ * without any per-case branching.
+ *
+ * SHADOWS: every member here is cast:false. A 2" section is well under one texel
+ * of the single 2048 shadow map spread over a 30' unit, so its "shadow" would be
+ * pure acne, and the sun must pour through the opening unobstructed.
+ */
+function addGlazedAssembly(
+  root: THREE.Object3D,
+  plan: FloorPlan,
+  w: Wall,
+  f: WallFrame,
+  o: Opening,
+  s0: number,
+  s1: number,
+  top: number,
+  joints: number[] = [],
+): void {
+  const n = `glazing:${o.id}`;
+  const g = new THREE.Group();
+  g.name = n;
+  root.add(g);
+  const NO_SHADOW: PartOpts = { cast: false };
+
+  // ---- depth frame: d = 0 at the exterior face, d = tw at the room face
+  const inward = f.faces[0].out;
+  const tw = Math.abs(f.vHi - f.vLo);
+  const vRoom = f.faces[0].v;
+  const vOut = vRoom - inward * tw;
+  const depthAt = (d: number): number => vOut + inward * d;
+
+  // Fit the frame into whatever thickness the wall actually has: this wall is 7",
+  // but a future plan could glaze a 4 1/2" partition, and the frame must never
+  // poke out of either face.
+  const fd = Math.min(GLZ.DEPTH, Math.max(IN(1), tw * 0.5));
+  const sb = Math.min(GLZ.SETBACK, Math.max(0, tw - fd - IN(0.25)));
+  const vf0 = depthAt(sb); // outboard face of the frame
+  const vf1 = depthAt(sb + fd); // room-side face of the frame
+  // Glass sits just outboard of the frame's mid-depth — inset into the frame, so
+  // the frame face casts a shadow line onto the glass instead of being coplanar.
+  const vg0 = depthAt(sb + fd * 0.55 - GLZ.GLASS / 2);
+  const vg1 = depthAt(sb + fd * 0.55 + GLZ.GLASS / 2);
+  // The operable leaf runs on the INBOARD track: its frame occupies the room-side
+  // 55% of the frame depth and its glass is centred in that.
+  const vl0 = depthAt(sb + fd * 0.45);
+  const vl1 = vf1;
+  const vlg0 = depthAt(sb + fd * 0.72 - GLZ.GLASS / 2);
+  const vlg1 = depthAt(sb + fd * 0.72 + GLZ.GLASS / 2);
+
+  // ---- vertical extent. `capped` = opts.wallCutHeight sliced the head off, in
+  // which case there is no head member or head reveal to draw and everything
+  // simply stops at the cut, matching the sectioned wall beside it.
+  const sill = Math.max(0, o.sill);
+  const hi = Math.min(o.head, top);
+  const capped = o.head > top + 1e-6;
+
+  // ---- plaster reveal returning into the wall thickness
+  const lin = Math.min(GLZ.LINER, (s1 - s0) * 0.1);
+  wallBox(g, MAT.wall, f, s0, s0 + lin, sill, hi, vf1, vRoom, `${n}/reveal-jamb`);
+  wallBox(g, MAT.wall, f, s1 - lin, s1, sill, hi, vf1, vRoom, `${n}/reveal-jamb`);
+  if (!capped) wallBox(g, MAT.wall, f, s0, s1, hi - lin, hi, vf1, vRoom, `${n}/reveal-head`);
+
+  // ---- perimeter frame, inside the plaster line
+  const a0 = s0 + lin;
+  const a1 = s1 - lin;
+  if (a1 - a0 <= GLZ.FACE * 2.5) return; // nonsense opening; the reveal alone will do
+  wallBox(g, MAT.metalBlack, f, a0, a0 + GLZ.FACE, sill, hi, vf0, vf1, `${n}/frame-jamb`, NO_SHADOW);
+  wallBox(g, MAT.metalBlack, f, a1 - GLZ.FACE, a1, sill, hi, vf0, vf1, `${n}/frame-jamb`, NO_SHADOW);
+  // The track sits ON the slab — there is no sill and no apron below it.
+  wallBox(g, MAT.metalBlack, f, a0 + GLZ.FACE, a1 - GLZ.FACE, sill, sill + GLZ.FACE, vf0, vf1, `${n}/track`, NO_SHADOW);
+  if (!capped) {
+    wallBox(g, MAT.metalBlack, f, a0 + GLZ.FACE, a1 - GLZ.FACE, hi - GLZ.FACE, hi, vf0, vf1, `${n}/frame-head`, NO_SHADOW);
+  }
+
+  // ---- glazed field, split into panels by vertical mullions
+  const gs0 = a0 + GLZ.FACE;
+  const gs1 = a1 - GLZ.FACE;
+  const gy0 = sill + GLZ.FACE;
+  const gy1 = capped ? hi : hi - GLZ.FACE;
+  if (gy1 - gy0 <= 0.05) return;
+
+  /**
+   * Panel edges. The REAL joints come first — those are the actual mullions
+   * between the merged lites, at their surveyed positions — and only then is each
+   * remaining segment subdivided, and only if it is wider than a comfortable
+   * daylight panel. Splitting purely on a target width would put mullions at
+   * invented positions and miss the ones the building has.
+   */
+  const edges: number[] = [gs0];
+  const stops = [gs0, ...joints.filter((j) => j > gs0 + 0.05 && j < gs1 - 0.05), gs1].sort(
+    (a, b) => a - b,
+  );
+  for (let i = 0; i < stops.length - 1; i++) {
+    const a = stops[i]!;
+    const b = stops[i + 1]!;
+    const sub = Math.max(1, Math.round((b - a) / GLZ.PANEL));
+    for (let k = 1; k <= sub; k++) edges.push(a + ((b - a) * k) / sub);
+  }
+  const panels = edges.length - 1;
+  for (let i = 1; i < panels; i++) {
+    const c = edges[i]!;
+    wallBox(g, MAT.metalBlack, f, c - GLZ.MULLION / 2, c + GLZ.MULLION / 2, gy0, gy1, vf0, vf1, `${n}/mullion`, NO_SHADOW);
+  }
+
+  // Which panel slides: the one nearest the middle of the whole glazed run
+  // (see isOperableOpening). Openings this narrow are one panel each, so in this
+  // plan that resolves to a single sliding leaf in the whole run, as photographed.
+  let opIdx = -1;
+  if (isOperableOpening(plan, w, o, f.length)) {
+    const oCentre = (s0 + s1) / 2;
+    let bestD = Infinity;
+    for (let i = 0; i < panels; i++) {
+      const d = Math.abs((edges[i]! + edges[i + 1]!) / 2 - oCentre);
+      if (d < bestD) {
+        bestD = d;
+        opIdx = i;
+      }
+    }
+  }
+
+  for (let i = 0; i < panels; i++) {
+    const p0 = edges[i]! + (i === 0 ? 0 : GLZ.MULLION / 2);
+    const p1 = edges[i + 1]! - (i === panels - 1 ? 0 : GLZ.MULLION / 2);
+    if (i === opIdx) {
+      /**
+       * OPERABLE LEAF. Stiles + a top rail + the deep BOTTOM RAIL that gives a
+       * slider away in any photograph, all stepped forward onto the inboard track
+       * so the leaf reads as a separate moving panel rather than more frame.
+       *
+       * Stated assumption: the bottom rail is modelled at the BASE of the leaf
+       * where a real slider carries it (4"-6" of extrusion over the track). The
+       * other horizontal line visible part-way up the photographed glass is the
+       * roof parapet BEYOND the glazing, not part of the assembly, so it is not
+       * modelled here.
+       */
+      wallBox(g, MAT.metalBlack, f, p0, p0 + GLZ.STILE, gy0, gy1, vl0, vl1, `${n}/leaf-stile`, NO_SHADOW);
+      wallBox(g, MAT.metalBlack, f, p1 - GLZ.STILE, p1, gy0, gy1, vl0, vl1, `${n}/leaf-stile`, NO_SHADOW);
+      wallBox(g, MAT.metalBlack, f, p0 + GLZ.STILE, p1 - GLZ.STILE, gy0, gy0 + GLZ.RAIL, vl0, vl1, `${n}/leaf-bottom-rail`, NO_SHADOW);
+      wallBox(g, MAT.metalBlack, f, p0 + GLZ.STILE, p1 - GLZ.STILE, gy1 - GLZ.TOP_RAIL, gy1, vl0, vl1, `${n}/leaf-top-rail`, NO_SHADOW);
+      wallBox(g, MAT.glass, f, p0 + GLZ.STILE, p1 - GLZ.STILE, gy0 + GLZ.RAIL, gy1 - GLZ.TOP_RAIL, vlg0, vlg1, `${n}/leaf-glass`, {
+        cast: false,
+        recv: false,
+      });
+    } else {
+      wallBox(g, MAT.glass, f, p0, p1, gy0, gy1, vg0, vg1, `${n}/glass`, { cast: false, recv: false });
+    }
+  }
+
+  g.traverse((node) => {
+    node.userData = { ...node.userData, openingId: o.id, wallId: w.id, glazing: 'full-height' };
+  });
 }
 
 /**
@@ -889,6 +1461,105 @@ function fixVanity(c: FixCtx): void {
   }
 }
 
+// ------------------------------------------------------------ soffit downlights
+
+/**
+ * Recessed circular downlights on the exposed concrete soffit.
+ *
+ * The photo shows small flush discs in the slab — a 4" aperture LED downlight
+ * with a ~5 1/4" trim, which is the standard fitting in this kind of shell. Two
+ * families of position:
+ *
+ *   LIVING  a grid at 6'-6" centres over the living/sleeping zone. 6'-6" is the
+ *           usual spacing for a 4" downlight at a 9' ceiling (roughly 0.7 x the
+ *           mounting height above the work plane). Candidates are dropped unless
+ *           they sit at least 2'-0" clear of the zone boundary inside the zone
+ *           polygon, which keeps lights off the walls and out of the bathroom /
+ *           kitchen / entry without hard-coding any coordinates.
+ *   KITCHEN one over the counter run, 8" forward of its front edge — clear of the
+ *           wall cabinets, throwing onto the working face of the counter.
+ *
+ * NO LIGHT SOURCES ARE ADDED. The whole lighting budget is one shadow-casting sun
+ * plus fills (see addLighting), and this is a daylight render; the fittings are
+ * geometry plus a faint emissive lens so they read as "on" without costing a
+ * single extra per-fragment light.
+ */
+function addDownlights(root: THREE.Object3D, plan: FloorPlan): void {
+  const y = plan.ceilingHeight;
+  const pts: Vec2[] = [];
+
+  const living = plan.zones.find((z) => z.id === 'living') ?? plan.zones.find((z) => z.type === 'living');
+  if (living) {
+    const b = polygonBounds(living.polygon);
+    const SPACING = FTIN(6, 6);
+    const CLEAR = 2.0;
+    const nx = Math.max(1, Math.round(b.w / SPACING));
+    const nz = Math.max(1, Math.round(b.h / SPACING));
+    for (let i = 0; i < nx; i++) {
+      for (let j = 0; j < nz; j++) {
+        const p: Vec2 = [b.min[0] + (b.w * (i + 0.5)) / nx, b.min[1] + (b.h * (j + 0.5)) / nz];
+        if (!pointInPolygon(p, living.polygon)) continue;
+        const probes: Vec2[] = [
+          [p[0] + CLEAR, p[1]],
+          [p[0] - CLEAR, p[1]],
+          [p[0], p[1] + CLEAR],
+          [p[0], p[1] - CLEAR],
+        ];
+        if (probes.every((q) => pointInPolygon(q, living.polygon))) pts.push(p);
+      }
+    }
+  }
+
+  // one over the kitchen counter run
+  const counters = plan.fixtures.filter((fx) => fixKind(fx) === 'counter' && fx.category === 'kitchen');
+  if (counters.length) {
+    const x0 = Math.min(...counters.map((fx) => fx.footprint.x));
+    const x1 = Math.max(...counters.map((fx) => fx.footprint.x + fx.footprint.w));
+    const y0 = Math.min(...counters.map((fx) => fx.footprint.y));
+    const y1 = Math.max(...counters.map((fx) => fx.footprint.y + fx.footprint.h));
+    const front = fixtureFront(plan, counters[0]);
+    // half the run's DEPTH (the extent along `front`), minus 8"
+    const halfDepth = Math.abs(front[0]) >= Math.abs(front[1]) ? (x1 - x0) / 2 : (y1 - y0) / 2;
+    const step = Math.max(0, halfDepth - IN(8));
+    const p: Vec2 = [(x0 + x1) / 2 + front[0] * step, (y0 + y1) / 2 + front[1] * step];
+    if (pointInPolygon(p, plan.interior)) pts.push(p);
+  }
+
+  if (!pts.length) return;
+
+  const APERTURE = IN(4); // 4" aperture LED downlight
+  const TRIM = IN(5.25); // trim ring outside diameter
+  const trimMat = matFor('#d2d0cc', { roughness: 0.5, metalness: 0.05, name: 'downlight-trim' });
+  // Faint on purpose: at ACESFilmic/exposure 1 in daylight these should read as
+  // warm discs, not blown-out white holes in the slab.
+  const lensMat = matFor('#fff7e8', {
+    roughness: 0.9,
+    emissive: '#ffe6bc',
+    emissiveIntensity: 1.15,
+    name: 'downlight-lens',
+  });
+
+  const g = new THREE.Group();
+  g.name = 'downlights';
+  root.add(g);
+  pts.forEach((p, i) => {
+    // Trim: a shallow can whose bottom face hangs 0.6" below the soffit. There is
+    // no CSG here, so a truly recessed can would be invisible behind the slab;
+    // a 0.6" proud trim ring is what a flush fitting actually looks like anyway.
+    addCyl(g, trimMat, { dBottom: TRIM, h: IN(0.6), seg: 16 }, [p[0], y - IN(0.3), p[1]], {
+      name: `downlight:${i}/trim`,
+      cast: false,
+      recv: false,
+    });
+    // Lens, seated up inside the trim so only the disc shows from the room.
+    addCyl(g, lensMat, { dBottom: APERTURE, h: IN(0.45), seg: 16 }, [p[0], y - IN(0.775), p[1]], {
+      name: `downlight:${i}/lens`,
+      cast: false,
+      recv: false,
+    });
+  });
+}
+
 // ---------------------------------------------------------------- lighting
 
 interface LampSpot {
@@ -1027,8 +1698,25 @@ export function buildScene(plan: FloorPlan, layout: Layout | undefined, opts: Re
   ground.name = 'ground';
   root.add(ground);
 
-  // ---- floor: the real L, from plan.interior
-  root.add(polygonSlab(plan.interior, 0, MAT.floor, true, 'floor'));
+  /**
+   * ---- floor: the real L.
+   *
+   * Authored from plan.FOOTPRINT, not plan.interior, for two reasons — one
+   * architectural, one a defect in the traced data:
+   *
+   *   1. a slab runs wall to wall. The walls stand ON it; stopping the deck at
+   *      the room face and butting the wall boxes against its edge puts a seam
+   *      exactly where the baseboard reveal is trying to hide one.
+   *   2. plan.interior is a hand-traced offset of the footprint and at the SOUTH
+   *      STEP it was offset the wrong way round the re-entrant corner: its
+   *      corner sits at (17.95, 19.17), which is 0.108 sq ft OUTSIDE the
+   *      footprint. A slab authored from it hangs a 7" x 2" tab of oak plank
+   *      through the south wall, in mid-air, over the street.
+   *
+   * The visible floor is identical either way — everything outside the room face
+   * is under a wall.
+   */
+  root.add(polygonSlab(plan.footprint, 0, MAT.floor, true, 'floor'));
 
   // ---- bath floor: tile, inset 1/2" inside the bath zone so the edge reads
   const bath = plan.zones.find((z) => z.type === 'bath');
@@ -1036,15 +1724,45 @@ export function buildScene(plan: FloorPlan, layout: Layout | undefined, opts: Re
     root.add(polygonSlab(insetPolygon(bath.polygon, IN(0.5)), 0.012, MAT.tile, true, 'floor:bath-tile'));
   }
 
-  // ---- ceiling (opt-in: it blocks every camera except the eye-level ones)
+  /**
+   * ---- ceiling: an EXPOSED CONCRETE SOFFIT (opt-in: it blocks every camera
+   * except the eye-level ones).
+   *
+   * The photo shows the structural slab left bare — smooth grey concrete, not
+   * painted drywall — with small recessed downlights in it. The material is
+   * resolved by name (MAT.concrete, falling back to MAT.ceiling) because
+   * materials.ts is being written in parallel; see soffitMaterial().
+   */
   if (opts.showCeiling) {
-    root.add(polygonSlab(plan.interior, plan.ceilingHeight, MAT.ceiling, false, 'ceiling'));
+    /**
+     * Footprint, for the same reasons as the floor slab above: the soffit is one
+     * pour running out to the facade, and plan.interior would hang a tab of it
+     * outside the building at the south step.
+     *
+     * Dropped 1/32" so it is never COPLANAR with the tops of the 9'-0" walls it
+     * now covers. Coplanar faces are the one thing a path tracer cannot resolve,
+     * and this pair would be visible together in every overhead frame. Below the
+     * wall top rather than above it, so the wall still seals the joint — a slab
+     * lifted clear would leak sky light round the whole perimeter.
+     */
+    const SOFFIT_SET = IN(1 / 32);
+    root.add(
+      polygonSlab(plan.footprint, plan.ceilingHeight - SOFFIT_SET, soffitMaterial(), false, 'ceiling'),
+    );
+    addDownlights(root, plan);
   }
 
   // ---- walls, openings, doors
   for (const w of plan.walls) {
     const top = cut !== undefined ? Math.min(w.height, cut) : w.height;
     addWall(root, plan, w, top, cut !== undefined && cut < w.height);
+  }
+  // Close the re-entrant corners the per-wall solids leave open. Without this
+  // the north and east steps are full-height holes through the envelope — you
+  // can see the street through them in the path-traced top view.
+  {
+    const wallTop = cut !== undefined ? Math.min(plan.ceilingHeight, cut) : plan.ceilingHeight;
+    addCornerFills(root, plan, wallTop, cut !== undefined && cut < plan.ceilingHeight);
   }
   for (const o of plan.openings) {
     const w = plan.walls.find((x) => x.id === o.wall);
@@ -1115,6 +1833,129 @@ function fitDistance(r: number, fovDeg: number, aspect: number): number {
   return r / Math.min(tanV, tanH);
 }
 
+/**
+ * Exact fit distance for a box, looking from direction `w` (unit vector pointing
+ * from the target TOWARD the camera).
+ *
+ * A sphere fit is badly wasteful here: this building is 30' x 20' x 9', so the
+ * bounding sphere is nearly twice the size of what you actually see and the unit
+ * ends up a small object in a large empty frame. Instead solve the real
+ * constraint per corner.
+ *
+ * With the camera at C = T + d*w, a point P (v = P - T) sits at
+ *   depth  = d - v·w        (distance along the view axis)
+ *   lateral = v·r , v·u     (right / up in camera space)
+ * and must satisfy |v·r| <= tanH * depth and |v·u| <= tanV * depth, i.e.
+ *   d >= v·w + |v·r| / tanH   and   d >= v·w + |v·u| / tanV.
+ * The fit is the max of those bounds over all 8 corners.
+ */
+function fitBoxDistance(
+  corners: THREE.Vector3[],
+  target: THREE.Vector3,
+  w: THREE.Vector3,
+  fovDeg: number,
+  aspect: number,
+): number {
+  const tanV = Math.tan((fovDeg * D2R) / 2);
+  const tanH = tanV * Math.max(0.2, aspect);
+  // Camera basis. w is the view axis; r/u span the image plane.
+  const worldUp = new THREE.Vector3(0, 1, 0);
+  const r = new THREE.Vector3().crossVectors(worldUp, w);
+  if (r.lengthSq() < 1e-9) r.set(1, 0, 0); // straight-down view: pick any right
+  r.normalize();
+  const u = new THREE.Vector3().crossVectors(w, r).normalize();
+
+  let d = 0;
+  const v = new THREE.Vector3();
+  for (const p of corners) {
+    v.subVectors(p, target);
+    const along = v.dot(w);
+    d = Math.max(d, along + Math.abs(v.dot(r)) / tanH, along + Math.abs(v.dot(u)) / tanV);
+  }
+  return d;
+}
+
+/**
+ * Frame the whole unit from view direction `w`, filling the frame.
+ *
+ * Fitting the distance alone is not enough: the massing box does not project
+ * symmetrically about the geometric centre of the plan (an L-shape seen at an
+ * angle never does), so the binding corner hits one edge while the opposite edge
+ * keeps a wide margin. So alternate two cheap steps — fit the distance, then
+ * slide the target sideways in the image plane to centre what is actually
+ * projected — and it settles in a couple of rounds.
+ */
+function frameMassing(
+  plan: FloorPlan,
+  w: THREE.Vector3,
+  fov: number,
+  aspect: number,
+  targetY: number,
+  margin = 1.03,
+): { position: Vec3; target: Vec3 } {
+  const corners = massingCorners(plan);
+  const b = polygonBounds(plan.footprint);
+  const target = new THREE.Vector3(
+    (b.min[0] + b.max[0]) / 2,
+    targetY,
+    (b.min[1] + b.max[1]) / 2,
+  );
+
+  const worldUp = new THREE.Vector3(0, 1, 0);
+  const r = new THREE.Vector3().crossVectors(worldUp, w);
+  if (r.lengthSq() < 1e-9) r.set(1, 0, 0); // straight down: any right vector
+  r.normalize();
+  const u = new THREE.Vector3().crossVectors(w, r).normalize();
+  const tanV = Math.tan((fov * D2R) / 2);
+  const tanH = tanV * Math.max(0.2, aspect);
+
+  let dist = fitBoxDistance(corners, target, w, fov, aspect) * margin;
+  const v = new THREE.Vector3();
+  for (let iter = 0; iter < 4; iter++) {
+    const eye = target.clone().addScaledVector(w, dist);
+    let minx = Infinity;
+    let maxx = -Infinity;
+    let miny = Infinity;
+    let maxy = -Infinity;
+    for (const p of corners) {
+      v.subVectors(p, eye);
+      const depth = -v.dot(w);
+      if (depth <= 1e-6) continue;
+      const x = v.dot(r) / (depth * tanH);
+      const y = v.dot(u) / (depth * tanV);
+      minx = Math.min(minx, x);
+      maxx = Math.max(maxx, x);
+      miny = Math.min(miny, y);
+      maxy = Math.max(maxy, y);
+    }
+    const dx = (minx + maxx) / 2;
+    const dy = (miny + maxy) / 2;
+    if (Math.abs(dx) < 0.002 && Math.abs(dy) < 0.002) break;
+    // Sliding the target by +d along r moves the image by -d, so add to cancel.
+    target.addScaledVector(r, dx * tanH * dist);
+    target.addScaledVector(u, dy * tanV * dist);
+    dist = fitBoxDistance(corners, target, w, fov, aspect) * margin;
+  }
+
+  const eye = target.clone().addScaledVector(w, dist);
+  return {
+    position: [eye.x, eye.y, eye.z],
+    target: [target.x, target.y, target.z],
+  };
+}
+
+/** The 8 corners of the unit's massing box (footprint extent x ceiling height). */
+function massingCorners(plan: FloorPlan): THREE.Vector3[] {
+  const b = polygonBounds(plan.footprint);
+  const out: THREE.Vector3[] = [];
+  for (const x of [b.min[0], b.max[0]]) {
+    for (const y of [0, plan.ceilingHeight]) {
+      for (const z of [b.min[1], b.max[1]]) out.push(new THREE.Vector3(x, y, z));
+    }
+  }
+  return out;
+}
+
 /** Centers of the WEST-wall windows (the unit's only glazing). */
 function westWindows(plan: FloorPlan): Vec2[] {
   const ib = polygonBounds(plan.interior);
@@ -1129,6 +1970,22 @@ function westWindows(plan: FloorPlan): Vec2[] {
     }
   }
   return out;
+}
+
+/**
+ * Mid-height of the actual glazing, for cameras that aim at it.
+ *
+ * With the plan corrected to full height (sill 0, head = ceiling - 4") this is
+ * ~4'-4" instead of the 4'-9" a 2'-6"/7'-0" punched window gave, so the eye-level
+ * shot now looks at the middle of the glass rather than above it. Derived from the
+ * openings so it stays right if the plan changes; WIN_MID_H is only the no-windows
+ * fallback. This does NOT touch frameMassing/fitBoxDistance.
+ */
+function glazingMidHeight(plan: FloorPlan): number {
+  const wins = plan.openings.filter((o) => o.kind === 'window');
+  if (!wins.length) return WIN_MID_H;
+  const sum = wins.reduce((s, o) => s + (Math.max(0, o.sill) + Math.min(o.head, plan.ceilingHeight)) / 2, 0);
+  return sum / wins.length;
 }
 
 function meanPoint(pts: Vec2[], fallback: Vec2): Vec2 {
@@ -1161,10 +2018,18 @@ export function cameraFor(preset: CameraPreset, plan: FloorPlan, aspect: number)
       // A 22 deg fov is near-orthographic at this distance: the walls barely
       // splay. Screen vertical = plan y, screen horizontal = plan x, because
       // the caller uses up = (0,0,-1).
+      // Frame the massing box, not the floor outline: at this distance the tops
+      // of the 9' walls are meaningfully nearer the camera than the floor, so a
+      // floor-only fit projects them past the frame edge and clips the unit.
       const fov = 22;
-      const tanV = Math.tan((fov * D2R) / 2);
-      const need = Math.max(fb.h / 2 / tanV, fb.w / 2 / (tanV * a)) * 1.06;
-      return { position: [cx, need, cy], target: [cx, 0, cy], fov };
+      const { position, target } = frameMassing(
+        plan,
+        new THREE.Vector3(0, 1, 0),
+        fov,
+        a,
+        0,
+      );
+      return { position, target, fov };
     }
 
     case 'iso-ne':
@@ -1176,16 +2041,15 @@ export function cameraFor(preset: CameraPreset, plan: FloorPlan, aspect: number)
       const dir: Vec2 =
         preset === 'iso-ne' ? [1, -1] : preset === 'iso-nw' ? [-1, -1] : preset === 'iso-se' ? [1, 1] : [-1, 1];
       const u = normv(dir);
-      // fit a sphere around the whole unit including its walls
-      const r = 0.5 * Math.hypot(fb.w, fb.h, ceil) * 1.04;
-      const dist = fitDistance(r, fov, a);
       const el = 35 * D2R;
-      const ty = ceil * 0.35;
-      return {
-        position: [cx + u[0] * dist * Math.cos(el), ty + dist * Math.sin(el), cy + u[1] * dist * Math.cos(el)],
-        target: [cx, ty, cy],
-        fov,
-      };
+      // w points from the target toward the camera.
+      const w = new THREE.Vector3(
+        u[0] * Math.cos(el),
+        Math.sin(el),
+        u[1] * Math.cos(el),
+      ).normalize();
+      const { position, target } = frameMassing(plan, w, fov, a, ceil * 0.35);
+      return { position, target, fov };
     }
 
     case 'eye-entry': {
@@ -1203,8 +2067,18 @@ export function cameraFor(preset: CameraPreset, plan: FloorPlan, aspect: number)
           : [-seg.normal[0], -seg.normal[1]];
         pos = addv(seg.center, inward, 3.0);
       }
-      const look = normv([-1, -0.38]); // west, canted north toward the living end
-      const tgt = addv(pos, look, 18);
+      /**
+       * Look WEST, canted only slightly north.
+       *
+       * The cant matters: the bathroom's south wall runs to x 26.4 at y 12.9, so
+       * from a standing spot around (27.4, 14.7) anything steeper than about
+       * dy/dx = 0.20 puts that wall dead centre and you photograph plasterboard.
+       * At 0.15 the ray clears the wall corner and the shot runs down the closet
+       * corridor and opens into the living end — which is what you actually see
+       * walking in.
+       */
+      const look = normv([-1, -0.15]);
+      const tgt = addv(pos, look, 20);
       return { position: [pos[0], EYE_H, pos[1]], target: [tgt[0], EYE_H * 0.86, tgt[1]], fov: 62 };
     }
 
@@ -1245,7 +2119,7 @@ export function cameraFor(preset: CameraPreset, plan: FloorPlan, aspect: number)
       const wc = meanPoint(westWindows(plan), [ib.min[0], pos[1]]);
       return {
         position: [pos[0], EYE_H, pos[1]],
-        target: [ib.min[0], (WIN_MID_H + EYE_H) / 2, wc[1]],
+        target: [ib.min[0], (glazingMidHeight(plan) + EYE_H) / 2, wc[1]],
         fov: 64,
       };
     }
