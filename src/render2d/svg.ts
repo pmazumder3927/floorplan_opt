@@ -336,10 +336,16 @@ function subtractIntervals(
 
 // =================================================================== sections
 
-function drawSheet(c: Ctx, w: number, h: number): void {
-  c.out.push(tag('rect', { x: 0, y: 0, width: w, height: h, fill: c.t.sheet }));
+/**
+ * The paper. Returned as markup rather than pushed, because the sheet HEIGHT is
+ * not known until the numbered key has been laid out (a suppressed label adds a
+ * row to the title block), and the sheet still has to be the first thing in the
+ * document. renderPlanSVG unshifts it once everything else is measured.
+ */
+function sheetMarkup(c: Ctx, w: number, h: number): string {
   const inset = 14;
-  c.out.push(
+  return (
+    tag('rect', { x: 0, y: 0, width: w, height: h, fill: c.t.sheet }) +
     tag('rect', {
       x: inset,
       y: inset,
@@ -348,7 +354,7 @@ function drawSheet(c: Ctx, w: number, h: number): void {
       fill: c.t.paper,
       stroke: c.t.frame,
       'stroke-width': STROKE.frame,
-    }),
+    })
   );
 }
 
@@ -418,7 +424,11 @@ function drawGrid(c: Ctx, plan: FloorPlan): void {
  * would be drawn over (zones are painted BEFORE the fixtures, as they must be —
  * the wash cannot cover the poché). So: try the centroid, then a handful of
  * offsets across the zone, and take the first one that is inside the zone and
- * clear of every fixture footprint and placed item.
+ * clear of every fixture footprint, placed item and WALL SOLID.
+ *
+ * The wall test matters for the same reason: the kitchen zone runs the full width
+ * of the leg, so at small scales its name reaches the laundry closet's partitions
+ * and the last letter disappears under the poché, which is painted over it.
  */
 function zoneLabelPoint(
   zone: FloorPlan['zones'][number],
@@ -429,6 +439,7 @@ function zoneLabelPoint(
 ): Vec2 {
   const cen = polygonCentroid(zone.polygon);
   const zb = polygonBounds(zone.polygon);
+  const solids = plan.walls.map((w) => obbInflate(wallSolid(w), 0.15));
   const free = (p: Vec2): boolean => {
     if (!pointInPolygon(p, zone.polygon)) return false;
     for (const f of plan.fixtures) {
@@ -438,12 +449,22 @@ function zoneLabelPoint(
       }
     }
     for (const it of items) if (obbContainsPoint(obbInflate(it.obb, 0.3), p)) return false;
+    for (const s of solids) if (obbContainsPoint(s, p)) return false;
     return true;
   };
-  // Test the centre AND both ends of the text run: a point can be clear while
+  // Score the centre AND both ends of the text run: a point can be clear while
   // the name still runs into the toilet next to it.
-  const clear = (p: Vec2): boolean =>
-    free(p) && free([p[0] - labelW / 2, p[1]]) && free([p[0] + labelW / 2, p[1]]);
+  const score = (p: Vec2): number =>
+    (free(p) ? 1 : 0) +
+    (free([p[0] - labelW / 2, p[1]]) ? 1 : 0) +
+    (free([p[0] + labelW / 2, p[1]]) ? 1 : 0);
+
+  // Candidates IN ORDER OF PREFERENCE: the area centroid, then the handful of
+  // offsets that suit a normal room, then a 7x5 grid across the zone. The grid is
+  // the part that matters at small scales — this plan's kitchen zone runs the
+  // full 17 ft width of the leg, so at 15 px/ft its name is 9 ft long and the
+  // only line clear of both the counter run and the laundry closet is a narrow
+  // band the fixed offsets happen to miss.
   const candidates: Vec2[] = [
     cen,
     [cen[0], cen[1] - zb.h * 0.24],
@@ -453,11 +474,40 @@ function zoneLabelPoint(
     [cen[0] - zb.w * 0.3, cen[1] - zb.h * 0.3],
     [cen[0] + zb.w * 0.3, cen[1] - zb.h * 0.3],
   ];
-  for (const p of candidates) if (clear(p)) return p;
-  return cen;
+  for (let iy = 0; iy < 5; iy++) {
+    for (let ix = 0; ix < 7; ix++) {
+      candidates.push([
+        zb.min[0] + zb.w * (0.12 + (0.76 * ix) / 6),
+        zb.min[1] + zb.h * (0.14 + (0.72 * iy) / 4),
+      ]);
+    }
+  }
+  // First fully clear candidate wins. Otherwise take the best-scoring one —
+  // falling back to the LEAST BAD spot rather than to the centroid is the point
+  // of scoring: in a zone with no clear line at all, one end of the name buried
+  // under a partition beats the whole name lying along the counter run.
+  let best = cen;
+  let bestScore = -1;
+  for (const p of candidates) {
+    if (!pointInPolygon(p, zone.polygon)) continue;
+    const sc = score(p);
+    if (sc > bestScore) {
+      best = p;
+      bestScore = sc;
+      if (sc === 3) break;
+    }
+  }
+  return best;
 }
 
-function drawZones(c: Ctx, plan: FloorPlan, items: PlacedResolved[]): void {
+/**
+ * Draw the zone washes and their names, and RETURN the boxes the names occupy.
+ *
+ * The return value is the point: zone names are painted before the fixtures and
+ * the furniture, so without handing their footprints to the label placer a
+ * fixture label on a leader would happily land on top of "KITCHEN / LAUNDRY".
+ */
+function drawZones(c: Ctx, plan: FloorPlan, items: PlacedResolved[]): PxRect[] {
   // Washes are clipped to the footprint. Zone polygons are authored off the
   // INTERIOR trace, which disagrees with the footprint trace by up to a couple
   // of inches at the south step (both are +-0.3 ft from a listing graphic), and
@@ -482,28 +532,45 @@ function drawZones(c: Ctx, plan: FloorPlan, items: PlacedResolved[]): void {
     tag('g', { class: 'p2d-zones', 'clip-path': `url(#${c.uid}-fp)` }, washes.join('')),
   );
   // Names go in a second pass so no wash ever lands on top of a label.
+  const boxes: PxRect[] = [];
+  const ZONE_TRACK = 1.4;
   for (const z of plan.zones) {
     const nameUp = z.name.toUpperCase();
-    // px -> ft; the 1.4 per character is the letter-spacing used below.
-    const labelW = (textWidth(nameUp, FONT_SIZE.zone) + nameUp.length * 1.4) / c.s;
-    const cen = zoneLabelPoint(z, plan, items, labelW);
+    const nameW = textWidth(nameUp, FONT_SIZE.zone) + [...nameUp].length * ZONE_TRACK;
+    const cen = zoneLabelPoint(z, plan, items, nameW / c.s);
     const cx = c.px(cen[0]);
     const cy = c.py(cen[1]);
+    const areaStr = formatArea(polygonArea(z.polygon));
     text(c, cx, cy - 7, nameUp, {
       size: FONT_SIZE.zone,
       weight: 600,
-      spacing: 1.4,
+      spacing: ZONE_TRACK,
       fill: c.t.text,
       opacity: 0.62,
       halo: 3,
     });
-    text(c, cx, cy + 7, formatArea(polygonArea(z.polygon)), {
+    text(c, cx, cy + 7, areaStr, {
       size: FONT_SIZE.zoneSub,
       fill: c.t.textMuted,
       font: FONT_MONO,
       halo: 3,
     });
+    boxes.push({
+      cx,
+      cy: cy - 7,
+      w: nameW,
+      h: FONT_SIZE.zone * LINE_HEIGHT,
+      rot: 0,
+    });
+    boxes.push({
+      cx,
+      cy: cy + 7,
+      w: textWidth(areaStr, FONT_SIZE.zoneSub, 'mono'),
+      h: FONT_SIZE.zoneSub * LINE_HEIGHT,
+      rot: 0,
+    });
   }
+  return boxes;
 }
 
 /**
@@ -577,13 +644,144 @@ function drawWalls(c: Ctx, plan: FloorPlan, frames: Map<string, WallFrame>): voi
   c.out.push(tag('g', { class: 'p2d-walls-part' }, partition.join('')));
 }
 
+// ============================================== openings: glazing conventions
+
 /**
- * Window symbol, the standard plan convention:
+ * A punched window and a floor-to-ceiling glazed assembly are DIFFERENT SYMBOLS,
+ * and the thing that tells them apart is the sill height — not the wall, not the
+ * width, not a hardcoded assumption about which wall the windows are in.
+ *
+ * A punched window has a sill you can sit a plant on, so the plan shows a stool
+ * projecting past the outer face. A full-height glazed assembly has no sill at
+ * all: the glass runs to the slab, and what you cut through at the 4 ft plan
+ * plane is a structural frame with mullions and, at the operable leaf, a sliding
+ * panel on its own track. Drawing the second one with a projecting sill is not a
+ * stylistic slip — it tells the reader there is a 2'-6" solid wall under the
+ * glass, which is the single most consequential thing about this unit's west
+ * wall (nothing can hide "below the sill" — see the note in core/plan.ts).
+ *
+ * 1" of tolerance because sills are authored in feet from tape measurements.
+ */
+const FULL_HEIGHT_SILL = 1 / 12;
+
+function isFullHeight(o: Opening): boolean {
+  return o.kind === 'window' && o.sill <= FULL_HEIGHT_SILL;
+}
+
+/**
+ * Slim aluminium frame profile, drawn to scale. 2 1/4" is a typical thermally
+ * broken storefront/slider frame member and is ASSUMED — the source plan does not
+ * dimension the frames. Mullions shared between two lights are NOT assumed: those
+ * are drawn at the traced width of the pier between the openings.
+ */
+const FRAME_W = 2.25 / 12;
+/** Sliding leaf panel: 2" including the glass and both rails. */
+const SLIDE_T = 2 / 12;
+/**
+ * Two full-height lights closer together than this share a MULLION, not a pier —
+ * they are one glazed assembly. Read the west wall off plan.ts from the south end:
+ * 3'-6", 4 1/4", 2'-9 1/4", then 1'-4 1/4", then 2'-8 1/4", 4 1/4", 2'-8 3/4".
+ * That is two PAIRS of lights, each pair split by a 4 1/4" mullion, with a 16"
+ * structural pier between the pairs — exactly what the reference photograph shows
+ * (two assemblies with a column between them). It only falls out of the data if
+ * the cut-off sits between 4 1/4" and 16", so 6" it is.
+ */
+const MULLION_MAX = 0.5;
+/**
+ * A full-height light at least this wide is an operable SLIDING leaf; anything
+ * narrower is fixed glazing. 3'-0" is the narrowest panel anyone builds as a
+ * door — below it you cannot get furniture through, so nobody makes it operable.
+ */
+const SLIDER_MIN = 3.0;
+/** Widest single fixed light before it gets an intermediate mullion. */
+const PANEL_MAX = 4.0;
+
+/** A mullion between two lights, in the wall's `along` coordinate. */
+interface Mullion {
+  at: number;
+  width: number;
+}
+
+interface GlazingInfo {
+  /** true for the first light of its assembly — it draws the shared mullions */
+  first: boolean;
+  /** mullions shared with the neighbouring lights of the same assembly */
+  mullions: Mullion[];
+  /** this light is the operable sliding leaf */
+  operable: boolean;
+  /** +1 / -1 in the wall's `along` direction: which way the leaf slides */
+  slide: number;
+}
+
+/**
+ * Group the full-height lights of each wall into assemblies and decide which
+ * leaf slides, and which way. All of it is derived from the opening data — the
+ * gaps between lights and their widths — so a change to plan.ts moves the
+ * drawing with it.
+ */
+function glazingLayout(plan: FloorPlan, frames: Map<string, WallFrame>): Map<string, GlazingInfo> {
+  const out = new Map<string, GlazingInfo>();
+  const byWall = new Map<string, Opening[]>();
+  for (const o of plan.openings) {
+    if (!isFullHeight(o)) continue;
+    const list = byWall.get(o.wall);
+    if (list) list.push(o);
+    else byWall.set(o.wall, [o]);
+  }
+  for (const [wallId, raw] of byWall) {
+    const lights = [...raw].sort((p, q) => p.offset - q.offset);
+    const wallLen = frames.get(wallId)?.length ?? 0;
+    // Split into assemblies at every gap wider than a mullion.
+    const groups: Opening[][] = [];
+    for (const o of lights) {
+      const g = groups[groups.length - 1];
+      const prev = g?.[g.length - 1];
+      if (prev && o.offset - (prev.offset + prev.width) <= MULLION_MAX) g.push(o);
+      else groups.push([o]);
+    }
+    for (const g of groups) {
+      const mullions: Mullion[] = [];
+      for (let i = 1; i < g.length; i++) {
+        const lo = g[i - 1].offset + g[i - 1].width;
+        const hi = g[i].offset;
+        mullions.push({ at: (lo + hi) / 2, width: Math.max(hi - lo, FRAME_W) });
+      }
+      g.forEach((o, i) => {
+        // Slide direction: the leaf parks in front of the adjacent fixed light of
+        // its own assembly. Alone in its assembly there is nothing to park over,
+        // so it slides toward the nearer end of the wall (against the pier).
+        let slide: number;
+        if (g.length > 1) {
+          if (i === 0) slide = 1;
+          else if (i === g.length - 1) slide = -1;
+          else {
+            const gapBefore = o.offset - (g[i - 1].offset + g[i - 1].width);
+            const gapAfter = g[i + 1].offset - (o.offset + o.width);
+            slide = gapAfter <= gapBefore ? 1 : -1;
+          }
+        } else {
+          const mid = o.offset + o.width / 2;
+          slide = mid <= wallLen / 2 ? -1 : 1;
+        }
+        out.set(o.id, {
+          first: i === 0,
+          mullions: i === 0 ? mullions : [],
+          operable: o.width >= SLIDER_MIN,
+          slide,
+        });
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * Window symbol, the standard PUNCHED-window plan convention:
  *   - the two wall FACES carried across the opening (the frame),
  *   - a thin DOUBLE LINE mid-thickness for the glazing,
  *   - a SILL projecting past the outer face, wider than the opening.
  */
-function drawWindow(c: Ctx, o: Opening, fr: WallFrame): void {
+function drawPunchedWindow(c: Ctx, o: Opening, fr: WallFrame): void {
   const a = o.offset;
   const b = o.offset + o.width;
   const parts: string[] = [];
@@ -592,8 +790,8 @@ function drawWindow(c: Ctx, o: Opening, fr: WallFrame): void {
   parts.push(
     tag('path', {
       d: polyD(c, [fr.at(a, fr.n0), fr.at(b, fr.n0), fr.at(b, fr.n1), fr.at(a, fr.n1)]),
-      fill: c.t.glass,
-      'fill-opacity': 0.16,
+      fill: c.t.glassTint,
+      'fill-opacity': 0.3,
     }),
   );
 
@@ -642,6 +840,290 @@ function drawWindow(c: Ctx, o: Opening, fr: WallFrame): void {
     tag(
       'g',
       { 'data-opening-id': o.id, 'data-opening-kind': o.kind, class: 'p2d-window' },
+      parts.join(''),
+    ),
+  );
+}
+
+/**
+ * FULL-HEIGHT GLAZED ASSEMBLY / SLIDING DOOR — the convention for glass that
+ * runs floor to soffit (see FULL_HEIGHT_SILL above for why it is chosen by sill).
+ *
+ * What gets drawn, and why each piece is there:
+ *   1. a pale daylight wash across the wall thickness — this is a hole you can
+ *      see through, and on this unit it is most of the west elevation;
+ *   2. HEAVY FRAME LINES ACROSS THE WALL THICKNESS at both jambs, drawn as the
+ *      real 2 1/4" aluminium profile filled solid. This is the structural read:
+ *      the frame is part of the fabric, not a line drawn in a void;
+ *   3. PANEL DIVISIONS — a mullion at every division: the ones this assembly
+ *      shares with the neighbouring light (drawn over the poché, which ties two
+ *      lights 4" apart into one assembly the way the photo shows them), plus an
+ *      intermediate mullion in any light too wide to be one pane;
+ *   4. the glazing plane itself as ONE heavy dark line at mid-thickness (black
+ *      anodised: see theme.glass) rather than the punched window's thin double
+ *      line, because at this scale the assembly is a wall of glass, not a pane;
+ *   5. at the operable leaf, a SLIDING PANEL drawn to scale on its own track,
+ *      offset inboard of the fixed plane exactly as a real bypass slider sits,
+ *      with a DIRECTION ARROW showing which way it goes.
+ *   6. NO SILL. There is nothing to project — the glass meets the slab.
+ */
+function drawGlazedAssembly(c: Ctx, o: Opening, fr: WallFrame, g: GlazingInfo): void {
+  const a = o.offset;
+  const b = o.offset + o.width;
+  const parts: string[] = [];
+  // Mid-thickness is where the fixed glazing plane sits; `inward` is the sign of
+  // the normal that points into the room, so the slider can be put on the inside
+  // track (which is where a bypass slider's operable leaf actually runs).
+  const mid = (fr.n0 + fr.n1) / 2;
+  const inward = Math.sign(fr.innerN - fr.outerN) || 1;
+
+  const seg = (n: number, stroke: string, width: number, from: number, to: number, extra: Attrs = {}): string =>
+    tag('line', {
+      x1: c.px(fr.at(from, n)[0]),
+      y1: c.py(fr.at(from, n)[1]),
+      x2: c.px(fr.at(to, n)[0]),
+      y2: c.py(fr.at(to, n)[1]),
+      stroke,
+      'stroke-width': width,
+      ...extra,
+    });
+
+  /** A frame/mullion profile: a solid block across the FULL wall thickness. */
+  const profile = (at: number, w: number): string =>
+    tag('path', {
+      d: polyD(c, [
+        fr.at(at - w / 2, fr.n0),
+        fr.at(at + w / 2, fr.n0),
+        fr.at(at + w / 2, fr.n1),
+        fr.at(at - w / 2, fr.n1),
+      ]),
+      fill: c.t.mullion,
+      stroke: c.t.mullion,
+      'stroke-width': STROKE.glazeFrame,
+      'stroke-linejoin': 'miter',
+    });
+
+  // 1. daylight.
+  parts.push(
+    tag('path', {
+      d: polyD(c, [fr.at(a, fr.n0), fr.at(b, fr.n0), fr.at(b, fr.n1), fr.at(a, fr.n1)]),
+      fill: c.t.glassTint,
+      'fill-opacity': 0.42,
+    }),
+  );
+
+  // 2. both wall faces carried across at FRAME weight (a glazed wall is
+  // continuous fabric), then the jamb frames across the thickness.
+  parts.push(seg(fr.n0, c.t.mullion, STROKE.glazeFrame, a, b));
+  parts.push(seg(fr.n1, c.t.mullion, STROKE.glazeFrame, a, b));
+  parts.push(profile(a + FRAME_W / 2, FRAME_W));
+  parts.push(profile(b - FRAME_W / 2, FRAME_W));
+
+  // 3. panel divisions.
+  for (const m of g.mullions) parts.push(profile(m.at, m.width));
+  const panes = Math.max(1, Math.ceil(o.width / PANEL_MAX - 1e-6));
+  for (let i = 1; i < panes; i++) {
+    parts.push(profile(a + (o.width * i) / panes, FRAME_W));
+  }
+
+  // 4. the glazing plane, between the jamb frames.
+  const g0 = a + FRAME_W;
+  const g1 = b - FRAME_W;
+  parts.push(seg(mid, c.t.glass, STROKE.glazePlane, g0, g1));
+
+  // 5. the operable leaf.
+  if (g.operable) {
+    // The sliding panel runs on the inside track, one frame depth in from the
+    // fixed plane, and overlaps the jamb it closes against.
+    const trackN = mid + inward * (FRAME_W * 0.9);
+    const lead = g.slide > 0 ? g1 : g0;
+    const heel = g.slide > 0 ? g0 : g1;
+    parts.push(
+      tag('path', {
+        d: polyD(c, [
+          fr.at(heel, trackN - SLIDE_T / 2),
+          fr.at(lead, trackN - SLIDE_T / 2),
+          fr.at(lead, trackN + SLIDE_T / 2),
+          fr.at(heel, trackN + SLIDE_T / 2),
+        ]),
+        fill: c.t.mullion,
+        'fill-opacity': 0.55,
+        stroke: c.t.mullion,
+        'stroke-width': STROKE.slider,
+      }),
+    );
+    // Direction arrow: just clear of the INNER wall face, in the room, so it
+    // never sits on the glazing or the track lines it is annotating.
+    const arrowN = fr.innerN + inward * (4.5 / c.s);
+    const half = Math.min(o.width * 0.3, 1.4) / 2;
+    const centre = (a + b) / 2;
+    const tip = centre + g.slide * half;
+    const tail = centre - g.slide * half;
+    parts.push(seg(arrowN, c.t.mullion, STROKE.arrow, tail, tip));
+    // Arrowhead: 5 px barbs swept back along the wall from the tip.
+    const barb = 5 / c.s;
+    for (const side of [-1, 1]) {
+      parts.push(
+        tag('line', {
+          x1: c.px(fr.at(tip, arrowN)[0]),
+          y1: c.py(fr.at(tip, arrowN)[1]),
+          x2: c.px(fr.at(tip - g.slide * barb, arrowN + side * barb * 0.6)[0]),
+          y2: c.py(fr.at(tip - g.slide * barb, arrowN + side * barb * 0.6)[1]),
+          stroke: c.t.mullion,
+          'stroke-width': STROKE.arrow,
+        }),
+      );
+    }
+  }
+
+  // 6. no sill: deliberately nothing. See the header comment.
+  c.out.push(
+    tag(
+      'g',
+      {
+        'data-opening-id': o.id,
+        'data-opening-kind': o.kind,
+        'data-glazing': g.operable ? 'sliding' : 'fixed',
+        class: 'p2d-glazing',
+      },
+      parts.join(''),
+    ),
+  );
+}
+
+/**
+ * BIFOLD detection for a `passage`.
+ *
+ * plan.ts models the laundry closet doors (D3) as kind 'passage' on purpose — a
+ * bifold folds flat into its own jambs and must not be analysed as if it swept a
+ * quarter-disc of floor — but "passage" makes the renderer draw a bare gap, and a
+ * bare gap in a closet wall is wrong: those leaves DO project into the room and
+ * you have to be able to see them on the drawing.
+ *
+ * The heuristic, in full, and each clause's reason:
+ *   - the wall must be a PARTITION. Bifolds are interior closet doors; a passage
+ *     in an exterior wall is something else entirely.
+ *   - the opening must be at least 2'-0" wide. Narrower than that it is a cased
+ *     opening, and a 2-leaf bifold in it would be 12" panels, which nobody makes.
+ *   - one side of the wall must BE A CLOSET: probe 1'-0" past each face from the
+ *     middle of the opening and look for a storage/laundry fixture footprint. A
+ *     storage fixture parked immediately behind an opening is what a closet IS.
+ * The leaves then fold into the OTHER side — the room — which is the only way a
+ * bifold can work, and is returned as the sign of the wall normal to fold toward.
+ */
+function passageBifoldFold(plan: FloorPlan, o: Opening, fr: WallFrame): number | null {
+  if (fr.wall.kind !== 'partition') return null;
+  if (o.width < 2.0) return null;
+  const midAlong = o.offset + o.width / 2;
+  const PROBE = 1.0;
+  const isCloset = (p: Vec2): boolean =>
+    plan.fixtures.some((f) => {
+      if (f.category !== 'storage' && f.category !== 'laundry') return false;
+      const r = f.footprint;
+      return p[0] >= r.x && p[0] <= r.x + r.w && p[1] >= r.y && p[1] <= r.y + r.h;
+    });
+  const plusIsCloset = isCloset(fr.at(midAlong, fr.n1 + PROBE));
+  const minusIsCloset = isCloset(fr.at(midAlong, fr.n0 - PROBE));
+  if (plusIsCloset === minusIsCloset) return null; // both or neither: not a closet door
+  // Fold into the side that is NOT the closet.
+  return plusIsCloset ? -1 : 1;
+}
+
+/**
+ * Bifold pair symbol. Each leaf is drawn to scale (1 1/8" panel) at 60 degrees
+ * off the wall plane — the standard "partly open" bifold convention, where the
+ * two leaves of a pair make a V into the room and the free edge lands halfway
+ * across its own pair, on the track.
+ *
+ * Leaf count comes from the width the way it does in a door schedule: up to
+ * 3'-0" is one pair of two leaves hinged at one jamb; wider than that is two
+ * pairs meeting in the middle, hinged at both jambs.
+ */
+function drawBifold(c: Ctx, o: Opening, fr: WallFrame, fold: number): void {
+  const parts: string[] = [];
+  const a = o.offset;
+  const b = o.offset + o.width;
+  const PANEL_T = 1.125 / 12;
+
+  // Threshold: carry both faces across as hairlines so the gap still reads as an
+  // opening rather than a hole (same as a swing door).
+  for (const n of [fr.n0, fr.n1]) {
+    parts.push(
+      tag('line', {
+        x1: c.px(fr.at(a, n)[0]),
+        y1: c.py(fr.at(a, n)[1]),
+        x2: c.px(fr.at(b, n)[0]),
+        y2: c.py(fr.at(b, n)[1]),
+        stroke: c.t.sill,
+        'stroke-width': STROKE.hairline,
+        'stroke-dasharray': '3 3',
+      }),
+    );
+  }
+
+  // The leaves hang off the room-side face of the partition.
+  const faceN = fold > 0 ? fr.n1 : fr.n0;
+  const pairs: Array<{ jamb: number; dir: number }> =
+    o.width <= 3.0 ? [{ jamb: a, dir: 1 }] : [
+      { jamb: a, dir: 1 },
+      { jamb: b, dir: -1 },
+    ];
+  const pairW = o.width / pairs.length;
+  const leaf = pairW / 2;
+  const COS = 0.5; // cos 60 degrees
+  const SIN = 0.8660254; // sin 60 degrees
+
+  for (const { jamb, dir } of pairs) {
+    const hinge: Vec2 = [jamb, faceN];
+    const apex: Vec2 = [jamb + dir * leaf * COS, faceN + fold * leaf * SIN];
+    const free: Vec2 = [jamb + dir * leaf, faceN];
+    // Each leaf as a to-scale slab, exactly like the swing-door leaf.
+    for (const [p0, p1] of [
+      [hinge, apex],
+      [apex, free],
+    ] as Array<[Vec2, Vec2]>) {
+      const A = fr.at(p0[0], p0[1]);
+      const B = fr.at(p1[0], p1[1]);
+      const d = norm(sub(B, A));
+      const perp = vmul(rotate(d, 90), PANEL_T / 2);
+      parts.push(
+        tag('path', {
+          d: polyD(c, [add(A, perp), add(B, perp), sub(B, perp), sub(A, perp)]),
+          fill: c.t.wallFill,
+          stroke: c.t.wallStroke,
+          'stroke-width': STROKE.bifold,
+          'stroke-linejoin': 'miter',
+        }),
+      );
+    }
+    // Pivot at the hinge jamb, track guide at the free edge: the two pieces of
+    // hardware that make a bifold a bifold.
+    const hp = fr.at(hinge[0], hinge[1]);
+    const fp = fr.at(free[0], free[1]);
+    parts.push(
+      tag('circle', { cx: c.px(hp[0]), cy: c.py(hp[1]), r: 1.9, fill: c.t.wallStroke }),
+    );
+    parts.push(
+      tag('circle', {
+        cx: c.px(fp[0]),
+        cy: c.py(fp[1]),
+        r: 2.1,
+        fill: 'none',
+        stroke: c.t.wallStroke,
+        'stroke-width': STROKE.hairline,
+      }),
+    );
+  }
+
+  c.out.push(
+    tag(
+      'g',
+      {
+        'data-opening-id': o.id,
+        'data-opening-kind': o.kind,
+        'data-passage': 'bifold',
+        class: 'p2d-bifold',
+      },
       parts.join(''),
     ),
   );
@@ -1113,7 +1595,9 @@ function facingAlignedObb(rect: Rect, facing: number): OBB {
   };
 }
 
-function drawClearances(c: Ctx, plan: FloorPlan, items: PlacedResolved[]): void {
+/** Draws the clearance boxes and returns the boxes its depth notes occupy. */
+function drawClearances(c: Ctx, plan: FloorPlan, items: PlacedResolved[]): PxRect[] {
+  const claimed: PxRect[] = [];
   const boxes: Array<{ o: OBB; id: string; depth: number }> = [];
   for (const f of plan.fixtures) {
     if (!f.clearance || f.clearance <= 0) continue;
@@ -1147,14 +1631,24 @@ function drawClearances(c: Ctx, plan: FloorPlan, items: PlacedResolved[]): void 
     // Label the required depth: a clearance you cannot read is decoration.
     const cen = b.o.center;
     if (b.o.w * c.s > 34 && b.o.d * c.s > 13) {
-      text(c, c.px(cen[0]), c.py(cen[1]), formatShort(b.depth), {
+      const note = formatShort(b.depth);
+      const rot = normRot(b.o.rot);
+      text(c, c.px(cen[0]), c.py(cen[1]), note, {
         size: FONT_SIZE.tiny,
         fill: c.t.clearance,
         font: FONT_MONO,
-        rotate: normRot(b.o.rot),
+        rotate: rot,
+      });
+      claimed.push({
+        cx: c.px(cen[0]),
+        cy: c.py(cen[1]),
+        w: textWidth(note, FONT_SIZE.tiny, 'mono'),
+        h: FONT_SIZE.tiny * LINE_HEIGHT,
+        rot,
       });
     }
   }
+  return claimed;
 }
 
 // ================================================================== furniture
@@ -1708,62 +2202,596 @@ function drawFurniture(c: Ctx, items: PlacedResolved[], selected: Set<string>): 
 
 // ===================================================================== labels
 
-interface Box {
-  x0: number;
-  y0: number;
-  x1: number;
-  y1: number;
+/**
+ * LABEL PLACEMENT.
+ *
+ * The rule this whole section exists to enforce, because breaking it is the
+ * fastest way to make a plan unreadable:
+ *
+ *   A LABEL NEVER OVERLAPS ANOTHER LABEL, AND NEVER SPILLS OUTSIDE THE SHAPE IT
+ *   NAMES.
+ *
+ * Every label that has been placed is kept as an oriented box in sheet px, and
+ * every new candidate is tested against that list with a real separating-axis
+ * test (labels are rotated 0/90 degrees and furniture OBBs are at arbitrary
+ * angles, so an axis-aligned bounding test is not good enough — it was the
+ * previous bug: three kitchen fixture labels each "fitted", each was tested as an
+ * unrotated box around its own centre, and they all landed on one baseline
+ * inside the same counter run and printed as "KITCHEN COUNTERRANGE").
+ *
+ * The escalation, in order, is the drafting-room one:
+ *   1. SHRINK   — step the type down through the size list.
+ *   2. ROTATE   — turn the label onto the shape's other axis.
+ *   3. SLIDE    — scan the label along the shape's own axes (a 10 ft counter run
+ *                 has room for "KITCHEN COUNTER" over the base cabinets even
+ *                 when the sink and the range have taken the middle).
+ *   4. LEADER   — move it outside the shape on a leader line with a dot at the
+ *                 shape edge, but only to a spot that is on the drawing and
+ *                 collides with nothing.
+ *   5. KEY      — give up on lettering it in place: tag the shape with a number
+ *                 and print the name in the numbered key in the title block.
+ * Steps 1-3 are interleaved (all positions at the largest size before shrinking)
+ * because keeping the type big matters more than keeping it centred.
+ */
+
+/** An oriented rectangle in SHEET PX space. `rot` is degrees clockwise. */
+interface PxRect {
+  cx: number;
+  cy: number;
+  w: number;
+  h: number;
+  rot: number;
 }
 
-function overlaps(a: Box, b: Box): boolean {
-  return a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+/** Unit axes of a px rect: `u` along its width, `v` along its height. */
+function pxAxes(rot: number): [Vec2, Vec2] {
+  const a = (rot * Math.PI) / 180;
+  const cs = Math.cos(a);
+  const sn = Math.sin(a);
+  return [
+    [cs, sn],
+    [-sn, cs],
+  ];
+}
+
+function pxCorners(r: PxRect): Vec2[] {
+  const [u, v] = pxAxes(r.rot);
+  const hw = r.w / 2;
+  const hh = r.h / 2;
+  const out: Vec2[] = [];
+  for (const [sx, sy] of [
+    [1, 1],
+    [-1, 1],
+    [-1, -1],
+    [1, -1],
+  ] as Array<[number, number]>) {
+    out.push([r.cx + u[0] * hw * sx + v[0] * hh * sy, r.cy + u[1] * hw * sx + v[1] * hh * sy]);
+  }
+  return out;
+}
+
+/** Separating-axis test for two oriented rectangles. Touching is not overlap. */
+function pxOverlap(a: PxRect, b: PxRect): boolean {
+  const ca = pxCorners(a);
+  const cb = pxCorners(b);
+  const axes = [...pxAxes(a.rot), ...pxAxes(b.rot)];
+  for (const ax of axes) {
+    let a0 = Infinity;
+    let a1 = -Infinity;
+    let b0 = Infinity;
+    let b1 = -Infinity;
+    for (const p of ca) {
+      const d = p[0] * ax[0] + p[1] * ax[1];
+      if (d < a0) a0 = d;
+      if (d > a1) a1 = d;
+    }
+    for (const p of cb) {
+      const d = p[0] * ax[0] + p[1] * ax[1];
+      if (d < b0) b0 = d;
+      if (d > b1) b1 = d;
+    }
+    if (a1 <= b0 + 0.01 || b1 <= a0 + 0.01) return false;
+  }
+  return true;
+}
+
+/** Is `inner` completely inside `outer`, with `pad` px to spare on every side? */
+function pxContains(outer: PxRect, inner: PxRect, pad = 0): boolean {
+  const [u, v] = pxAxes(outer.rot);
+  for (const p of pxCorners(inner)) {
+    const dx = p[0] - outer.cx;
+    const dy = p[1] - outer.cy;
+    if (Math.abs(dx * u[0] + dy * u[1]) > outer.w / 2 - pad) return false;
+    if (Math.abs(dx * v[0] + dy * v[1]) > outer.h / 2 - pad) return false;
+  }
+  return true;
+}
+
+/** px kept clear between a label block and the edge of the shape it names. */
+const LABEL_PAD = 3;
+/**
+ * px of white space demanded BETWEEN two labels. Not overlapping is not enough:
+ * "RANGE" and "KITCHEN COUNTER" set 1 px apart on the same baseline read as one
+ * word, which is the same failure as an overlap with extra steps.
+ */
+const LABEL_GAP = 6.5;
+
+function pxInflate(r: PxRect, d: number): PxRect {
+  return { ...r, w: r.w + d * 2, h: r.h + d * 2 };
 }
 
 /**
- * Item labels. Two lines (name + size), placed at the OBB centre and rotated
- * with the item's long axis. If the block will not fit inside the shape it is
- * shrunk, then reduced to one line, and only then moved outside on a leader —
- * a label crossing the edge of its own shape is the fastest way to make a plan
- * look amateur, so that case is never emitted.
+ * Offsets across a slack range, ordered CENTRE OUT, so a label only moves off
+ * centre by as much as it has to.
  */
+function scanOffsets(slack: number, steps: number): number[] {
+  if (slack <= 0.5) return [0];
+  const n = Math.max(2, steps);
+  const out: number[] = [];
+  for (let i = 0; i < n; i++) out.push(-slack / 2 + (slack * i) / (n - 1));
+  return out.sort((p, q) => Math.abs(p) - Math.abs(q));
+}
+
+/** One line of a label block. */
+interface LabelLine {
+  text: string;
+  font: 'sans' | 'mono';
+  /** relative to the block's base size */
+  rel: number;
+  weight: number;
+}
+
+interface LabelJob {
+  id: string;
+  /** the shape being named, in sheet px */
+  shape: PxRect;
+  /**
+   * Text variants in order of preference at any one size: normally the full
+   * two-line block first, then the name on its own.
+   */
+  variants: LabelLine[][];
+  /** candidate base sizes, largest first */
+  sizes: number[];
+  ink: string;
+  halo: string;
+  /** extra tracking in px per character (uppercase fixture names are tracked) */
+  tracking: number;
+  /** name printed in the numbered key if the label has to be suppressed */
+  keyText: string;
+}
+
+function blockMetrics(lines: LabelLine[], size: number, tracking: number): { w: number; h: number } {
+  let w = 0;
+  let h = 0;
+  for (const l of lines) {
+    const s = size * l.rel;
+    w = Math.max(w, textWidth(l.text, s, l.font) + [...l.text].length * tracking);
+    h += s * LINE_HEIGHT;
+  }
+  return { w, h };
+}
+
+/**
+ * Emit a stacked text block centred at (cx, cy) and rotated `rot`.
+ * Lines are stacked PERPENDICULAR to the baseline: offsetting in screen y and
+ * then rotating each line about its own anchor would run a rotated two-line
+ * label straight through itself.
+ */
+function putBlock(
+  c: Ctx,
+  cx: number,
+  cy: number,
+  lines: LabelLine[],
+  size: number,
+  rot: number,
+  ink: string,
+  halo: string,
+  tracking: number,
+  owner: string,
+  mode: 'inside' | 'leader' | 'key',
+): void {
+  const [, v] = pxAxes(rot);
+  const total = lines.reduce((s, l) => s + size * l.rel * LINE_HEIGHT, 0);
+  let cursor = -total / 2;
+  // Emitted into a group stamped with WHO the label names and HOW it was placed.
+  // Not decoration: it is what lets a test assert that every `inside` label is
+  // actually inside the shape it names, without re-deriving the placement.
+  const buf: string[] = [];
+  const sub: Ctx = { ...c, out: buf };
+  for (const l of lines) {
+    const s = size * l.rel;
+    const off = cursor + (s * LINE_HEIGHT) / 2;
+    cursor += s * LINE_HEIGHT;
+    text(sub, cx + v[0] * off, cy + v[1] * off, l.text, {
+      size: s,
+      fill: ink,
+      weight: l.weight,
+      font: l.font === 'mono' ? FONT_MONO : FONT,
+      rotate: rot,
+      spacing: tracking ? tracking : undefined,
+      halo: true,
+      haloColor: halo,
+    });
+  }
+  c.out.push(
+    tag(
+      'g',
+      { class: 'p2d-label', 'data-label-for': owner, 'data-label-mode': mode },
+      buf.join(''),
+    ),
+  );
+}
+
+interface Placement {
+  /** the claimed box, oriented with the SHAPE (so containment is exact) */
+  box: PxRect;
+  /** baseline rotation for the glyphs */
+  textRot: number;
+  size: number;
+  lines: LabelLine[];
+}
+
+/**
+ * Steps 1-3: shrink / rotate / slide, all inside the shape.
+ *
+ * The shape's LONG axis is the natural orientation and is exhausted at every size
+ * before the label is turned — shrink before rotate, as a draughtsman does. It is
+ * also why "DISHWASHER" reads up the 2'-1"-deep dishwasher instead of spilling
+ * out of both ends of it, and why "KITCHEN COUNTER" stays horizontal and slides
+ * east over the base cabinets instead of turning.
+ */
+function placeInside(job: LabelJob, taken: PxRect[]): Placement | null {
+  const [u, v] = pxAxes(job.shape.rot);
+  const spins = job.shape.w >= job.shape.h ? [0, 90] : [90, 0];
+  for (const spin of spins) {
+    for (const size of job.sizes) {
+      for (const lines of job.variants) {
+        const m = blockMetrics(lines, size, job.tracking);
+        // Block extents re-expressed in the SHAPE's own frame.
+        const ex = spin === 0 ? m.w : m.h;
+        const ey = spin === 0 ? m.h : m.w;
+        const slackX = job.shape.w - 2 * LABEL_PAD - ex;
+        const slackY = job.shape.h - 2 * LABEL_PAD - ey;
+        if (slackX < 0 || slackY < 0) continue;
+        for (const dy of scanOffsets(slackY, 5)) {
+          for (const dx of scanOffsets(slackX, 13)) {
+            const box: PxRect = {
+              cx: job.shape.cx + u[0] * dx + v[0] * dy,
+              cy: job.shape.cy + u[1] * dx + v[1] * dy,
+              w: ex,
+              h: ey,
+              rot: job.shape.rot,
+            };
+            if (!pxContains(job.shape, box, LABEL_PAD - 0.5)) continue;
+            // The GAP is demanded of the candidate only; the stored box stays
+            // tight so the next label is not pushed away twice over.
+            const probe = pxInflate(box, LABEL_GAP);
+            if (taken.some((t) => pxOverlap(t, probe))) continue;
+            return {
+              box,
+              textRot: normRot(job.shape.rot + spin),
+              size,
+              lines,
+            };
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Step 4: outside on a leader line.
+ *
+ * First choice is away from the middle of the plan so labels fan outward instead
+ * of piling up in the centre; second choice is back INWARD, because a piece
+ * pushed against an outside wall has nothing but dimension chains on its outward
+ * side. A candidate that lands off the footprint or on another label is rejected
+ * outright rather than merely penalised — a leader pointing into a dimension
+ * chain is worse than no label at all, and that is what the numbered key is for.
+ */
+function placeLeader(
+  c: Ctx,
+  plan: FloorPlan,
+  job: LabelJob,
+  taken: PxRect[],
+): { box: PxRect; tx: number; ty: number; ax: number; ay: number; right: boolean } | null {
+  const size = Math.min(8.6, job.sizes[0]);
+  const name = job.variants[job.variants.length - 1][0];
+  const w1 = textWidth(name.text, size, name.font) + [...name.text].length * job.tracking;
+  const h1 = size * LINE_HEIGHT;
+  // px -> ft is a uniform positive scale, so a direction in px IS the direction
+  // in feet; no need to convert the shape centre back into plan coordinates.
+  let away = norm([job.shape.cx - c.px(c.mid[0]), job.shape.cy - c.py(c.mid[1])] as Vec2);
+  if (away[0] === 0 && away[1] === 0) away = [1, 0];
+  const [u, v] = pxAxes(job.shape.rot);
+
+  // Four directions, not two. A bed with two nightstands, a lamp, a plant and a
+  // piece of art all sit in the same corner and all point "away from centre", so
+  // with only the outward and inward directions their leaders pile into one
+  // crowded stack. The two perpendiculars let the cluster fan out.
+  const dirs: Vec2[] = [away, rotate(away, 90), rotate(away, -90), vmul(away, -1)];
+  /** px -> plan feet, for the "is this note on the floor?" test. */
+  const toFt = (x: number, y: number): Vec2 => [
+    (x - c.px(c.b.min[0])) / c.s + c.b.min[0],
+    (y - c.py(c.b.min[1])) / c.s + c.b.min[1],
+  ];
+  // Two passes. A note lettered ON the wall poché is legible but reads as
+  // sloppy, so every candidate that lands wholly on the FLOOR is preferred; only
+  // if none exists does the placer settle for anywhere inside the footprint.
+  for (const onFloorOnly of [true, false]) {
+    for (const dir of dirs) {
+      // Support distance of the shape along `dir` (exact for a rectangle).
+      const reach =
+        (Math.abs(u[0] * dir[0] + u[1] * dir[1]) * job.shape.w) / 2 +
+        (Math.abs(v[0] * dir[0] + v[1] * dir[1]) * job.shape.h) / 2;
+      const ax = job.shape.cx + dir[0] * reach;
+      const ay = job.shape.cy + dir[1] * reach;
+      const right = dir[0] >= 0;
+      for (const gap of [12, 20, 30, 42, 56]) {
+        const tx = ax + dir[0] * gap + (right ? 4 : -4);
+        const ty = ay + dir[1] * gap;
+        const box: PxRect = {
+          cx: right ? tx + w1 / 2 : tx - w1 / 2,
+          cy: ty,
+          w: w1,
+          h: h1,
+          rot: 0,
+        };
+        const offSheet =
+          box.cx - w1 / 2 < c.px(c.b.min[0]) ||
+          box.cx + w1 / 2 > c.px(c.b.max[0]) ||
+          box.cy - h1 / 2 < c.py(c.b.min[1]) ||
+          box.cy + h1 / 2 > c.py(c.b.max[1]);
+        if (offSheet) continue;
+        if (
+          onFloorOnly &&
+          !pxCorners(box).every((p) => pointInPolygon(toFt(p[0], p[1]), plan.interior))
+        ) {
+          continue;
+        }
+        if (taken.some((t) => pxOverlap(t, pxInflate(box, LABEL_GAP)))) continue;
+        return { box, tx, ty, ax, ay, right };
+      }
+    }
+  }
+  return null;
+}
+
+/** An entry in the numbered key printed in the title block. */
+interface KeyEntry {
+  n: number;
+  text: string;
+}
+
+/** Radius of a numbered key tag on the drawing. */
+const KEY_TAG_R = 7.5;
+
+/**
+ * Step 5: suppress the lettering and tag the shape with a number instead.
+ * The tag is small enough to fit almost anywhere, but it is still placed by the
+ * same collision test — a key tag that lands on a label is the same bug.
+ */
+function placeKeyTag(job: LabelJob, taken: PxRect[]): PxRect {
+  const [u, v] = pxAxes(job.shape.rot);
+  const d = KEY_TAG_R * 2;
+  const free = (box: PxRect): boolean => !taken.some((t) => pxOverlap(t, pxInflate(box, 2)));
+  const at = (dx: number, dy: number): PxRect => ({
+    cx: job.shape.cx + u[0] * dx + v[0] * dy,
+    cy: job.shape.cy + u[1] * dx + v[1] * dy,
+    w: d,
+    h: d,
+    rot: 0,
+  });
+
+  // 1. On the shape, if the shape is big enough to hold the disc at all.
+  const slackX = job.shape.w - 2 - d;
+  const slackY = job.shape.h - 2 - d;
+  if (slackX >= 0 && slackY >= 0) {
+    for (const dy of scanOffsets(slackY, 5)) {
+      for (const dx of scanOffsets(slackX, 9)) {
+        const box = at(dx, dy);
+        if (free(box)) return box;
+      }
+    }
+  }
+
+  // 2. Off the shape, on a ring, with a connector drawn back to it.
+  //
+  // This is not a nicety. A 55" TV is 4" deep in plan — 5 px — so there is no
+  // "inside" for a 15 px disc, and a wall-mounted piece is always shoulder to
+  // shoulder with the labels of whatever stands under it. Searching outward in
+  // eight directions is what stops the tag being dumped on a neighbour's name.
+  const r0 = Math.max(job.shape.w, job.shape.h) / 2 + KEY_TAG_R + 3;
+  for (const r of [r0, r0 + 12, r0 + 26, r0 + 44]) {
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      const box = at(Math.cos(a) * r, Math.sin(a) * r);
+      if (free(box)) return box;
+    }
+  }
+
+  // 3. Nowhere clear anywhere: the centre still tells the reader which shape it
+  // is, and a 15 px disc over a label is less damaging than an unreadable name.
+  return at(0, 0);
+}
+
+function drawKeyTag(c: Ctx, shape: PxRect, box: PxRect, n: number, owner: string): void {
+  // Connector: only when the tag could not sit on the shape it names, so a reader
+  // is never left guessing which box a bare number belongs to.
+  if (!pxContains(shape, box, 0)) {
+    const dx = shape.cx - box.cx;
+    const dy = shape.cy - box.cy;
+    const len = Math.hypot(dx, dy);
+    if (len > KEY_TAG_R + 1) {
+      c.out.push(
+        tag('line', {
+          x1: box.cx + (dx / len) * KEY_TAG_R,
+          y1: box.cy + (dy / len) * KEY_TAG_R,
+          x2: shape.cx,
+          y2: shape.cy,
+          stroke: c.t.textMuted,
+          'stroke-width': STROKE.leader,
+        }),
+      );
+    }
+  }
+  const buf: string[] = [];
+  buf.push(
+    tag('circle', {
+      cx: box.cx,
+      cy: box.cy,
+      r: KEY_TAG_R,
+      fill: c.t.paper,
+      'fill-opacity': 0.92,
+      stroke: c.t.text,
+      'stroke-width': STROKE.keyTag,
+    }),
+  );
+  text({ ...c, out: buf }, box.cx, box.cy, String(n), {
+    size: FONT_SIZE.keyTag,
+    weight: 700,
+    fill: c.t.text,
+    font: FONT_MONO,
+  });
+  c.out.push(
+    tag('g', { class: 'p2d-label', 'data-label-for': owner, 'data-label-mode': 'key' }, buf.join('')),
+  );
+}
+
+/** Run one job through the full escalation and emit whatever it settles on. */
+function runLabelJob(
+  c: Ctx,
+  plan: FloorPlan,
+  job: LabelJob,
+  taken: PxRect[],
+  keys: KeyEntry[],
+): void {
+  const inside = placeInside(job, taken);
+  if (inside) {
+    taken.push(inside.box);
+    putBlock(
+      c,
+      inside.box.cx,
+      inside.box.cy,
+      inside.lines,
+      inside.size,
+      inside.textRot,
+      job.ink,
+      job.halo,
+      job.tracking,
+      job.id,
+      'inside',
+    );
+    return;
+  }
+
+  const lead = placeLeader(c, plan, job, taken);
+  if (lead) {
+    taken.push(lead.box);
+    const name = job.variants[job.variants.length - 1][0];
+    c.out.push(
+      tag('path', {
+        d: dOf(
+          [
+            [lead.ax, lead.ay],
+            [lead.tx + (lead.right ? -3 : 3), lead.ty],
+          ],
+          false,
+        ),
+        stroke: c.t.textMuted,
+        'stroke-width': STROKE.leader,
+        fill: 'none',
+      }),
+    );
+    c.out.push(tag('circle', { cx: lead.ax, cy: lead.ay, r: 1.5, fill: c.t.textMuted }));
+    const leadBuf: string[] = [];
+    text({ ...c, out: leadBuf }, lead.tx, lead.ty, name.text, {
+      size: Math.min(8.6, job.sizes[0]),
+      fill: c.t.text,
+      weight: 600,
+      font: name.font === 'mono' ? FONT_MONO : FONT,
+      anchor: lead.right ? 'start' : 'end',
+      spacing: job.tracking ? job.tracking : undefined,
+      halo: true,
+    });
+    c.out.push(
+      tag(
+        'g',
+        { class: 'p2d-label', 'data-label-for': job.id, 'data-label-mode': 'leader' },
+        leadBuf.join(''),
+      ),
+    );
+    return;
+  }
+
+  const box = placeKeyTag(job, taken);
+  taken.push(box);
+  const n = keys.length + 1;
+  keys.push({ n, text: job.keyText });
+  drawKeyTag(c, job.shape, box, n, job.id);
+}
+
+/** Fixture / item labels. `reserved` holds boxes claimed by earlier passes. */
 function drawLabels(
   c: Ctx,
   items: PlacedResolved[],
   plan: FloorPlan,
   showFixtures: boolean,
-): void {
-  const taken: Box[] = [];
+  reserved: PxRect[],
+): KeyEntry[] {
+  const taken: PxRect[] = [...reserved];
+  const keys: KeyEntry[] = [];
+  const jobs: LabelJob[] = [];
 
-  const put = (
-    cx: number,
-    cy: number,
-    lines: string[],
-    size: number,
-    rot: number,
-    fills: string[],
-    fonts: string[],
-    halo: string,
-  ): void => {
-    const step = size * LINE_HEIGHT;
-    // Stack the lines PERPENDICULAR to the baseline. Offsetting in screen y and
-    // then rotating each line about its own anchor would run a rotated two-line
-    // label straight through itself.
-    const a = (rot * Math.PI) / 180;
-    const nx = -Math.sin(a);
-    const ny = Math.cos(a);
-    for (let i = 0; i < lines.length; i++) {
-      const off = i * step - ((lines.length - 1) * step) / 2;
-      text(c, cx + nx * off, cy + ny * off, lines[i], {
-        size: i === 0 ? size : size * 0.86,
-        fill: fills[i] ?? c.t.text,
-        weight: i === 0 ? 600 : 400,
-        font: fonts[i],
-        rotate: rot,
-        halo: true,
-        haloColor: halo,
+  if (showFixtures) {
+    // Fixture names, uppercase and tracked. Parentheticals are dropped
+    // ("Range (30\")" -> "RANGE") — the size is already on the drawing to scale.
+    const SPACING = 0.5;
+    const labelled = plan.fixtures.filter((f) => (f.z ?? 0) < 4);
+    /**
+     * How many other fixtures swallow this one. An appliance set INTO a counter
+     * run (dishwasher, sink, range) must win the argument over the run itself:
+     * it is the specific information, it has nowhere else to go, and the run has
+     * 10 ft of base cabinet to letter over. Sorting by containment first and
+     * then smallest-area first means every tightly constrained box is placed
+     * while the sheet is still empty.
+     */
+    const depth = (f: Fixture): number =>
+      labelled.filter((o) => {
+        if (o.id === f.id) return false;
+        const r = o.footprint;
+        const q = f.footprint;
+        const ox = Math.min(q.x + q.w, r.x + r.w) - Math.max(q.x, r.x);
+        const oy = Math.min(q.y + q.h, r.y + r.h) - Math.max(q.y, r.y);
+        if (ox <= 0 || oy <= 0) return false;
+        return (ox * oy) / (q.w * q.h) >= 0.8;
+      }).length;
+    const area = (f: Fixture): number => f.footprint.w * f.footprint.h;
+    const ordered = [...labelled].sort((p, q) => depth(q) - depth(p) || area(p) - area(q));
+
+    for (const f of ordered) {
+      const shown = f.name.replace(/\s*\([^)]*\)\s*/g, ' ').trim().toUpperCase();
+      const rect = f.footprint;
+      jobs.push({
+        id: f.id,
+        shape: {
+          cx: c.px(rect.x + rect.w / 2),
+          cy: c.py(rect.y + rect.h / 2),
+          w: rect.w * c.s,
+          h: rect.h * c.s,
+          rot: 0,
+        },
+        variants: [[{ text: shown, font: 'sans', rel: 1, weight: 600 }]],
+        sizes: [FONT_SIZE.fixture, 7.8, 7.2, 6.8, FONT_SIZE.fixtureMin],
+        ink: c.t.textMuted,
+        halo: c.t.paper,
+        tracking: SPACING,
+        keyText: shown,
       });
     }
-  };
+  }
 
   // Big pieces claim their own interior first; rugs go last because a label in
   // the middle of a rug is the least useful one on the drawing (and the rug is
@@ -1774,169 +2802,37 @@ function drawLabels(
     if (ra !== rb) return ra - rb;
     return b.obb.w * b.obb.d - a.obb.w * a.obb.d;
   });
-
   for (const { item, def, obb } of order) {
     const name = item.label ?? def.name;
     const dims = `${formatShort(obb.w)} x ${formatShort(obb.d)}`;
     // Inside labels are read against the item's own fill, not the sheet.
     const { ink, halo } = labelInk(item.color ?? def.color ?? c.t.fixtureFill, c.t);
-    // Long axis of the OBB, and the on-page angle of that axis.
-    const alongW = obb.w >= obb.d;
-    const longFt = alongW ? obb.w : obb.d;
-    const shortFt = alongW ? obb.d : obb.w;
-    // Turn the label along the long axis ONLY for long, thin pieces (a sofa, a
-    // counter, a bookcase). Turning a near-square item's label — an 8x10 rug —
-    // just looks like a mistake, so those keep the item's own orientation.
-    const thin = shortFt > 0 && longFt / shortFt >= 1.8;
-    const rot = thin ? normRot(alongW ? obb.rot : obb.rot + 90) : normRot(obb.rot);
-    const availW = (thin ? longFt : obb.w) * c.s - 8;
-    const availH = (thin ? shortFt : obb.d) * c.s - 6;
-    const cx = c.px(obb.center[0]);
-    const cy = c.py(obb.center[1]);
-
-    // The label's own footprint, as a box around the centre. Rotation is folded
-    // in by taking the larger of the two extents — cheap and never optimistic.
-    const claim = (w: number, h: number): Box => {
-      const half = Math.max(w, h) / 2;
-      return { x0: cx - half, y0: cy - half, x1: cx + half, y1: cy + half };
-    };
-    let placed = false;
-    for (const size of [FONT_SIZE.item, 9.6, 8.8, 8, 7.2, FONT_SIZE.itemMin]) {
-      const w2 = Math.max(textWidth(name, size), textWidth(dims, size * 0.86));
-      const h2 = size * LINE_HEIGHT * 2;
-      if (w2 <= availW && h2 <= availH) {
-        const box = claim(w2, h2);
-        if (taken.some((t) => overlaps(t, box))) continue; // try smaller, then outside
-        taken.push(box);
-        put(cx, cy, [name, dims], size, rot, [ink, ink], [FONT, FONT_MONO], halo);
-        placed = true;
-        break;
-      }
-      // One line only — the name matters more than the size.
-      const w1 = textWidth(name, size);
-      if (w1 <= availW && size * LINE_HEIGHT <= availH) {
-        const box = claim(w1, size);
-        if (taken.some((t) => overlaps(t, box))) continue;
-        taken.push(box);
-        put(cx, cy, [name], size, rot, [ink], [FONT], halo);
-        placed = true;
-        break;
-      }
-    }
-    if (placed) continue;
-
-    // ---- outside, on a leader line.
-    const size = 8.6;
-    const w1 = textWidth(name, size);
-    // First choice: away from the middle of the plan, so labels fan outward and
-    // do not pile up in the centre. Second choice: back INWARD — for a piece
-    // pushed against an outside wall (a floor lamp in a window bay) the outward
-    // side is off the building, where the dimension chains live.
-    let away = norm(sub(obb.center, c.mid));
-    if (away[0] === 0 && away[1] === 0) away = [1, 0];
-    const u = rotate([1, 0], obb.rot);
-    const v = rotate([0, 1], obb.rot);
-
-    let best: { dir: Vec2; tx: number; ty: number; ax: number; ay: number; box: Box } | null = null;
-    let bestCost = Infinity;
-    for (const dir of [away, vmul(away, -1)] as Vec2[]) {
-      // Support distance of the OBB along `dir` (exact for a box).
-      const reach =
-        (Math.abs(dot(u, dir)) * obb.w) / 2 + (Math.abs(dot(v, dir)) * obb.d) / 2;
-      const anchorFt = add(obb.center, vmul(dir, reach));
-      const ax = c.px(anchorFt[0]);
-      const ay = c.py(anchorFt[1]);
-      const right = dir[0] >= 0;
-      for (const [gi, gap] of [12, 22, 32, 44, 58].entries()) {
-        const tx = ax + dir[0] * gap + (right ? 4 : -4);
-        const ty = ay + dir[1] * gap;
-        const box: Box = {
-          x0: right ? tx : tx - w1,
-          y0: ty - size,
-          x1: right ? tx + w1 : tx,
-          y1: ty + size,
-        };
-        // Cost: leaving the footprint is the worst outcome (that is where the
-        // dimension chains are), then collisions, then distance from the item.
-        const outside =
-          box.x0 < c.px(c.b.min[0]) ||
-          box.x1 > c.px(c.b.max[0]) ||
-          box.y0 < c.py(c.b.min[1]) ||
-          box.y1 > c.py(c.b.max[1]);
-        const hits = taken.filter((t) => overlaps(t, box)).length;
-        const cost = (outside ? 400 : 0) + hits * 60 + gi;
-        if (cost < bestCost) {
-          bestCost = cost;
-          best = { dir, tx, ty, ax, ay, box };
-        }
-        if (cost === 0) break;
-      }
-      if (bestCost === 0) break;
-    }
-    const { tx, ty, ax, ay, box, dir } = best!;
-    const right = dir[0] >= 0;
-    taken.push(box);
-    c.out.push(
-      tag('path', {
-        d: dOf(
-          [
-            [ax, ay],
-            [tx + (right ? -3 : 3), ty],
-          ],
-          false,
-        ),
-        stroke: c.t.textMuted,
-        'stroke-width': STROKE.leader,
-        fill: 'none',
-      }),
-    );
-    c.out.push(tag('circle', { cx: ax, cy: ay, r: 1.5, fill: c.t.textMuted }));
-    text(c, tx, ty, name, {
-      size,
-      fill: c.t.text,
-      weight: 600,
-      anchor: right ? 'start' : 'end',
-      halo: true,
+    jobs.push({
+      id: item.id,
+      shape: {
+        cx: c.px(obb.center[0]),
+        cy: c.py(obb.center[1]),
+        w: obb.w * c.s,
+        h: obb.d * c.s,
+        rot: normRot(obb.rot),
+      },
+      variants: [
+        [
+          { text: name, font: 'sans', rel: 1, weight: 600 },
+          { text: dims, font: 'mono', rel: 0.86, weight: 400 },
+        ],
+        [{ text: name, font: 'sans', rel: 1, weight: 600 }],
+      ],
+      sizes: [FONT_SIZE.item, 9.6, 8.8, 8, 7.2, FONT_SIZE.itemMin],
+      ink,
+      halo,
+      tracking: 0,
+      keyText: `${name}  ${dims}`,
     });
   }
 
-  if (!showFixtures) return;
-  // Fixture names, inside-only: a plan that does not say which box is the range
-  // is not a plan. Parentheticals are dropped ("Range (30\")" -> "Range").
-  for (const f of plan.fixtures) {
-    if ((f.z ?? 0) >= 4) continue; // uppers: dashed and unlabelled, as drawn
-    // Measure exactly what gets drawn: capitals plus the tracking are ~20% wider
-    // than the mixed-case name, which is enough to run a label off its own box.
-    const SPACING = 0.5;
-    const shown = f.name.replace(/\s*\([^)]*\)\s*/g, ' ').trim().toUpperCase();
-    const rect = f.footprint;
-    const alongW = rect.w >= rect.h;
-    const availW = (alongW ? rect.w : rect.h) * c.s - 8;
-    const availH = (alongW ? rect.h : rect.w) * c.s - 6;
-    const cx = c.px(rect.x + rect.w / 2);
-    const cy = c.py(rect.y + rect.h / 2);
-    for (const size of [FONT_SIZE.fixture, 7.6, 7]) {
-      const w1 = textWidth(shown, size) + shown.length * SPACING;
-      if (w1 <= availW && size * LINE_HEIGHT <= availH) {
-        const box: Box = {
-          x0: cx - w1 / 2,
-          y0: cy - size / 2,
-          x1: cx + w1 / 2,
-          y1: cy + size / 2,
-        };
-        if (taken.some((t) => overlaps(t, box))) break;
-        taken.push(box);
-        text(c, cx, cy, shown, {
-          size,
-          fill: c.t.textMuted,
-          spacing: SPACING,
-          rotate: alongW ? 0 : -90,
-          halo: true,
-        });
-        break;
-      }
-    }
-  }
+  for (const job of jobs) runLabelJob(c, plan, job, taken, keys);
+  return keys;
 }
 
 // ===================================================================== issues
@@ -2158,6 +3054,44 @@ function chainV(c: Ctx, stations: number[], labels: string[], xLine: number, fro
 }
 
 /**
+ * A DIMENSION CHAIN MUST CLOSE.
+ *
+ * Round nine runs of the west wall to the nearest inch independently and they
+ * add up to 19'-9": 3'-3" + 3'-6" + 4" + 2'-9" + 1'-4" + 2'-8" + 4" + 2'-9" +
+ * 2'-10". The overall printed beside them is 19'-10". Both numbers are honestly
+ * rounded from the same 19.80 ft, and the drawing still contradicts itself —
+ * which on a real sheet is the defect a builder phones you about, because he
+ * cannot set out nine dimensions that do not equal the tenth.
+ *
+ * So: round every run, then hand the leftover inches back, one at a time, to the
+ * runs that lost the most in rounding (largest remainder — the same method used
+ * to apportion seats). Every label stays within 1/2" of its true length, and the
+ * chain sums EXACTLY to the overall dimension printed next to it.
+ *
+ * `total` is the number the chain must add up to, measured the same way the
+ * overall is (so the two agree by construction, not by luck).
+ */
+function closedChainLabels(runs: number[], total: number): string[] {
+  const INCH = 1 / 12;
+  const target = Math.round(total * 12);
+  const exact = runs.map((r) => r * 12);
+  const whole = exact.map((v) => Math.floor(v));
+  let short = target - whole.reduce((a, b) => a + b, 0);
+  // Hand the remaining inches out largest-remainder first; ties go to the longer
+  // run, where an inch is proportionally least visible.
+  const order = exact
+    .map((v, i) => ({ i, frac: v - Math.floor(v), len: v }))
+    .sort((p, q) => q.frac - p.frac || q.len - p.len);
+  for (let k = 0; short > 0 && k < order.length; k++, short--) whole[order[k].i] += 1;
+  // Pathological case (a chain whose runs cannot reach the total): give up on
+  // closing rather than printing a negative dimension.
+  for (let k = order.length - 1; short < 0 && k >= 0; k--, short++) {
+    if (whole[order[k].i] > 0) whole[order[k].i] -= 1;
+  }
+  return whole.map((inches) => formatFtIn(inches * INCH));
+}
+
+/**
  * Overall width + depth chains outside the footprint, plus a chain along the
  * west wall dimensioning every window and every pier between them — the chain a
  * builder actually needs to set out the openings.
@@ -2200,14 +3134,101 @@ function drawDimensions(c: Ctx, plan: FloorPlan, frames: Map<string, WallFrame>)
     .map((a) => ({ a, y: c.py(fr.at(a, fr.outerN)[1]) }))
     .sort((p, q) => p.y - q.y);
   const stations = rows.map((r) => r.y);
-  const labels: string[] = [];
+  const runs: number[] = [];
   for (let i = 0; i < rows.length - 1; i++) {
-    labels.push(formatFtIn(Math.abs(rows[i + 1].a - rows[i].a)));
+    runs.push(Math.abs(rows[i + 1].a - rows[i].a));
   }
-  chainV(c, stations, labels, left - DIM_OUT, left);
+  // Closed against c.b.h — the SAME quantity the overall depth chain prints, so
+  // the two chains cannot disagree on the sheet. (This wall runs the full depth
+  // of the footprint; if it ever did not, it closes on its own length instead.)
+  const chainTotal = Math.abs(fr.length - c.b.h) < 0.02 ? c.b.h : fr.length;
+  chainV(c, stations, closedChainLabels(runs, chainTotal), left - DIM_OUT, left);
 }
 
 // =============================================================== title block
+
+/**
+ * The numbered key — the drawing's last resort for a label that cannot be
+ * lettered in place, and the only reason a plan is allowed to carry a bare number
+ * on a shape. It grows the title block downward rather than floating anywhere on
+ * the sheet, because a key belongs with the drawing's other metadata.
+ */
+const KEY_ROW_H = 13;
+const KEY_HEAD_H = 20;
+const KEY_COL_MIN = 150;
+
+interface KeyLayout {
+  height: number;
+  cols: number;
+  colW: number;
+  rows: number;
+}
+
+function keyLayout(keys: KeyEntry[], w: number): KeyLayout {
+  if (keys.length === 0) return { height: 0, cols: 0, colW: 0, rows: 0 };
+  const avail = w - 28;
+  let widest = 0;
+  for (const k of keys) widest = Math.max(widest, textWidth(k.text, FONT_SIZE.key));
+  const colW = Math.max(KEY_COL_MIN, Math.min(avail, widest + 30));
+  const cols = Math.max(1, Math.floor(avail / colW));
+  const rows = Math.ceil(keys.length / cols);
+  return { height: KEY_HEAD_H + rows * KEY_ROW_H + 8, cols, colW, rows };
+}
+
+function drawKeyBlock(
+  c: Ctx,
+  keys: KeyEntry[],
+  x: number,
+  y: number,
+  w: number,
+  lay: KeyLayout,
+): void {
+  c.out.push(
+    tag('line', {
+      x1: x,
+      y1: y,
+      x2: x + w,
+      y2: y,
+      stroke: c.t.frame,
+      'stroke-width': STROKE.frame,
+      'stroke-opacity': 0.7,
+    }),
+  );
+  text(c, x + 14, y + 12, 'KEY — NOT LETTERED IN PLACE', {
+    size: FONT_SIZE.tiny,
+    anchor: 'start',
+    weight: 700,
+    spacing: 1.3,
+    fill: c.t.textMuted,
+  });
+  keys.forEach((k, i) => {
+    const col = Math.floor(i / lay.rows);
+    const row = i % lay.rows;
+    const kx = x + 14 + col * lay.colW;
+    const ky = y + KEY_HEAD_H + 6 + row * KEY_ROW_H;
+    c.out.push(
+      tag('circle', {
+        cx: kx + 6,
+        cy: ky,
+        r: 6,
+        fill: 'none',
+        stroke: c.t.text,
+        'stroke-width': STROKE.keyTag,
+      }),
+    );
+    text(c, kx + 6, ky, String(k.n), {
+      size: 7,
+      weight: 700,
+      fill: c.t.text,
+      font: FONT_MONO,
+    });
+    text(c, kx + 17, ky, k.text, {
+      size: FONT_SIZE.key,
+      anchor: 'start',
+      fill: c.t.text,
+    });
+  });
+}
 
 function northArrow(c: Ctx, cx: number, cy: number): void {
   // North is UP on the page: the data model's +y is plan SOUTH.
@@ -2313,6 +3334,8 @@ function drawTitleBlock(
   title: string,
   subtitle: string,
   itemCount: number,
+  keys: KeyEntry[],
+  keyLay: KeyLayout,
 ): void {
   const NORTH_W = 82;
   const STAT_W = Math.min(190, Math.max(140, w * 0.24));
@@ -2321,7 +3344,7 @@ function drawTitleBlock(
       x,
       y,
       width: w,
-      height: h,
+      height: h + keyLay.height,
       fill: 'none',
       stroke: c.t.frame,
       'stroke-width': STROKE.frame,
@@ -2354,13 +3377,23 @@ function drawTitleBlock(
     }),
   );
 
-  text(c, x + 14, y + 22, title, {
+  // The title cell is only as wide as the sheet allows, and at small scales that
+  // is narrower than a layout description. Truncate to the cell rather than let
+  // the text run through the vertical rule and under the AREA figure.
+  const cellW = statX - x - 26;
+  const ellipsize = (s: string, size: number): string => {
+    if (textWidth(s, size) <= cellW) return s;
+    let cut = s;
+    while (cut.length > 1 && textWidth(`${cut}…`, size) > cellW) cut = cut.slice(0, -1);
+    return `${cut.trimEnd()}…`;
+  };
+  text(c, x + 14, y + 22, ellipsize(title, FONT_SIZE.title), {
     size: FONT_SIZE.title,
     anchor: 'start',
     weight: 700,
     fill: c.t.text,
   });
-  text(c, x + 14, y + 41, subtitle, {
+  text(c, x + 14, y + 41, ellipsize(subtitle, FONT_SIZE.subtitle), {
     size: FONT_SIZE.subtitle,
     anchor: 'start',
     fill: c.t.textMuted,
@@ -2415,6 +3448,8 @@ function drawTitleBlock(
   });
 
   northArrow(c, northX + NORTH_W / 2, y + h / 2 - 6);
+
+  if (keys.length) drawKeyBlock(c, keys, x, y + h, w, keyLay);
 }
 
 // ================================================================ entry point
@@ -2497,7 +3532,10 @@ export function renderPlanSVG(
   }
   const legendY = padTop + drawH + TITLE_GAP;
   const titleY = legendY + (legendH ? legendH + 14 : 0);
-  const height = round2(titleY + TITLE_H + Math.round(margin * 0.5));
+  // NOTE: the sheet HEIGHT cannot be settled yet. If a label has to be suppressed
+  // it goes into the numbered key, and the key grows the title block — so the
+  // height is computed after the annotation pass and the paper is unshifted in
+  // front of everything at the end. See sheetMarkup.
 
   const c: Ctx = {
     t,
@@ -2556,7 +3594,12 @@ export function renderPlanSVG(
       `.p2d-item{cursor:pointer}` +
         `.p2d-item.is-selected .p2d-body{stroke:${t.accent};stroke-width:${STROKE.selected}}` +
         `.p2d-item.is-selected .p2d-halo{stroke-opacity:.75}` +
-        `.p2d-fixture{cursor:default}`,
+        `.p2d-fixture{cursor:default}` +
+        // Labels are emitted OUTSIDE the group of the thing they name (they have
+        // to be, so they paint over every symbol), so a pointer landing on a
+        // label would otherwise find no [data-item-id] to walk up to and would
+        // read as a click on empty paper.
+        `.p2d-label{pointer-events:none}`,
     ),
   );
 
@@ -2564,33 +3607,50 @@ export function renderPlanSVG(
   // sitting on the floor before they choose a spot.
   const items = show.furniture ? resolveItems(layout) : [];
 
-  // ---- 1. paper + floor + grid
-  drawSheet(c, width, height);
+  // ---- 1. floor + grid (the paper goes on last, see above)
   drawFloor(c, plan);
   if (show.grid) drawGrid(c, plan);
 
+  // Boxes that later annotation must not land on. Zone names and clearance notes
+  // are painted BEFORE the labels, so the label placer has to be told about them
+  // or it will letter straight over the top of them.
+  const reserved: PxRect[] = [];
+
   // ---- 2. zone tints
-  if (show.zones) drawZones(c, plan, items);
+  if (show.zones) reserved.push(...drawZones(c, plan, items));
 
   // ---- 3-5. the building fabric
   const frames = new Map<string, WallFrame>();
   for (const w of plan.walls) frames.set(w.id, wallFrame(w));
+  const glazing = glazingLayout(plan, frames);
   drawWalls(c, plan, frames);
   for (const o of plan.openings) {
     const fr = frames.get(o.wall);
     if (!fr) continue;
-    if (o.kind === 'window') drawWindow(c, o, fr);
-    else if (o.kind === 'door') drawDoor(c, plan, o, fr, show.swings);
-    // 'passage': the poché break IS the drawing. Nothing else to add.
+    if (o.kind === 'window') {
+      // The SILL picks the convention — punched opening vs. full-height glazed
+      // assembly. See FULL_HEIGHT_SILL.
+      const g = glazing.get(o.id);
+      if (g) drawGlazedAssembly(c, o, fr, g);
+      else drawPunchedWindow(c, o, fr);
+    } else if (o.kind === 'door') {
+      drawDoor(c, plan, o, fr, show.swings);
+    } else {
+      // 'passage': normally the poché break IS the drawing — but a closet passage
+      // is a bifold pair whose leaves project into the room, and those have to be
+      // on the drawing. See passageBifoldFold.
+      const fold = passageBifoldFold(plan, o, fr);
+      if (fold !== null) drawBifold(c, o, fr, fold);
+    }
   }
 
   // ---- 6-8. contents
   if (show.fixtures) drawFixtures(c, plan);
-  if (show.clearances) drawClearances(c, plan, items);
+  if (show.clearances) reserved.push(...drawClearances(c, plan, items));
   if (show.furniture) drawFurniture(c, items, selected);
 
   // ---- 9. annotation
-  if (show.labels) drawLabels(c, items, plan, show.fixtures);
+  const keys = show.labels ? drawLabels(c, items, plan, show.fixtures, reserved) : [];
 
   // ---- 10. issues
   if (issues.length) {
@@ -2601,22 +3661,30 @@ export function renderPlanSVG(
   // ---- 11. dimensions
   if (show.dims) drawDimensions(c, plan, frames);
 
-  // ---- 12. title block
+  // ---- 12. title block, now that the numbered key is known.
   const frameInset = 14;
+  const titleW = width - (frameInset + 12) * 2;
+  const keyLay = keyLayout(keys, titleW);
+  const height = round2(titleY + TITLE_H + keyLay.height + Math.round(margin * 0.5));
   drawTitleBlock(
     c,
     plan,
     layout,
     frameInset + 12,
     titleY,
-    width - (frameInset + 12) * 2,
+    titleW,
     TITLE_H,
     opts.title ?? layout?.name ?? plan.name,
     opts.subtitle ??
       layout?.description ??
       `${plan.name}${plan.meta.accuracy ? ` — ${plan.meta.accuracy}` : ''}`,
     items.length,
+    keys,
+    keyLay,
   );
+
+  // The paper, in front of everything in document order so it paints first.
+  c.out.unshift(sheetMarkup(c, width, height));
 
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" ` +

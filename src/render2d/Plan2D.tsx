@@ -11,6 +11,12 @@
  *
  * There is NO drawing logic here. If something looks wrong on screen it is
  * wrong in svg.ts, and the headless PNG render will show the same bug.
+ *
+ * OTHER HOOKS svg.ts stamps, for anyone writing tests or dev tools against the
+ * markup: `g.p2d-label[data-label-for][data-label-mode]` on every annotation,
+ * where the mode is `inside` | `leader` | `key` — how the label placer had to
+ * settle the label. `inside` carries the guarantee that the text is wholly within
+ * the shape named by data-label-for, so it is directly assertable.
  */
 
 import { useCallback, useMemo, type JSX, type MouseEvent } from 'react';
@@ -104,6 +110,10 @@ export const PLAN2D_CSS = `
 .plan2d .p2d-item { transition: opacity 90ms linear; }
 .plan2d .p2d-item.is-selected { outline: none; }
 .plan2d .p2d-item.is-selected .p2d-body { paint-order: stroke; }
+/* Annotation must never eat a click meant for the item it names. svg.ts sets the
+   same rule in the SVG's own <style> so an exported file behaves identically;
+   this is here so the rule survives a consumer that strips inline styles. */
+.plan2d .p2d-label { pointer-events: none; }
 `;
 
 export default Plan2D;

@@ -36,8 +36,24 @@ export interface PlanTheme {
   /** wall outline — the heaviest line on the drawing */
   wallStroke: string;
 
-  /** glazing tint + the double glass line */
+  /**
+   * The glazing PLANE line. Reference-matched: the real assemblies are black
+   * anodised aluminium (data/reference/unit-photo-living-west.jpeg), so on the
+   * light sheet this is near-black, not the sky-blue a "window" usually gets.
+   */
   glass: string;
+  /**
+   * Low-alpha wash across the thickness of a glazed opening. Separate from
+   * `glass` because the frame reads DARK while the light coming through reads
+   * PALE — using one colour for both makes a full-height slider look like a
+   * shadow instead of a window.
+   */
+  glassTint: string;
+  /**
+   * Aluminium frame / mullion / slider track ink. Part of the building fabric,
+   * so it wants the weight of the wall linework rather than of the annotation.
+   */
+  mullion: string;
   /** sill / jamb / threshold lines */
   sill: string;
   /** door leaf + swing arc */
@@ -72,6 +88,30 @@ export interface PlanTheme {
   /** selection highlight (used by Plan2D's CSS) */
   accent: string;
 }
+
+/**
+ * REFERENCE-MATCHED PALETTE — data/reference/unit-photo-living-west.jpeg.
+ *
+ * The photo of the real unit fixes four things that the generic "architectural
+ * sheet" palette got wrong, and every theme below is tuned to them:
+ *
+ *   FLOOR    dark wide-plank walnut, satin. The floor is the single most
+ *            recognisable surface in the photo, so the footprint fill carries a
+ *            warm walnut tint on every theme (a warm WASH on the light sheet, a
+ *            genuinely dark espresso on the dark one). It stays a tint rather
+ *            than the real espresso brown on the light sheet for one reason:
+ *            this is a working construction drawing and a 20%-value floor kills
+ *            the line-weight hierarchy on top of it.
+ *   GLAZING  black anodised aluminium, slim mullions, floor-to-ceiling. So the
+ *            glazing ink is the DARKEST thing on the light sheet after the wall
+ *            poché — see `glass` / `mullion` — with a pale daylight wash
+ *            (`glassTint`) inside the frame for the light coming through.
+ *   WALLS    flat smooth white. Paper and the interior stay near-white; the
+ *            zone washes are the only colour on the floor.
+ *   CEILING  exposed structural concrete. The wall poché moves off near-black
+ *            onto a cool concrete grey, which is what you would actually be
+ *            cutting through.
+ */
 
 /** Zone washes for the light sheet. Muted, printerly hues — see zoneAlpha. */
 const LIGHT_ZONES: Record<ZoneType, string> = {
@@ -108,27 +148,36 @@ const BLUE_ZONES: Record<ZoneType, string> = {
 };
 
 export const THEMES: Record<'light' | 'dark' | 'blueprint', PlanTheme> = {
-  /** Warm white paper, near-black poché — a printed construction sheet. */
+  /**
+   * Printed construction sheet: white walls on warm paper, concrete-grey poché,
+   * a walnut wash on the floor and black-anodised glazing.
+   */
   light: {
     name: 'light',
     sheet: '#ffffff',
-    paper: '#fbfaf6',
-    frame: '#cdc7ba',
-    floor: '#ffffff',
-    grid: '#eae5d9',
-    gridMajor: '#d7d0be',
-    wallFill: '#2c3134',
-    wallStroke: '#101416',
-    glass: '#5f9fbe',
-    sill: '#54626a',
-    swing: '#98a2a8',
-    fixtureFill: '#f0f2f2',
-    fixtureStroke: '#5a666c',
+    paper: '#fbf9f5',
+    frame: '#c9c1b2',
+    // Walnut wash. Held at ~88% value so 0.5 pt hairlines still read on it.
+    floor: '#eee0cf',
+    grid: '#e0cfb9',
+    gridMajor: '#cdb79b',
+    // Exposed concrete, not ink-black: this is the material being cut.
+    wallFill: '#3b4144',
+    wallStroke: '#12171a',
+    // Black anodised aluminium.
+    glass: '#161d21',
+    glassTint: '#b8d0dc',
+    mullion: '#0e1315',
+    sill: '#33403f',
+    swing: '#9aa3a7',
+    // Pale stone counter / white appliance fronts.
+    fixtureFill: '#f4f2ec',
+    fixtureStroke: '#556169',
     furnitureStroke: '#39424a',
     furnitureFillAlpha: 1,
-    text: '#1a2023',
-    textMuted: '#79848a',
-    dimLine: '#7a6a52',
+    text: '#191f22',
+    textMuted: '#76817f',
+    dimLine: '#7d6a4e',
     zoneTints: LIGHT_ZONES,
     issueError: '#c0392b',
     issueWarn: '#c1830f',
@@ -136,27 +185,38 @@ export const THEMES: Record<'light' | 'dark' | 'blueprint', PlanTheme> = {
     accent: '#0f7fd4',
   },
 
-  /** Dark UI sheet. Poché inverts to light so the walls still read as solid. */
+  /**
+   * Dark UI sheet. Poché inverts to concrete-light so the walls still read as
+   * solid, and the floor is allowed to be the real espresso walnut here — on a
+   * dark ground a dark floor costs nothing.
+   */
   dark: {
     name: 'dark',
-    sheet: '#101316',
-    paper: '#181c20',
-    frame: '#2f363c',
-    floor: '#1e2429',
-    grid: '#242b31',
-    gridMajor: '#333c43',
-    wallFill: '#c6ccd1',
-    wallStroke: '#eef2f5',
-    glass: '#6ec3e8',
-    sill: '#9dafb9',
+    sheet: '#0f1113',
+    paper: '#17191b',
+    frame: '#343a3c',
+    // Real walnut value, warm.
+    floor: '#2a1f17',
+    grid: '#382a20',
+    gridMajor: '#4d3a2b',
+    wallFill: '#c8cccd',
+    wallStroke: '#f0f3f4',
+    // Anodised metal cannot read "black" against a dark floor; it reads as the
+    // cool grey sheen you actually see on the mullions in the photo.
+    glass: '#a7bcc6',
+    glassTint: '#8fb4c6',
+    // Pure white so the aluminium still separates from the concrete-light poché
+    // it is set into — at 4" a mullion is only two device pixels wide.
+    mullion: '#ffffff',
+    sill: '#9aaab2',
     swing: '#6c777f',
-    fixtureFill: '#232a2f',
-    fixtureStroke: '#8e9aa1',
+    fixtureFill: '#242a2d',
+    fixtureStroke: '#96a2a8',
     furnitureStroke: '#0c1013',
     furnitureFillAlpha: 1,
     text: '#e9eef1',
-    textMuted: '#8b959b',
-    dimLine: '#9aa7ae',
+    textMuted: '#8b9599',
+    dimLine: '#a8a08c',
     zoneTints: DARK_ZONES,
     issueError: '#ff6f60',
     issueWarn: '#ffc24a',
@@ -164,18 +224,26 @@ export const THEMES: Record<'light' | 'dark' | 'blueprint', PlanTheme> = {
     accent: '#4db2ff',
   },
 
-  /** Classic blueprint: white linework burned into a deep blue ground. */
+  /**
+   * Classic blueprint: white linework burned into a deep blue ground. The
+   * reference cannot change the ground (a blueprint is blue by definition), so
+   * the walnut shows up as a warm violet-shifted floor and the black glazing as
+   * the only NEUTRAL (un-blued) white on the sheet.
+   */
   blueprint: {
     name: 'blueprint',
     sheet: '#0a2149',
     paper: '#0f2d5c',
     frame: '#6d92c9',
-    floor: '#123566',
-    grid: '#1b4079',
-    gridMajor: '#2b5892',
+    // Warm-shifted off the pure navy floor so the wood still registers.
+    floor: '#193760',
+    grid: '#26457a',
+    gridMajor: '#3a5f96',
     wallFill: '#eaf2ff',
     wallStroke: '#ffffff',
-    glass: '#a8dcf7',
+    glass: '#eceff0',
+    glassTint: '#2a5590',
+    mullion: '#ffffff',
     sill: '#d3e4fa',
     swing: '#8fb2df',
     fixtureFill: '#164079',
@@ -209,6 +277,22 @@ export const STROKE = {
   jamb: 0.9,
   glass: 0.9,
   sill: 1.2,
+  /**
+   * FULL-HEIGHT GLAZED ASSEMBLY (sill == 0). A punched window is annotation-
+   * weight linework in a hole in the wall; a floor-to-ceiling glazed wall is
+   * STRUCTURE, so its frame gets wall weight and its glass plane gets more than
+   * a hairline. Without that, a slider reads as a hole and the drawing lies.
+   */
+  glazeFrame: 1.6,
+  glazePlane: 1.4,
+  /** mullion between two lights of the same assembly */
+  mullion: 1.2,
+  /** the operable sliding leaf, drawn on its own track line */
+  slider: 1.3,
+  /** slide-direction / swing-direction arrows */
+  arrow: 0.9,
+  /** bifold leaf outline */
+  bifold: 1.25,
   swing: 0.75,
   leaf: 1.6,
   fixture: 1.05,
@@ -222,6 +306,8 @@ export const STROKE = {
   frame: 1.1,
   clearance: 0.8,
   issue: 1.3,
+  /** ring around a numbered key tag */
+  keyTag: 1.0,
   selected: 2.6,
 } as const;
 
@@ -247,29 +333,64 @@ export const FONT_SIZE = {
   itemSub: 8.8,
   itemMin: 6.6,
   fixture: 8.4,
+  /** smallest a fixture name is allowed to shrink to before it is rotated/keyed */
+  fixtureMin: 6.4,
   dim: 9.4,
   legend: 9.8,
+  /** numbered-key list in the title block */
+  key: 8.8,
+  /** the digit inside a key tag on the drawing */
+  keyTag: 8,
   tiny: 7.6,
 } as const;
 
 /**
- * Per-character advance widths as a fraction of the font size, used to decide
- * whether a label fits inside a shape without a DOM to measure with.
- * Calibrated roughly against Helvetica.
+ * EXACT advance widths, in 1/1000 em, for ASCII 32..126 in Helvetica.
+ *
+ * This is not a guess and it is not "calibrated roughly": it is the Adobe Core-14
+ * Helvetica AFM table, and it was verified against what actually rasterises here
+ * by measuring canvas `measureText` in the same headless chromium that renders
+ * the PNGs — every sample string matched to within 2/1000 em (e.g. A-Z summed to
+ * 17.613 em predicted vs 17.6128 em measured). Arial, Liberation Sans and
+ * Helvetica Neue are all metric-compatible with this table for ASCII, so every
+ * member of the FONT stack above measures the same.
+ *
+ * WHY IT MATTERS: label fitting has no DOM to measure with, and the old ~6%
+ * underestimate was enough to push "WASHER / DRYER" past the ends of its own
+ * 2'-8" box. A label placer is only as honest as its text metric.
  */
-const NARROW = new Set("iljtIfr1.,:;'\"|!()[]-/ ".split(''));
-const WIDE = new Set('mwMWQ@#%&'.split(''));
+const HELV_W: readonly number[] = [
+  278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333, 278, 278, // 32-47
+  556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 278, 278, 584, 584, 584, 556, // 48-63
+  1015, 667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833, 722, 778, // 64-79
+  667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611, 278, 278, 278, 469, 556, // 80-95
+  333, 556, 556, 500, 556, 556, 278, 556, 556, 222, 222, 500, 222, 833, 556, 556, // 96-111
+  556, 556, 333, 500, 278, 556, 500, 722, 500, 500, 500, 334, 260, 334, 584, // 112-126
+];
 
-export function textWidth(str: string, fontSize: number): number {
-  let units = 0;
+/**
+ * Advance width of the mono stack, in em. DejaVu Sans Mono (what the FONT_MONO
+ * stack lands on in this environment) is fixed pitch at 1233/2048 em; measured
+ * identically for digits and for capitals.
+ */
+const MONO_W = 0.60205;
+
+/**
+ * Width of a text run in px. `font` selects which metric table to use — the
+ * dimension strings and the size sub-lines are set in FONT_MONO, and a mono
+ * digit is 8% wider than a Helvetica one, which is the difference between a
+ * dimension fitting inside its own chain and colliding with the tick.
+ */
+export function textWidth(str: string, fontSize: number, font: 'sans' | 'mono' = 'sans'): number {
+  if (font === 'mono') return [...str].length * MONO_W * fontSize;
+  let mille = 0;
   for (const ch of str) {
-    if (NARROW.has(ch)) units += 0.31;
-    else if (WIDE.has(ch)) units += 0.84;
-    else if (ch >= 'A' && ch <= 'Z') units += 0.66;
-    else if (ch >= '0' && ch <= '9') units += 0.56;
-    else units += 0.52;
+    const cp = ch.codePointAt(0) ?? 32;
+    // Anything outside ASCII (rare in this data: only quotes/degree signs) is
+    // charged as a lowercase 'n', the modal width of the table.
+    mille += cp >= 32 && cp <= 126 ? HELV_W[cp - 32] : 556;
   }
-  return units * fontSize;
+  return (mille / 1000) * fontSize;
 }
 
 /** Cap height used for vertical fitting of a single text line. */
