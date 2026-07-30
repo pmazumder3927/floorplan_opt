@@ -1007,6 +1007,21 @@ def parse_args(argv: list[str]) -> Args:
     # near-glass surface goes WARM (R-B -10 -> +4) where the photo goes strongly cool.
     # The sun is not what is missing. See the block in world.py's _ground_bounce for
     # where the soffit deficit actually lives.
+    #
+    # RE-RUN on a layout that still exists, because the sweep above was measured on
+    # a-window-desk and a concurrent pass deleted it. c-second-row / eye-living /
+    # 160 spp, soffit_mid 250,45..700,95 and east wall 800,140..940,330, floor
+    # 225,528..450,570, clip% = fraction of the whole frame at or above 254:
+    #     sun/sky      soffit L   wall L   ratio   floor R-B   floor clip   frame clip
+    #     0.04 / 2.2     132.5    133.8    0.990     -7.3         0.00%       0.07%
+    #     1.00 / 1.0     183.5    174.5    1.052     +5.3         6.11%       4.07%
+    #     1.00 / 2.2     200.0    189.4    1.056     +3.6         8.11%       4.59%
+    #     photograph     155.3    136.5    1.138    -23.1         0.00%       0.00%
+    # Same verdict, larger numbers: the ratio moves the right way (0.99 -> 1.06 of the
+    # 1.14 wanted) and the price is 6-8% of the floor clipped against a photograph
+    # that clips nothing, plus a soffit that goes from R-B -23 to R-B -5 where the
+    # photograph's is -25 at mid-ceiling and -68 at the glass. Rejecting the sun is
+    # a COLOUR and CLIPPING decision, not a brightness one, and it is the right call.
     p.add_argument('--sun-intensity', type=float, default=0.04,
                    help='multiplier on the sun DISC. 1.0 = clear sky; default matches the photo.')
     p.add_argument('--sky-strength', type=float, default=2.2,

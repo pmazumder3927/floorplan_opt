@@ -254,6 +254,33 @@ def _ground_bounce(nt, sky, bearing_deg: float):
     six times BRIGHTER than the sky above it. That is not a lower hemisphere, it is
     a light box.
 
+    RE-VERIFIED INDEPENDENTLY, and re-stated in units anyone can reproduce, because
+    the sweep above was run through temporary XP_* environment hooks and a layout
+    (a-window-desk) that have both since been deleted. c-second-row / eye-living /
+    160 spp / default weather / AgX as shipped, editing GROUND_ALBEDO in place:
+        GROUND_ALBEDO   soffit_mid L   east-wall L   soffit/wall   soffit R-B
+          0.0              133.0         134.6         0.988         -23.8
+          0.22 (ours)      132.5         133.8         0.990         -23.4
+          5.0              153.1         142.5         1.074         -15.0
+        photograph         155.3         136.5         1.138         -25.3
+      patches: soffit_mid 250,45..700,95   east wall 800,140..940,330
+      photo:   soffit_mid 250,40..700,95   east wall 765,200..820,450
+    Killing the hemisphere really is invisible (0.5 L unit, i.e. noise), and even a
+    23x overdose reaches only 1.07 of the 1.14 the photograph wants while dragging
+    the ceiling WARM (R-B -23 -> -15) where the photograph is cool. Confirmed.
+
+    ONE CORRECTION TO THE DIAGNOSIS ABOVE: the render's ceiling is not "flat", it
+    runs BACKWARDS, and that is a bigger error than the deficit in the mean. Column
+    profile, x averaged 290-310, c-second-row against the photograph:
+        render   soffit L 133.8 far  ->  132.5 mid  ->  107.7 at the glass
+        photo    soffit L 126.5 far  ->  155.3 mid  ->  179.5 at the glass
+    Ours falls 26 L units toward the glazing; the photograph's rises 53. The mean is
+    close (132.5 against 136.5 for the wall) — it is the GRADIENT that is inverted,
+    and the last 30 px of it are a hard AO trough at the head junction (L 50 at y114
+    against a soffit of 133), which is geometry in src/render3d/build.ts, not
+    illumination. Nothing in world.py can produce a gradient across a ceiling that
+    only sees the world through a slot 4" tall.
+
     Two refinements were built, measured and thrown away, so nobody rebuilds them:
       * AERIAL PERSPECTIVE on this hemisphere (a per-direction 1-exp(-H/(-Z * D))
         ramp from albedo*sky straight down to AIRLIGHT_DEPRESSION*sky at the
@@ -489,14 +516,33 @@ class Mulberry32:
 
 # --------------------------------------------------------------------------- palettes
 
-# THESE ARE THE OUTLOOK'S ONLY LIVE ALBEDOS. scripts/blender/materials.py also
-# defines six `context-*` Surfaces (context-roof, context-wall, ...) and they are
-# DEAD CODE on every real frame: render.py's build_outlook() imports world.py and
-# only falls back to its own build_context() if that import RAISES, and world.py's
-# build_city() bakes the two tables below into a per-vertex 'albedo' attribute read
-# by the private _city_material(). Every frame that has ever shipped logs
-# "outlook: world.py city". Tune here; tuning materials.py's context-* block changes
-# nothing.
+# THESE ARE THE ALBEDOS OF EVERY FRAME raytrace.ts PRODUCES. build_city() bakes the
+# two tables below into a per-vertex 'albedo' attribute read by the private
+# _city_material(), and every frame the driver has shipped logs "outlook: world.py
+# city". So tune here first.
+#
+# BUT materials.py's six `context-*` Surfaces are NOT dead code, and an earlier
+# revision of this note said they were, with the wrong reason. Read render.py's
+# build_outlook(): it takes the built-in build_context() rig on THREE conditions,
+# only one of which is an import failure —
+#   1. `import world` raised (logged "world.py not importable");
+#   2. --sun-az or --sun-el was passed. world.py derives its sun from time-of-day
+#      alone, so an arbitrary sun angle CANNOT go through it. This is a documented
+#      render.py flag pair with its own log line, and it is reachable today:
+#      invoking render.py directly with --sun-az=237.6 --sun-el=37.5 logs
+#      "outlook: --sun-az/--sun-el given ... built-in rig" and then
+#      "context: 288 mid-rise blocks" (verified, not reasoned);
+#   3. build_world() or build_city() raised at runtime, which is caught.
+# raytrace.ts happens never to pass --sun-az/--sun-el today (see its flag list), so
+# condition 2 needs a direct blender invocation to hit — that is the whole of the
+# "dead code" claim, and it is a property of the DRIVER, not of the code.
+#
+# It matters because the chroma work below did not touch materials.py, so the two
+# cities have now diverged. MEASURED, c-second-row / eye-living / 160 spp, the same
+# 8x6-block roofscape patch (250,292..326,500) through both paths:
+#     world.py city    R-B sd 17.1   p95 +32.0   warm 11.4%
+#     build_context    R-B sd  8.3   p95   0.0   warm  0.0%     <- still monochrome
+# Anyone who ships a --sun-az frame gets the styrofoam city this pass removed.
 #
 # Wall and roof albedos, the same two palettes and the same order as backdrop.ts.
 # Walls are masonry/stucco/concrete and mid-tone; roofs are dark. Keeping them
@@ -505,14 +551,52 @@ class Mulberry32:
 # renders near zero.
 #
 # A CITY WITH NO WARM SURFACES READS AS STYROFOAM, and that is what these two tables
-# were producing. MEASURED on the reference photo, roofscape through the left bay
-# with the mullion excluded (x212-336, y292-478, 8x6 blocks): R-B ranges -47 to +59,
-# sd 20.5, and 14.8% of the blocks are warm (R-B > +5) — a run of ochre parapet
-# panels, a terracotta cap flashing, red-brown brick flanks among the grey membrane.
-# The Cycles render of the same city measured R-B sd 6.3 with max -1.5 and ZERO warm
-# blocks: EVERY pixel of the outlook sat between -25 and -1. It was never a value
-# problem (median L 184 against the photo's 227, i.e. we are if anything DARKER, not
-# blown out) — it was monochrome.
+# were producing. Measured in 8x6 blocks over the roofscape, mullion excluded:
+#
+#                                          R-B sd   R-B p5/p95   warm(>+5)   L p50
+#   reference photo, left bay               20.5    -38 / +40      14.8%      227
+#     212,292..336,478
+#   BEFORE, c-second-row left bay pane1      5.2    -24 /  -3       0.0%      174
+#   AFTER,  c-second-row left bay pane1     17.1    -27 / +32      11.4%      174
+#     250,292..326,500
+#   BEFORE, demo-openloft pane               6.3    -24 /  -3       0.0%      184
+#   AFTER,  demo-openloft pane              19.9    -24 / +37      19.4%      184
+#     354,338..450,410
+#
+# (The first pass measured its BEFORE on `a-window-desk`, which a concurrent pass
+# then deleted; the c-second-row rows above are the same experiment on a layout that
+# exists, and they agree. All rows eye-living, 160 spp, default weather.)
+#
+# The photo swings from a shaded bitumen deck to a run of ochre parapet panels, with
+# a terracotta cap flashing and red-brown brick flanks among the grey membrane. Ours
+# had EVERY block between -25 and -1 — monochrome. The fix put the spread back
+# without moving the value at all (L p50 183.6 -> 183.6 on the demo pane, 173.8 ->
+# 174.1 on c-second-row), and it is a REDISTRIBUTION, not a saturation boost:
+# per-pixel sat mean over that pane went 15.3 -> 19.9 against the photo's 19.9, and
+# sat p95 24 -> 37 against the photo's 46, so the outlook is still slightly UNDER the
+# photograph's chroma, not over it. Whole-frame clipped fraction and firefly count
+# did not move (0.070% -> 0.070%, 61 -> 57 outliers).
+#
+# STILL WRONG, AND NOT FIXED HERE: THE OUTLOOK'S VALUE. An earlier revision of this
+# note said "it was never a value problem". That is only true in the direction of
+# blowing out. With the INTERIOR matched (east wall: render 133.8 against the photo's
+# 136.5, 2% low) the outlook is about 0.9 stop dark, and the error is not uniform —
+# it is worst on the nearest, largest roof in the frame, and its gradient runs
+# BACKWARDS. Measured, c-second-row eye-living against the photo's left bay:
+#     sky above the horizon    render 244.0    photo 246.1     <- matches
+#     mid-field roofs          render 182.6    photo 201.9     <- 10% low
+#     nearest roof deck        render 145.3    photo 228.5     <- 36% low, and
+#                              R-B -22.9       R-B +18.6          cool where the
+#                                                                 photo is warm
+# In the photograph the near roofs are the BRIGHTEST and WARMEST thing outside;
+# here they are the darkest and coolest. Two causes, both real: (a) there is no
+# direct sun on this city at the default weather (--sun-intensity 0.04), so no roof
+# gets a bright warm face for free — which is exactly why the hue below had to be
+# faked into the albedo; and (b) the ladder below tops out at linear Y 0.265 and has
+# no WHITE-MEMBRANE entry at all, while the photo plainly contains near-white TPO
+# (blocks at L 244). Fixing (b) means breaking the "same COUNT and ORDER" contract
+# with backdrop.ts or re-purposing a slot, and it must be re-measured against the
+# floor-glare sheet, so it is left as a stated deficit rather than a silent one.
 #
 # WHY the chroma that was already in these tables did not survive to the frame, in
 # order of size (all three are real, and the third is the biggest):
@@ -546,7 +630,8 @@ WALL_COLORS = (
     "#a2a099",  # concrete
     "#c2a878",  # light painted brick, warmed to the ochre of the photo's parapet
                 # panel run (measured there at R-B +50..+59 where it is sunlit).
-                # Was #b0a898 at R/B 1.38; this is 2.87 at the same Y (0.41).
+                # Was #b0a898 at R/B 1.38 and linear Y 0.395; this is R/B 2.87 at
+                # Y 0.408, i.e. +3% brighter, not "the same Y" as first written.
     "#77706a",  # dark grey render
     "#8d9195",  # cool grey precast
     "#6e7276",  # dark cool grey / glazed office block
@@ -569,15 +654,34 @@ WALL_COLORS = (
 # the reference photo through its own pipeline. The LENGTH and ORDER, however,
 # must stay identical: both scatterers index their table with the same seeded
 # PRNG, so entry i must mean the same kind of roof in both.
-# HUE, added at constant VALUE. The darkness above is not being undone: every entry
-# below keeps its predecessor's linear Y to within 0.01 (the ladder goes 0.047, 0.061,
-# 0.084, 0.110, 0.197, 0.265, 0.063, 0.029 against the old 0.046, 0.062, 0.085, 0.111,
-# 0.186, 0.252, 0.055, 0.029, so the palette mean moves +3%). What changes is R/B, and
-# only on the slots whose own comment already names a warm material: pea gravel on a
-# built-up roof is buff-brown, ballast is tan, and slot 6 is gravel over a BRICK
-# building. Slots 2 and 7 are pushed the other way — weathered concrete and fresh
-# bitumen really are neutral-to-cool — because the photograph's roofscape is a SPREAD
-# (R-B -47 to +59), and a spread needs both ends, not a warm bias.
+#
+# HUE, ADDED AT NEARLY CONSTANT VALUE — and "nearly" is the honest word. The darkness
+# above is not being undone, but an earlier revision of this note claimed "every entry
+# keeps its old linear Y to within 0.01" and that is FALSE for two of the eight.
+# Recomputed from the hexes below (sRGB -> linear, Y = 0.2126R + 0.7152G + 0.0722B):
+#
+#   slot        0      1      2      3      4      5      6      7    mean
+#   old     0.0456 0.0621 0.0849 0.1107 0.1856 0.2515 0.0549 0.0292  0.1031
+#   new     0.0466 0.0608 0.0843 0.1095 0.1973 0.2652 0.0622 0.0287  0.1068
+#   dY      +.001  -.001  -.001  -.001  +.012  +.014  +.007  -.000    +3.6%
+#
+# So the two brightest slots each moved ~+0.012-0.014 linear Y (+6% and +5% of their
+# own value). The palette mean is +3.6%, and the frame-level consequence was measured
+# rather than argued: interior patches are unchanged (soffit_mid 127.5 -> 127.5, east
+# wall 150.4 -> 150.6, whole frame 134.0 -> 134.0 on c-second-row eye-living), which
+# they must be, because build_city() sets visible_diffuse = False.
+#
+# What is meant to change is R/B, on the slots whose own comment already names a warm
+# material: pea gravel on a built-up roof is buff-brown, ballast is tan, and slot 6 is
+# gravel over a BRICK building. Slots 2 and 7 are pushed the other way — weathered
+# concrete and fresh bitumen really are neutral-to-cool — because the photograph's
+# roofscape is a SPREAD (R-B -47 to +59), and a spread needs both ends, not a warm
+# bias. Two slots have no comment of their own and moved anyway, so they are recorded
+# here rather than left for the next reader to discover: slot 1 R/B 1.34 -> 1.56
+# (warmer) and slot 5 R/B 1.30 -> 1.13 (cooler), both to keep the value ladder
+# monotonic once their neighbours moved. Slot 5 carries the largest dY in the table,
+# which is the opposite of a nudge; it is deliberate and it is the reason the mean
+# rose at all.
 ROOF_COLORS = (
     "#4a3a2c",  # built-up tar and BUFF PEA GRAVEL. R/B 1.30 -> 2.72.
     "#4b453c",

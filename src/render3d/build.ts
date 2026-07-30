@@ -962,7 +962,36 @@ function addGlazedAssembly(
    * became a 4" dark square floating on the wall. Butting the members instead of
    * lapping them removes it, and a mitre is what the plasterer does anyway.
    */
-  if (!capped) wallBox(g, MAT.wall, f, s0 + lin, s1 - lin, hi - lin, hi, vf1, vRoom, `${n}/reveal-head`);
+  /**
+   * THE HEAD RETURN IS CONCRETE, NOT PLASTER — and the correction is measured.
+   *
+   * The pass that added this return read the photo as showing "a light head band
+   * stepping down off the soffit" and gave it MAT.wall, i.e. the same 0.858-albedo
+   * paint as the jambs. A later pass took a proper column profile through the same
+   * pixels and the reading does not hold:
+   *
+   *   photo   concrete 161/184/197 at y70 -> smooth BLUE gradient -> 154/195/230
+   *           at y136 -> 153/200/227 at y145 -> glass 236/245/250 at y151
+   *   render  concrete 112/126/137 -> dark AO trough 82/89/93 -> a warmer,
+   *           flatter band rising to 108/114/117 -> glass
+   *
+   * B far above R all the way down to the aluminium: that is the concrete SLAB
+   * carrying sky, not a painted band. There is no plaster head reveal in this
+   * building — the soffit runs straight down to the head member. Painting one in
+   * put a bright warm 0.858 band exactly where the photograph has cool concrete,
+   * and the coincident-corner mitre below created an AO trough that ate the first
+   * foot of ceiling.
+   *
+   * So the head return keeps its geometry (the hole does have depth) and takes
+   * MAT.concrete, and its depth is cut to the frame setback rather than the full
+   * 4" jamb liner, because a slab edge is as thin as the setback and no thinner.
+   * The jambs stay MAT.wall: those ARE drywall returns, and the photo's jamb at
+   * x752-772 samples #95a09a, a warm-neutral, which is paint.
+   */
+  if (!capped) {
+    const headLin = Math.min(lin, sb + IN(0.5));
+    wallBox(g, MAT.concrete, f, s0 + lin, s1 - lin, hi - headLin, hi, vf1, vRoom, `${n}/reveal-head`);
+  }
 
   // ---- perimeter frame, inside the plaster line
   const a0 = s0 + lin;

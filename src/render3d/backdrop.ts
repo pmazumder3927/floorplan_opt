@@ -1,6 +1,24 @@
 /**
  * THE OUTLOOK — everything you see THROUGH the west glazing.
  *
+ * ---------------------------------------------------------------------------
+ * READ THIS BEFORE YOU SPEND TIME HERE: NOTHING IMPORTS THIS FILE.
+ * ---------------------------------------------------------------------------
+ * As of this writing `grep -r backdrop src/ shot/` finds no importer, so the
+ * WebGL preview renders the west glazing against a flat sky and ground and shows
+ * no city at all. The city you see in a path-traced frame comes from
+ * scripts/blender/world.py, which is a bit-for-bit port of THIS file's seeded
+ * PRNG and scatter — that is the whole reason the two are meant to agree.
+ *
+ * So this module is currently a SPECIFICATION rather than a renderer, and the
+ * palettes below are maintained in step with world.py's so that wiring it up
+ * later produces the same city rather than a different one. If you change a
+ * value here, expect to see nothing happen, and check world.py.
+ *
+ * (The same trap exists on the other side: scripts/blender/materials.py's six
+ * `context-*` Surfaces are also dead code, because build_outlook only falls back
+ * to its local rig if `import world` raises.)
+ *
  * WHY THIS FILE EXISTS
  * The reference photograph (data/reference/unit-photo-living-west.jpeg) is a
  * high-floor unit with FLOOR-TO-CEILING glass on its west wall. Measured off that
@@ -419,9 +437,9 @@ const WALL_COLORS = [
   '#9c9489',
   '#a89e91', // pale render
   '#7f7468', // shaded/dirty stucco
-  '#8a6f5e', // red brick
+  '#a08056', // common brick — see the CHROMA note below; was a brick-coloured grey
   '#a2a099', // concrete
-  '#b0a898', // light painted brick
+  '#c2ac84', // light painted brick / ochre parapet panel
   '#77706a', // dark grey render
   '#8d9195', // cool grey precast
   '#6e7276', // dark cool grey / glazed office block
@@ -447,15 +465,50 @@ const WALL_COLORS = [
  * Change one, change the other, and re-run world.py's parity self-check.
  */
 const ROOF_COLORS = [
-  '#5c5952', // built-up tar and gravel — the most common roof in the photo
+  '#63564a', // built-up tar and BUFF PEA GRAVEL — see the CHROMA note below
   '#67635b',
-  '#736f66', // weathered concrete deck
-  '#807b71',
-  '#948f84', // pale membrane / ballast
+  '#6b6f6c', // weathered concrete deck — pushed cool, to hold the other end
+  '#847b66', // tan gravel ballast
+  '#9a8f76', // pale membrane / ballast, warm
   '#a5a096',
-  '#6b5a4e', // gravel ballast over a brick building
-  '#4e4c48', // dark bitumen, freshly done
+  '#7d5a34', // gravel ballast over a BRICK building — the one warm roof
+  '#4b4a4a', // dark bitumen, freshly done — neutral-cool
 ] as const;
+
+/**
+ * ---------------------------------------------------------------------------
+ * CHROMA — why several of the entries above just moved, and why not all of them
+ * ---------------------------------------------------------------------------
+ *
+ * MEASURED on the reference photograph, R-B distribution over the roofscape in
+ * 8x6 blocks with the mullion excluded: the photo has an R-B standard deviation
+ * of 20.5, a p95 of +40 and 14.8% of blocks warmer than +5. The Cycles city, on
+ * the SAME palette structure, measured sd 4.8 / p95 -3.3 / 0.0% warm — i.e. it
+ * was monochrome, and a city with no warm surface in it reads as styrofoam.
+ *
+ * The cause was not haze and not the per-vertex colour path (both tested and
+ * cleared). It was that every warm entry lived in WALL_COLORS, on VERTICAL faces
+ * that are barely in frame: from the 14th floor looking down you are looking at
+ * roof decks, parapet rims and penthouses. Compounding it, chroma in display
+ * units scales roughly as (R/B - 1) x brightness, so a warm hue on a dark roof
+ * produces almost no absolute R-B.
+ *
+ * So the hue went into the ROOF slots whose own comments already named a warm
+ * material, at constant value. Two cautions learned by rendering rather than by
+ * reasoning:
+ *   * OCHRE, NOT RED. The photo's warm blocks are yellow-dominant (R-G +10..+27,
+ *     G-B +25..+45). A high-R/low-G brick renders as candy pink through a filmic
+ *     curve — an attempt at R/G 2.94 produced R-G +37 / G-B +7, visibly wrong.
+ *   * KEEP BOTH ENDS. Slot 2 was pushed COOL and slot 7 left neutral-cool on
+ *     purpose: the photograph is a SPREAD, and a spread needs a cold end as much
+ *     as a warm one.
+ *
+ * THE VALUES HERE ARE STILL LIGHTER THAN scripts/blender/world.py's, and that is
+ * still not drift — see the note above for why the two pipelines calibrate
+ * separately. What WOULD be drift is a hue difference, because then the preview
+ * and the path-traced frame would show two different cities rather than the same
+ * city under two exposures. That is what this edit closes.
+ */
 
 /**
  * Scatter the mid-rise carpet.

@@ -2,7 +2,7 @@
  * scripts/brief.ts — one self-contained HTML brief per layout.
  *
  *   npx tsx scripts/brief.ts                       # all four, into briefs/
- *   npx tsx scripts/brief.ts --layout a-window-desk
+ *   npx tsx scripts/brief.ts --layout a-night-wall
  *   npx tsx scripts/brief.ts --out /tmp/x --no-hero
  *
  * A brief is the whole scheme in one page: the ray-traced hero frame, the
@@ -196,34 +196,35 @@ function budgetCsv(layout: Layout, b: BudgetResult): string {
  * of these was picked by looking at the render, and the ones that are NOT the
  * default are the interesting cases:
  *
- *   a-window-desk  eye-hero    the WNW diagonal gets the desk, the loveseat,
- *                              the dresser and both glazed bays in one frame.
- *   b-fold-away    eye-living  eye-hero puts the 6'-0" fig 5'-10" from the lens,
- *                              dead centre, where it blanks out the dining room
- *                              that is the entire point of the scheme.
- *   c-lounge-wall  eye-hero    the low platform bed lying along the glass is
- *                              exactly what this diagonal is good at showing.
- *   d-two-rooms    eye-living  eye-hero stands in the study looking at the back
- *                              of the partition from 4 ft away — a grey slab
- *                              filling the frame. Correct, and useless: the
- *                              headline of this scheme is the bedroom at the
- *                              glass, so shoot that instead.
+ * FOR THESE FOUR SCHEMES THE RULE IS SIMPLE, because every one of them is
+ * organised around one wall: SHOOT THE PICTURE. Three of the four put it on the
+ * bathroom partition at the east end, so the frame that shows the scheme is
+ * eye-window — standing at the glass looking back east down the room's own
+ * 18'-4" axis, which is also the axis the seating distance is measured along.
+ * The fourth puts the picture IN the west glazing, so it is the opposite frame.
  *
- * The two overrides are the SAME finding from opposite directions: a hero frame
- * has to be chosen against the furniture, and this map is where that judgement
- * is recorded rather than left in someone's head.
+ *   a-night-wall    eye-window  screen, plinth, projector, sofa and poufs all in
+ *                               one frame, with the bed in the notch at the edge.
+ *   b-fold-away     eye-living  the picture is the floor-riser AT the glazing, so
+ *                               the only frame that contains it looks west. It
+ *                               also catches the Murphy cabinet on the north wall.
+ *   c-second-row    eye-window  the whole point is the low bed lying between the
+ *                               floor seats and the screen; looking east down the
+ *                               axis is the only view that shows the bed IS row 2.
+ *   d-paint-and-go  eye-window  a painted rectangle has no frame and no hardware,
+ *                               so the scheme is invisible from any other angle —
+ *                               and the honest cost of that is that it is also
+ *                               nearly invisible in this one.
+ *
+ * eye-hero, the WNW diagonal, is deliberately used by none of them: it looks
+ * across the room rather than down its long axis, which is exactly the axis these
+ * schemes are built on.
  */
 const HERO: Record<string, CameraPreset> = {
-  // The projector schemes: the picture is on the EAST wall in three of the four,
-  // so the frame that has to show the scheme is the one looking east.
   'a-night-wall': 'eye-window',
   'b-fold-away': 'eye-living',
   'c-second-row': 'eye-window',
   'd-paint-and-go': 'eye-window',
-  // Superseded schemes, kept so an old id still resolves rather than throwing.
-  'a-window-desk': 'eye-hero',
-  'c-lounge-wall': 'eye-hero',
-  'd-two-rooms': 'eye-living',
 };
 
 const heroCamera = (id: string): CameraPreset => HERO[id] ?? 'eye-hero';
@@ -304,11 +305,19 @@ figure svg { background: var(--plan-bg); }
 figcaption { font-size: .82rem; color: var(--muted); margin-top: .6rem; max-width: var(--measure); text-wrap: pretty; }
 .frame { border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; background: var(--panel); }
 .scroller { overflow-x: auto; }
+/*
+ * FLEX, NOT GRID, and the reason is the last row. With
+ * grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)) the tracks exist
+ * whether or not there is an item in them, so eight stats in a six-column row
+ * left two cells of bare container background — a grey L-shaped hole in the
+ * middle of the page. A wrapping flex row with flex-grow on the item has no
+ * empty tracks: whatever lands on the last row expands to fill it.
+ */
 .stats {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: 1px;
+  display: flex; flex-wrap: wrap; gap: 1px;
   background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; margin: 0;
 }
-.stat { background: var(--paper); padding: .9rem 1rem; }
+.stat { flex: 1 1 8.5rem; background: var(--paper); padding: .9rem 1rem; }
 .stat dt { font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 0 0 .3rem; }
 .stat dd {
   margin: 0; font: 600 1.22rem/1.15 ui-monospace, SFMono-Regular, Menlo, monospace;

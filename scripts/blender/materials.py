@@ -547,14 +547,23 @@ SURFACES: dict[str, Surface] = {
     'projection-image': Surface(
         note='THE PICTURE, switched on. An emitter, and cool-neutral because a '
              'projector lamp is 6000-6500 K: this is what spills blue-white onto '
-             'the soffit and the faces of everyone watching, and that spill is '
-             'the single strongest cue that a room is in use. emit_strength 9.0 '
-             'is a stated ESTIMATE, not a measurement: a 100" 16:9 image is '
-             '~2.4 m2, so a 2500 lm projector on a gain-1.0 screen returns '
-             'roughly 300-350 cd/m2 — bright enough to read as ON against a dim '
-             'interior, dim enough not to clip. Re-check it against a frame '
-             'before trusting it.',
-        base='#dfe8f5', rough=0.88, emit='#bcd2f0', emit_strength=9.0,
+             'the soffit and onto the faces of everyone watching, and that spill '
+             'is the strongest single cue that a room is in use.\n'
+             'THE STRENGTH IS NOT CALIBRATED, AND THIS IS WHY. 9.0 is an estimate '
+             'from the photometry: a 100" 16:9 image is ~2.4 m2, so a 2,500 lm '
+             'projector on a gain-1.0 screen returns roughly 300-350 cd/m2. It was '
+             'raised to 30.0 to try to make the picture read as ON in a night '
+             'frame and the difference was BARELY PERCEPTIBLE, so it was put back '
+             'rather than left at a number no frame supports.\n'
+             'The reason a night frame cannot yet settle it is an open item in a '
+             'different file: render.py calls world.build_city(tod, strength=1.0) '
+             'unconditionally, so dropping --sky-strength to 0.03 for a dark room '
+             'leaves the city outside still lit at full strength and blowing white '
+             'through every bay. Until build_city takes the sky strength, the '
+             'brightest thing in a "night" frame is the view, not the screen, and '
+             'no value here can be judged against it. Fix that first, then '
+             'calibrate this.',
+             base='#dfe8f5', rough=0.88, emit='#bcd2f0', emit_strength=9.0,
     ),
     'bezel-velvet': Surface(
         note='Flocked black velvet on a fixed-frame screen bezel, and the end '

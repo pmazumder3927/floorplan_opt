@@ -3050,9 +3050,60 @@ function drawIssueLegend(c: Ctx, issues: Issue[], x: number, y: number, w: numbe
     spacing: 1.2,
     fill: c.t.textMuted,
   });
-  const shown = issues.slice(0, 10);
-  shown.forEach((iss, i) => {
-    const ly = y + 32 + i * 15;
+  /*
+   * WRAP, DO NOT OVERRUN. An analyzer message is a full sentence — the
+   * bed-access one runs to about 190 characters — and written as a single line
+   * it ran straight off the right edge of its own box and off the sheet, which
+   * on a drawing that is otherwise dimensioned to 1/16" looked like a bug and
+   * was one. Two lines per issue is the budget: enough for every message the
+   * analyzer currently produces, and beyond that the reader is better served by
+   * the full report in the brief than by a wall of 9.8 pt text on a plan.
+   *
+   * The character estimate is deliberate rather than measured: SVG gives no text
+   * metrics without a layout engine, and 0.5 em per character is the standard
+   * approximation for a humanist sans at this size. It errs SHORT, which is the
+   * safe direction — a slightly early break costs nothing and an overrun costs
+   * the sheet.
+   */
+  const inset = 29;
+  const avail = Math.max(80, w - inset - 12);
+  const perLine = Math.max(24, Math.floor(avail / (FONT_SIZE.legend * 0.5)));
+  const MAX_LINES = 2;
+
+  const wrap = (s: string): string[] => {
+    const words = s.split(/\s+/);
+    const lines: string[] = [];
+    let cur = '';
+    for (const word of words) {
+      const next = cur ? `${cur} ${word}` : word;
+      if (next.length <= perLine) {
+        cur = next;
+        continue;
+      }
+      if (cur) lines.push(cur);
+      cur = word;
+      if (lines.length === MAX_LINES) break;
+    }
+    if (cur && lines.length < MAX_LINES) lines.push(cur);
+    // Ellipsis only when something was genuinely dropped.
+    const kept = lines.join(' ').length;
+    if (kept < s.replace(/\s+/g, ' ').length && lines.length) {
+      const last = lines[lines.length - 1]!;
+      lines[lines.length - 1] = `${last.slice(0, Math.max(0, perLine - 2))}…`;
+    }
+    return lines;
+  };
+
+  // Row pitch has to follow the tallest entry, or two-line issues collide.
+  const LINE_H = 12;
+  const wrapped = issues.map((iss) => wrap(`${iss.code}  ${iss.message}`));
+  let ly = y + 32;
+  let shownCount = 0;
+  for (let i = 0; i < issues.length; i++) {
+    const lines = wrapped[i]!;
+    // Stop before running out of box rather than drawing over its border.
+    if (ly + (lines.length - 1) * LINE_H > y + h - 16) break;
+    const iss = issues[i]!;
     const col = iss.severity === 'error' ? c.t.issueError : c.t.issueWarn;
     c.out.push(tag('circle', { cx: x + 17, cy: ly, r: 6.5, fill: col }));
     c.out.push(
@@ -3071,14 +3122,20 @@ function drawIssueLegend(c: Ctx, issues: Issue[], x: number, y: number, w: numbe
         esc(String(i + 1)),
       ),
     );
-    text(c, x + 29, ly, `${iss.code}  ${iss.message}`, {
-      size: FONT_SIZE.legend,
-      anchor: 'start',
-      fill: c.t.text,
+    lines.forEach((line, j) => {
+      text(c, x + inset, ly + j * LINE_H, line, {
+        size: FONT_SIZE.legend,
+        anchor: 'start',
+        fill: j === 0 ? c.t.text : c.t.textMuted,
+      });
     });
-  });
-  if (issues.length > shown.length) {
-    text(c, x + 29, y + 32 + shown.length * 15, `+${issues.length - shown.length} more`, {
+    ly += lines.length * LINE_H + 4;
+    shownCount++;
+  }
+  if (issues.length > shownCount) {
+    // Clamp inside the border: the pointer is the one line that must never be
+    // the thing that overruns the box it is apologising for.
+    text(c, x + inset, Math.min(ly, y + h - 6), `+${issues.length - shownCount} more — see the analyzer report`, {
       size: FONT_SIZE.legend,
       anchor: 'start',
       fill: c.t.textMuted,
@@ -3674,7 +3731,14 @@ export function renderPlanSVG(
   const padTop = margin + dimPadTop;
   const padLeft = margin + dimPadLeft;
   let padRight = margin;
-  const legendH = issues.length ? 30 + Math.min(issues.length, 10) * 15 + 8 : 0;
+  /*
+   * Analyzer messages are full sentences and drawIssueLegend now wraps each one
+   * onto up to TWO lines at a 12 px pitch, plus a 4 px gap between issues, plus
+   * one line for the "+N more" pointer. Sizing this box off a single 15 px row
+   * per issue is what made the legend overrun its own border.
+   */
+  const legendRows = Math.min(issues.length, 8);
+  const legendH = issues.length ? 30 + legendRows * (2 * 12 + 4) + 12 + 8 : 0;
 
   const drawW = b.w * s;
   const drawH = b.h * s;

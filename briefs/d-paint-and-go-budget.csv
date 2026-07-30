@@ -1,0 +1,40 @@
+section,item,catalog_id,qty,unit_usd,total_usd,low_usd,high_usd,tier,price_verified,note
+"Screening — projector, picture, plinth, sound","XGIMI MoGo 4 Laser portable projector","projector-portable-xgimi-mogo4-laser",1,669,669,,,value,yes,""
+"Screening — projector, picture, plinth, sound","Screen paint on a level-5 wall, 118"" 16:9","screen-painted-wall-118",1,189,189,,,value,no,"catalog source flags this price as unverified"
+"Screening — projector, picture, plinth, sound — SUBTOTAL",,,,,858,,,,,
+"Light control — the co-requisite, not an accessory","Blackout roller shade, per glazing bay","shade-blackout-roller-bay",4,210,840,,,value,no,"catalog source flags this price as unverified"
+"Light control — the co-requisite, not an accessory","Blackout side channels, per glazing bay (pair)","shade-side-channels-bay",4,120,480,,,unspecified,no,"catalog source flags this price as unverified"
+"Light control — the co-requisite, not an accessory — SUBTOTAL",,,,,1320,,,,,
+"Work — the Jarvis and everything on it","Fully Jarvis bamboo standing desk, 48"" x 27""","desk-standing-jarvis-48x27",1,1325,1325,,,unspecified,yes,""
+"Work — the Jarvis and everything on it","Branch Ergonomic Chair Pro","chair-branch-ergonomic-pro",1,599,599,,,recommended,yes,""
+"Work — the Jarvis and everything on it","Monitor, 27"" 16:9","monitor-27",1,449,449,,,unspecified,yes,""
+"Work — the Jarvis and everything on it","Fully Jarvis single monitor arm","monitor-arm-single-jarvis",1,175,175,,,unspecified,no,"catalog source flags this price as unverified"
+"Work — the Jarvis and everything on it","Fully Jarvis cable management tray","cable-tray-jarvis",1,0,0,,,unspecified,yes,""
+"Work — the Jarvis and everything on it — SUBTOTAL",,,,,2548,,,,,
+"Sleep","GRIMSBU queen bed frame (with Luröy base)","bed-queen-grimsbu",1,79,79,,,value,no,"catalog source flags this price as unverified"
+"Sleep — SUBTOTAL",,,,,79,,,,,
+"Seating — the congregation area","Blu Dot Cleon 56"" armless sofa","sofa-cleon-56-armless",1,1960,1960,,,premium,yes,""
+"Seating — the congregation area","ALSEDA banana-fibre stool, 23 1/2""","floor-cushion-alseda-24",2,30,60,,,value,yes,""
+"Seating — the congregation area — SUBTOTAL",,,,,2020,,,,,
+"Tables","Side table, 18"" round","side-table-round-18",1,149,149,,,unspecified,yes,""
+"Tables — SUBTOTAL",,,,,149,,,,,
+"Dining","NORDEN gateleg table (folded)","dining-gateleg-norden",1,350,350,,,unspecified,yes,""
+"Dining","FRÖSVI folding chair, black","chair-frosvi-folding",2,35,70,,,value,yes,""
+"Dining — SUBTOTAL",,,,,420,,,,,
+"Storage","TRONES shoe cabinet, wall-mounted","entry-trones-shoe",1,40,40,,,value,no,"catalog source flags this price as unverified"
+"Storage — SUBTOTAL",,,,,40,,,,,
+"Soft goods","STOENSE low-pile rug, 6'7"" x 9'10""","rug-stoense-6x10",1,160,160,,,value,yes,""
+"Soft goods — SUBTOTAL",,,,,160,,,,,
+"Light and greenery","Clamp-on task lamp","lamp-task-clamp",1,15,15,,,unspecified,yes,""
+"Light and greenery — SUBTOTAL",,,,,15,,,,,
+"FURNITURE TOTAL",,,,,7609,,,,,
+"ALLOWANCE","Queen mattress (10-11"")","mattress",1,,,499,1999,,band,"Every bed frame in the catalog is a FRAME — its height includes a 10"" mattress so the drawings show a made bed, but its price is the frame alone. Verified end points: Zinus Original Green Tea 10"" at $499 (sale, from $718, read off the Zinus PDP) and Avocado Green Hybrid 11"" at $1,999. Stay at 10-11"": every extra inch of mattress raises the sleeping height and pushes the bed's silhouette up toward the glazing, and Avocado's 13"" Pillow Top would put a Thuma's sleeping surface at 26""."
+"ALLOWANCE","Slatted bed base (GRIMSBU frame only)","slat-base",1,,,40,90,,band,"The $79 GRIMSBU price is IKEA US for the FRAME ONLY (art. 90508513) — the slatted base is a separate purchase, so that line is not a complete bed. Band is the usual IKEA Luröy/Lönset queen range and is UNVERIFIED; re-price at the till."
+"ALLOWANCE","Bedding — duvet, insert, two pillows, two sets of sheets","bedding",1,,,220,650,,band,"Not in any furniture catalog and not optional. Class estimate for a queen set at the linen-shop and the good-linen-shop ends of the market. In this scheme it is also a VISIBLE design element rather than a utility: in a studio the bed is in every sightline, and in the layout where the bed is literally part of the seating it is on show whenever anyone visits."
+"ALLOWANCE","Level-5 skim, prime and flat-black border for a painted screen","level5-skim",1,,,450,1200,,band,"Screen paint is only as flat as the wall under it, and on a 103""-wide 4K image one pixel is about 0.024"" — so roller stipple, drywall imperfections and telegraphed joints all show. The honest requirement is a level-5 skim over the screen area, sanded to 220, high-build primer, then 2-4 rolled coats and a flat-black border: three to five days of a finisher's time over about 45 sq ft. THE PLASTERING COSTS MORE THAN THE PAINT, which is the real argument against the paint option — a $628 edge-free ALR frame is cheaper than the low end of this band. This unit's flat white walls are almost certainly level 4."
+"ALLOWANCE","Power + HDMI at the projector position, and cable concealment","av-power",1,,,150,500,,band,"A projector needs mains where it stands, and in this unit that is a real question rather than a detail: there is no power in the concrete soffit, so anything overhead is out, and a screen or plinth against the bathroom partition needs an outlet behind it or a cord run somewhere visible. The low end is a floor outlet already in the right place plus a cable channel; the high end is an electrician adding a receptacle. Motorised screens and floor-risers all plug in."
+"ALLOWANCE","Laser measure — before ordering any screen","laser-measure",1,,,30,60,,band,"This is a small line with a large consequence. The plan is traced from a listing graphic at ±0.3 ft, i.e. ±3.6"" — which is LARGER than the reveal a 120"" frame would leave on the 9'-6"" bathroom partition and comparable to the reveal a 110"" leaves. Do not order a screen over 110"" on the strength of a traced plan. Measure the wall, and while the meter is out, confirm the ceiling height and the glazing head — the 9'-0"" ceiling in this model is ASSUMED, and every screen-size and cassette limit falls out of it."
+"ALLOWANCE","Blackout shade installation and the eight side-channel runs","shade-install",1,,,200,600,,band,"Four inside-mount shades means four headrails and EIGHT vertical light gaps, and the manufacturer's own copy admits a ~1/8"" factory deduction per side. On a west wall between 3pm and sunset that puts visible bars of daylight across a projected image. The side channels are catalogued per bay, but fitting them is eight adhesive runs plus four bracket sets into the jambs — and note that at this unit's 8'-8"" (104"") head, a cellular shade tall enough to reach can only be ordered on a CONTINUOUS CORD LOOP: not cordless, not no-drill."
+"ALLOWANCE","Delivery, lift booking and assembly","delivery",1,,,609,913,,band,"8-12% of the furniture total. It is a real number here rather than a rounding error because the entry nook has an ANGLED front door: the pieces that do not knock down — a 56"" one-piece sofa frame, a 70"" one-piece modular unit — ship freight and have to make that turn. Measure the door swing, the corridor turn and the lift car before committing to anything that does not flat-pack."
+"ALLOWANCES TOTAL",,,,,,2198,6012,,,
+"ALL-IN",,,,,,9807,13621,,,"layout d-paint-and-go"
