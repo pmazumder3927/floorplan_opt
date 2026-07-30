@@ -29,6 +29,7 @@ const ALL_CAMERAS = [
   'iso-nw',
   'iso-ne',
   'eye-entry',
+  'eye-hero',
   'eye-living',
   'eye-window',
   'eye-kitchen',

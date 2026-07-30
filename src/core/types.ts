@@ -299,7 +299,8 @@ export type CameraPreset =
   | 'eye-entry'
   | 'eye-kitchen'
   | 'eye-window'
-  | 'eye-living';
+  | 'eye-living'
+  | 'eye-hero';
 
 export interface Render2DOptions {
   /** pixels per foot */

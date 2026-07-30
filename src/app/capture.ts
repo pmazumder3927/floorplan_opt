@@ -30,6 +30,7 @@ export const CAMERA_PRESETS: readonly CameraPreset[] = [
   'eye-entry',
   'eye-kitchen',
   'eye-window',
+  'eye-hero',
   'eye-living',
 ];
 
@@ -43,6 +44,7 @@ export const CAMERA_LABELS: Record<CameraPreset, string> = {
   'eye-entry': 'Eye: entry',
   'eye-kitchen': 'Eye: kitchen',
   'eye-window': 'Eye: windows',
+  'eye-hero': 'Eye: hero',
   'eye-living': 'Eye: living',
 };
 

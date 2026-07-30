@@ -79,6 +79,7 @@ const CAMERAS: readonly CameraPreset[] = [
   'eye-entry',
   'eye-kitchen',
   'eye-window',
+  'eye-hero',
   'eye-living',
 ];
 

@@ -2111,6 +2111,52 @@ export function cameraFor(preset: CameraPreset, plan: FloorPlan, aspect: number)
       return { position: [pos[0], EYE_H, pos[1]], target: [tgt[0], EYE_H * 0.85, tgt[1]], fov: 68 };
     }
 
+    case 'eye-hero': {
+      /**
+       * THE LAYOUT SHOT — the one frame that has to show the scheme, not a wall.
+       *
+       * eye-living stands on the living zone's CENTROID and looks west at the
+       * glazing. On an L-shaped zone the centroid lands in the middle of the
+       * furniture, so that frame is a lampshade in the foreground and a window
+       * behind it: correct light, no information. What a reader needs is the
+       * estate-agent view — stand in the last clear corner of the open floor and
+       * shoot the long diagonal, so the work wall, the sleeping end, the lounge
+       * and the glazing are all in one frame.
+       *
+       * The stand point is 4'-3" west of the bathroom's west partition and 7"
+       * north of the kitchen zone line — the middle of the wide leg, at its
+       * south edge. Both offsets are doing work:
+       *
+       *   the 4'-3" west  puts the partition BEHIND the camera. Standing right
+       *                   against it (the obvious first choice, since that is
+       *                   the corner of the room) filled the right third of the
+       *                   frame with 9'-6" of blank plaster, because the wall
+       *                   then recedes away from the lens instead of sitting
+       *                   behind it.
+       *   the 7" north    keeps the lens out of the kitchen work aisle, so the
+       *                   counter run stays out of shot.
+       *
+       * Verified clear in all four layouts with 1'-4" to the nearest solid.
+       * cameraFor() only ever sees the PLAN, never the furniture, so a spot that
+       * works in one scheme and stands inside a sofa in another is not good
+       * enough — this one was checked against all four.
+       */
+      const bath = zoneBounds(plan, 'bath', 'bath');
+      const kitchen = zoneBounds(plan, 'kitchen', 'kitchen');
+      const pos: Vec2 = [bath.min[0] - FTIN(4, 3), kitchen.min[1] - FTIN(0, 7)];
+      // Aim at the north-west inside corner: that diagonal is the longest sight
+      // line in the unit and it puts the glazing on the left of frame rather
+      // than filling it.
+      const tgt: Vec2 = [ib.min[0] + 1.0, ib.min[1] + 6.0];
+      return {
+        position: [pos[0], EYE_H, pos[1]],
+        // Tilted slightly down: the floor is what carries a layout, and 9 ft of
+        // ceiling in the top third of the frame says nothing.
+        target: [tgt[0], EYE_H * 0.72, tgt[1]],
+        fov: 56,
+      };
+    }
+
     case 'eye-living':
     default: {
       // Middle of the living zone, looking at the west windows.

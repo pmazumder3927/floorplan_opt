@@ -37,6 +37,7 @@ const ROOT = resolve(HERE, '..');
 
 /** Every preset cameraFor() knows. `--camera all` walks these in this order. */
 const ALL_CAMERAS = [
+  'eye-hero',
   'eye-living',
   'eye-window',
   'eye-kitchen',
@@ -58,6 +59,11 @@ const ALL_CAMERAS = [
  * view). A single exposure either blows the window or crushes the back of the
  * flat. So each view gets the bias a photographer would dial in for it:
  *
+ *   eye-hero    +0.4   the layout shot: a WNW diagonal, so the glazing is at the
+ *                      side of frame rather than filling it and roughly half the
+ *                      visible surface faces away from the light. Measured, not
+ *                      guessed: at a total of +1.0 the off-white wall in shot
+ *                      reads mean 162 against the reference photo's 161.
  *   eye-living   0     front-lit: looking WEST at the glazing, everything the
  *                      camera sees faces the light. This is the reference frame,
  *                      and the frame the base --exposure is calibrated on.
@@ -77,6 +83,7 @@ const ALL_CAMERAS = [
  * where the histogram of that view lands the interior mid-tones.
  */
 const EXPOSURE_BIAS: Record<CameraPreset, number> = {
+  'eye-hero': 0.4,
   'eye-living': 0,
   'eye-window': 0.8,
   'eye-entry': 0.8,
