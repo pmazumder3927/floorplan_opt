@@ -18,6 +18,22 @@ const PART_T = FTIN(0, 4.5);
 /** Assumed, not on the plan. */
 const CEILING = 9.0;
 
+/**
+ * Inner wall faces, named because half the built-ins are dimensioned off them.
+ * Note the two south faces differ: the kitchen leg is 10" deeper than the east leg.
+ */
+const S_FACE_KITCHEN = 19.17;
+const S_FACE_EAST = 18.36;
+const E_FACE_BATH = 26.27;
+const N_FACE_BATH = 3.22;
+
+/** Stacked washer/dryer, and the closet it lives in. */
+const WD_X = 13.57;
+const WD_W = 2.45; // 2'-5", a standard stacked pair
+const WD_D = 2.62; // 2'-8" deep
+/** Closet front (door plane): W/D depth + 3" of hookup space behind. */
+const WD_FRONT = S_FACE_KITCHEN - (WD_D + FTIN(0, 3));
+
 const footprint: Vec2[] = [
   [0.0, 0.0],
   [10.53, 0.0],
@@ -49,7 +65,7 @@ const interior: Vec2[] = [
  * Every one has the interior on its `right` (with +y down, walking start->end,
  * the right-hand normal is (-dy, dx)).
  */
-const exteriorWalls: Wall[] = [
+const exteriorWalls: Wall[] = ([
   { id: 'W1', name: 'N wall (living)', start: [0.0, 0.0], end: [10.53, 0.0], thickness: EXT_T },
   { id: 'W2', name: 'N step at bath', start: [10.53, 0.0], end: [10.53, 2.59], thickness: EXT_T },
   { id: 'W3', name: 'N wall (bath)', start: [10.53, 2.59], end: [26.9, 2.59], thickness: EXT_T },
@@ -60,7 +76,9 @@ const exteriorWalls: Wall[] = [
   { id: 'W8', name: 'S step at kitchen', start: [17.35, 18.99], end: [17.35, 19.8], thickness: EXT_T },
   { id: 'W9', name: 'S wall (kitchen)', start: [17.35, 19.8], end: [0.0, 19.8], thickness: EXT_T },
   { id: 'W10', name: 'W wall (windows)', start: [0.0, 19.8], end: [0.0, 0.0], thickness: WEST_T },
-].map((w) => ({ ...w, kind: 'exterior' as const, height: CEILING, interiorSide: 'right' as const }));
+] satisfies Array<{ id: string; name: string; start: Vec2; end: Vec2; thickness: number }>).map(
+  (w) => ({ ...w, kind: 'exterior' as const, height: CEILING, interiorSide: 'right' as const }),
+);
 
 /**
  * Interior partitions enclosing the bathroom. Not dimensioned on the source
@@ -95,6 +113,38 @@ const partitions: Wall[] = [
     kind: 'partition',
     height: CEILING,
   },
+  // Laundry closet enclosing the stacked washer/dryer. The traced plan shows the
+  // W/D as a bare box in the counter run, but it is really inside its own closet
+  // with bifold doors and a shelf over the units. Jamb returns at the sides, a
+  // header wall across the front; interior sized to the 2'-5" x 2'-8" W/D plus
+  // 3" of hookup space behind (34 1/2" total closet depth off the S wall).
+  {
+    id: 'P4',
+    name: 'Laundry closet W jamb',
+    start: [WD_X - PART_T / 2, WD_FRONT - PART_T / 2],
+    end: [WD_X - PART_T / 2, S_FACE_KITCHEN],
+    thickness: PART_T,
+    kind: 'partition',
+    height: CEILING,
+  },
+  {
+    id: 'P5',
+    name: 'Laundry closet E jamb',
+    start: [WD_X + WD_W + PART_T / 2, WD_FRONT - PART_T / 2],
+    end: [WD_X + WD_W + PART_T / 2, S_FACE_KITCHEN],
+    thickness: PART_T,
+    kind: 'partition',
+    height: CEILING,
+  },
+  {
+    id: 'P6',
+    name: 'Laundry closet front / header',
+    start: [WD_X - PART_T / 2, WD_FRONT - PART_T / 2],
+    end: [WD_X + WD_W + PART_T / 2, WD_FRONT - PART_T / 2],
+    thickness: PART_T,
+    kind: 'partition',
+    height: CEILING,
+  },
 ];
 
 export const walls: Wall[] = [...exteriorWalls, ...partitions];
@@ -104,8 +154,18 @@ export const walls: Wall[] = [...exteriorWalls, ...partitions];
  * windows (W10 runs south->north) are offset from the SW corner.
  * Sill/head heights are assumed (not on the source plan).
  */
-const WIN_SILL = 2.5; // 2'-6"
-const WIN_HEAD = 7.0; // 7'-0"
+/**
+ * FLOOR-TO-CEILING GLAZING.
+ *
+ * Corrected from a photograph of the actual unit (data/reference/): the west
+ * openings are not punched windows with a 2'-6" sill, they are full-height glazed
+ * assemblies in black anodised aluminium running from the floor slab to just
+ * under the concrete soffit. That is a big deal for layout, not just looks —
+ * nothing can hide "below the sill" any more, so any piece taller than about 2'-6"
+ * in front of the glass now genuinely blocks daylight and the view.
+ */
+const WIN_SILL = 0.0;
+const WIN_HEAD = CEILING - FTIN(0, 4); // slim head detail under the slab
 const DOOR_HEAD = FTIN(6, 10);
 
 export const openings: Opening[] = [
@@ -135,6 +195,21 @@ export const openings: Opening[] = [
     sill: 0,
     head: DOOR_HEAD,
     swing: { hinge: 'near', into: 'right', angle: 90 },
+    approximate: true,
+  },
+  {
+    // Bifold pair on the laundry closet. Modelled as a 'passage' rather than a
+    // 'door' on purpose: bifolds fold flat into the jambs, so they do not sweep
+    // a quarter-disc of floor and must not be analysed as if they did. The
+    // working space in front is enforced by WD's 36" clearance instead.
+    id: 'D3',
+    name: 'Laundry closet bifold doors',
+    kind: 'passage',
+    wall: 'P6',
+    offset: PART_T / 2,
+    width: WD_W,
+    sill: 0,
+    head: FTIN(6, 8),
     approximate: true,
   },
 ];
@@ -187,20 +262,19 @@ export const zones: Zone[] = [
     name: 'Entry',
     type: 'circulation',
     note: 'Entry nook, SE corner.',
+    // L-shaped: the nook runs all the way up to the inner face of the W5 step
+    // (y=12.28), so it includes the slot east of the bath/entry wall P3. Only the
+    // part west of P3 is cut off by the bathroom's south wall at y=13.075.
     polygon: [
-      [26.27, 12.7 + PART_T],
-      [29.73, 12.7 + PART_T],
+      [26.27 + PART_T, 12.28],
+      [29.73, 12.28],
       [29.73, 18.36],
       [26.27, 18.36],
+      [26.27, 12.7 + PART_T],
+      [26.27 + PART_T, 12.7 + PART_T],
     ],
   },
 ];
-
-/** South inner wall face in the kitchen leg, and in the east leg. */
-const S_FACE_KITCHEN = 19.17;
-const S_FACE_EAST = 18.36;
-const E_FACE_BATH = 26.27;
-const N_FACE_BATH = 3.22;
 
 export const fixtures: Fixture[] = [
   // ---- kitchen: single 25 1/2" deep counter run along the south wall
@@ -263,10 +337,22 @@ export const fixtures: Fixture[] = [
     id: 'WD',
     name: 'Washer / dryer (stacked)',
     category: 'laundry',
-    footprint: { x: 13.57, y: S_FACE_KITCHEN - 2.62, w: 2.45, h: 2.62 },
+    // Pushed to the back of its closet, leaving the 3" hookup gap at the rear.
+    footprint: { x: WD_X, y: S_FACE_KITCHEN - WD_D, w: WD_W, h: WD_D },
     height: FTIN(6, 0),
     facing: 180,
     clearance: IN(36),
+    approximate: true,
+  },
+  {
+    id: 'WD_SHELF',
+    name: 'Laundry shelf',
+    category: 'laundry',
+    // Wire shelf in the dead space over a 6'-0" stacked pair, 3" of clearance
+    // above the dryer so the door can open. 1 1/2" shelf, full closet interior.
+    footprint: { x: WD_X, y: WD_FRONT, w: WD_W, h: S_FACE_KITCHEN - WD_FRONT },
+    z: FTIN(6, 3),
+    height: FTIN(6, 4.5),
     approximate: true,
   },
 
@@ -333,6 +419,7 @@ export const PLAN_NOTES: string[] = [
   'The traced closet run overhung the south wall; re-seated as a real 24"-deep, 8\'-0" reach-in run on the inner face.',
   "The traced bath fixture block spanned the full 7'-0\" width; modelled as a real 60\" alcove tub plus a 24\" linen closet.",
   'Washer/dryer modelled as a stacked pair (traced footprint is a single 2\'-5" x 2\'-8" box).',
+  'The W/D is enclosed in its own laundry closet (partitions P4-P6, bifold doors D3, wire shelf over the units at 6\'-3"). The source plan drew it as a bare box in the counter run; the closet is inferred.',
 ];
 
 export const studio: FloorPlan = {
