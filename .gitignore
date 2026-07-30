@@ -4,6 +4,21 @@ dist/
 .DS_Store
 
 # Rendered output is regenerable — keep the committed set small and deliberate.
+# Everything under renders/ is produced by `pnpm svg`, `pnpm render`,
+# scripts/shot.ts or scripts/raytrace.ts from the layouts + plan, which ARE
+# committed. A .glb is 170 KB of that same geometry re-encoded; a 4K path trace
+# is 1.2 MB. None of it is a source of truth.
 renders/*.png
 renders/*.svg
+renders/*.glb
+renders/geo/
 !renders/.gitkeep
+
+# Throwaway diagnostic scripts and their output (photometric sweeps, crop
+# comparisons, geometry dumps). Kept out of the tree on purpose: they are how a
+# conclusion was reached, and the conclusion belongs in a comment, not here.
+tmp/
+
+# Blender runs the scripts/blender/*.py modules with its bundled interpreter.
+__pycache__/
+*.pyc
