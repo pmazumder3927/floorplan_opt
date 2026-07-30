@@ -2358,6 +2358,12 @@ interface LabelJob {
   tracking: number;
   /** name printed in the numbered key if the label has to be suppressed */
   keyText: string;
+  /**
+   * Skip straight to a numbered key tag: do not try an inside label or a
+   * leader. Used for assembly callouts, where the whole point is one disc and
+   * one key entry instead of eight names fighting over the same 5 ft box.
+   */
+  keyOnly?: boolean;
 }
 
 function blockMetrics(lines: LabelLine[], size: number, tracking: number): { w: number; h: number } {
@@ -2668,7 +2674,7 @@ function runLabelJob(
   taken: PxRect[],
   keys: KeyEntry[],
 ): void {
-  const inside = placeInside(job, taken);
+  const inside = job.keyOnly ? null : placeInside(job, taken);
   if (inside) {
     taken.push(inside.box);
     putBlock(
@@ -2687,7 +2693,7 @@ function runLabelJob(
     return;
   }
 
-  const lead = placeLeader(c, plan, job, taken);
+  const lead = job.keyOnly ? null : placeLeader(c, plan, job, taken);
   if (lead) {
     taken.push(lead.box);
     const name = job.variants[job.variants.length - 1][0];
@@ -2802,12 +2808,12 @@ function drawLabels(
     if (ra !== rb) return ra - rb;
     return b.obb.w * b.obb.d - a.obb.w * a.obb.d;
   });
-  for (const { item, def, obb } of order) {
+  const itemJobs = order.map(({ item, def, obb }) => {
     const name = item.label ?? def.name;
     const dims = `${formatShort(obb.w)} x ${formatShort(obb.d)}`;
     // Inside labels are read against the item's own fill, not the sheet.
     const { ink, halo } = labelInk(item.color ?? def.color ?? c.t.fixtureFill, c.t);
-    jobs.push({
+    const job: LabelJob = {
       id: item.id,
       shape: {
         cx: c.px(obb.center[0]),
@@ -2828,11 +2834,82 @@ function drawLabels(
       halo,
       tracking: 0,
       keyText: `${name}  ${dims}`,
-    });
+    };
+    return { job, name, dims, offFloor: !!def.wallMounted, walkable: !!def.walkable };
+  });
+
+  /**
+   * ASSEMBLIES GET ONE CALLOUT, NOT EIGHT NAMES.
+   *
+   * An OFF-FLOOR piece whose whole footprint sits inside another piece's
+   * footprint is being CARRIED by it — a monitor arm, a cable tray, a CPU sling
+   * and a desk mat are all inside the desk and none of them touches the ground.
+   * Naming each one individually is what turned the most important 5 ft of the
+   * drawing into an unreadable pile: nine labels competed for one box, the
+   * placer scattered leaders across the room, and two identical monitors ended
+   * up labelled two different ways.
+   *
+   * So the carried pieces get no marker of their own. The carrier keeps its
+   * inline label and gains ONE numbered disc whose key entry schedules the
+   * components. That is how the drawing would be drafted by hand, and it is the
+   * only version of this corner that can actually be read.
+   *
+   * THE OFF-FLOOR TEST IS WHAT MAKES THIS SAFE, and it is not decoration.
+   * Containment alone says a coffee table is "inside" the rug it stands on, and
+   * a rug is not an assembly — the table is a real piece of furniture standing
+   * on the floor and it has earned its own name. `wallMounted` is the catalog's
+   * own flag for "not carried by the floor", which is exactly the question here.
+   * Walkable carriers are excluded for the same reason from the other side.
+   *
+   * Containment is exact (rotation included) and total: a chair merely pulled up
+   * to a desk is not inside it, so it keeps its own name.
+   */
+  const carriedBy = new Map<string, string[]>();
+  const carried = new Set<string>();
+  for (const a of itemJobs) {
+    if (!a.offFloor) continue;
+    let host: (typeof itemJobs)[number] | null = null;
+    for (const b of itemJobs) {
+      if (b.job.id === a.job.id || b.walkable) continue;
+      if (!pxContains(b.job.shape, a.job.shape)) continue;
+      // Smallest enclosing piece wins, so a tray inside a desk inside nothing
+      // is scheduled under the desk and not under the room.
+      const area = b.job.shape.w * b.job.shape.h;
+      if (!host || area < host.job.shape.w * host.job.shape.h) host = b;
+    }
+    if (!host) continue;
+    carried.add(a.job.id);
+    const list = carriedBy.get(host.job.id) ?? [];
+    list.push(a.name);
+    carriedBy.set(host.job.id, list);
   }
 
+  for (const { job } of itemJobs) if (!carried.has(job.id)) jobs.push(job);
+
   for (const job of jobs) runLabelJob(c, plan, job, taken, keys);
+
+  // Assembly discs last, so they place around finished text rather than under it.
+  for (const { job, name } of itemJobs) {
+    const parts = carriedBy.get(job.id);
+    if (!parts?.length) continue;
+    runLabelJob(
+      c,
+      plan,
+      { ...job, id: `${job.id}-assembly`, keyOnly: true, keyText: `${name} — with ${listOf(parts)}` },
+      taken,
+      keys,
+    );
+  }
   return keys;
+}
+
+/** "a, b and c", collapsing repeats into "2x a" so two monitors read as two. */
+function listOf(names: string[]): string {
+  const counts = new Map<string, number>();
+  for (const n of names) counts.set(n, (counts.get(n) ?? 0) + 1);
+  const parts = [...counts].map(([n, k]) => (k > 1 ? `${k}x ${n}` : n));
+  if (parts.length <= 1) return parts.join('');
+  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
 }
 
 // ===================================================================== issues
