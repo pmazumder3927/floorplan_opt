@@ -11,7 +11,11 @@
     "typecheck": "tsc --noEmit",
     "check": "tsx scripts/check.ts",
     "svg": "tsx scripts/export-svg.ts",
-    "render": "tsx scripts/render.ts"
+    "render": "tsx scripts/render.ts",
+    "brief": "tsx scripts/brief.ts",
+    "shot": "tsx scripts/shot.ts",
+    "glb": "tsx scripts/export-gltf.ts",
+    "raytrace": "tsx scripts/raytrace.ts"
   },
   "dependencies": {
     "react": "^19.2.8",

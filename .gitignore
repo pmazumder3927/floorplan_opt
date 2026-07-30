@@ -14,6 +14,12 @@ renders/*.glb
 renders/geo/
 !renders/.gitkeep
 
+# Generated briefs — `pnpm brief` rebuilds them from the layouts, the plan and
+# whatever hero frames are sitting in renders/. Self-contained HTML with an
+# embedded JPEG is ~300 KB a copy, and none of it is a source of truth.
+briefs/*.html
+!briefs/.gitkeep
+
 # Throwaway diagnostic scripts and their output (photometric sweeps, crop
 # comparisons, geometry dumps). Kept out of the tree on purpose: they are how a
 # conclusion was reached, and the conclusion belongs in a comment, not here.
