@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>floor lab — glTF export</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #101214;
+        color: #cfd6dc;
+        font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      main {
+        padding: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      No canvas: this entry serialises the scene graph, it never renders. Kept as
+      a separate document from shot/index.html so the export cannot be broken by
+      a change to the capture renderer (and vice versa).
+    -->
+    <main>building glb…</main>
+    <script type="module" src="./export.ts"></script>
+  </body>
+</html>
