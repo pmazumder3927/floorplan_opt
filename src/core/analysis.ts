@@ -129,6 +129,36 @@ const SLEEPING = new Set(['bed', 'sofa_bed', 'murphy_bed']);
 const RUG_ANCHOR = new Set(['sofa', 'sectional', 'loveseat']);
 
 /**
+ * A SEAT and the SURFACE it is pulled up to are one group, and neither one is an
+ * obstruction in the other's clear floor.
+ *
+ * Why this exists: `frontClearance` on a desk is the 30" you need to roll the
+ * chair back and stand up — so the chair being there is the whole point, not a
+ * blockage. Symmetrically, a dining chair's 36" is the room to push back into,
+ * which the catalog measures from the seat, so the table it faces registered as
+ * "100% of the clear floor is blocked". Before this pairing rule every correct
+ * desk + task chair scored 43-52% blocked and every dining chair scored 99-100%,
+ * which buried the real clearance findings (a bookcase into a walkway, a bench
+ * jammed against a divider) under noise.
+ *
+ * The check still catches everything else: walls, appliances, a wardrobe parked
+ * in front of a desk, a plant in the chair's pull-back. Only the seat/surface
+ * pair is exempt from each other.
+ */
+const SEAT_KINDS = new Set([
+  'chair',
+  'bar_stool',
+  'bench',
+  'sofa',
+  'sectional',
+  'loveseat',
+  'armchair',
+  'sofa_bed',
+  'ottoman',
+]);
+const SEAT_SURFACE_KINDS = new Set(['desk', 'dining_table', 'coffee_table', 'side_table']);
+
+/**
  * A mattress this wide or wider sleeps two, so BOTH long sides have to be
  * reachable. A full is 54" wide, a twin is 38" — 53" splits them.
  */
@@ -353,20 +383,29 @@ function buildSolids(plan: FloorPlan, entries: Entry[]): Solids {
   };
 }
 
-/** Is this point unusable floor? `exclude` skips one item id (usually "myself"). */
-function isBlocked(plan: FloorPlan, s: Solids, p: Vec2, exclude?: string): boolean {
+/**
+ * Is this point unusable floor? `exclude` skips one item id (usually "myself"),
+ * or a set of ids when a whole group is exempt (see SEAT_KINDS).
+ */
+type Exclusion = string | ReadonlySet<string> | undefined;
+
+function excluded(exclude: Exclusion, id: string): boolean {
+  return typeof exclude === 'string' ? exclude === id : (exclude?.has(id) ?? false);
+}
+
+function isBlocked(plan: FloorPlan, s: Solids, p: Vec2, exclude?: Exclusion): boolean {
   if (!pointInPolygon(p, plan.interior)) return true;
   for (const w of s.walls) if (obbContainsPoint(w, p)) return true;
   for (const f of s.fixtures) if (obbContainsPoint(f.obb, p)) return true;
   for (const it of s.items) {
-    if (it.id === exclude) continue;
+    if (excluded(exclude, it.id)) continue;
     if (obbContainsPoint(it.obb, p)) return true;
   }
   return false;
 }
 
 /** Fraction of an OBB region that is not usable floor, by rasterising it. */
-function blockedFraction(plan: FloorPlan, s: Solids, box: OBB, exclude?: string): number {
+function blockedFraction(plan: FloorPlan, s: Solids, box: OBB, exclude?: Exclusion): number {
   const nx = Math.max(1, Math.round(box.w / RASTER_CELL));
   const ny = Math.max(1, Math.round(box.d / RASTER_CELL));
   const ax = axisX(box);
@@ -973,7 +1012,18 @@ export function analyzeLayout(plan: FloorPlan, layout: Layout): AnalysisResult {
   for (const e of entries) {
     if (!e.def.frontClearance || !e.onFloor) continue;
     const box = clearanceObb(e.obb, e.def.frontClearance, e.item.rot ?? 0);
-    const frac = blockedFraction(plan, solids, box, e.item.id);
+    // A seat and the surface it is pulled up to do not block each other — see
+    // SEAT_KINDS. Everything else in the room still counts.
+    const exempt = new Set<string>([e.item.id]);
+    const partner = SEAT_KINDS.has(e.def.kind)
+      ? SEAT_SURFACE_KINDS
+      : SEAT_SURFACE_KINDS.has(e.def.kind)
+        ? SEAT_KINDS
+        : null;
+    if (partner) {
+      for (const other of entries) if (partner.has(other.def.kind)) exempt.add(other.item.id);
+    }
+    const frac = blockedFraction(plan, solids, box, exempt);
     if (frac <= CLEARANCE_BLOCKED_WARN) continue;
     add_(
       'warn',
@@ -1144,6 +1194,10 @@ export function analyzeLayout(plan: FloorPlan, layout: Layout): AnalysisResult {
   // ---- info: rug too small for the seating group -----------------------
   for (const e of entries) {
     if (e.def.kind !== 'rug') continue;
+    // A desk mat is catalogued as a rug because that is what it is — but it lies
+    // 29 1/2" up on the desktop (wallMounted = "not on the floor"), so it can
+    // never run under a sofa's front legs and pairing it with one is nonsense.
+    if (e.def.wallMounted) continue;
     let anchor: Entry | null = null;
     let anchorD = Infinity;
     for (const s of entries) {
@@ -1164,6 +1218,17 @@ export function analyzeLayout(plan: FloorPlan, layout: Layout): AnalysisResult {
     ];
     const off = feet.filter((p) => !obbContainsPoint(e.obb, p));
     if (!off.length) continue;
+    // Another rug may already be doing the job. With two seating groups (or two
+    // rooms) the nearest-anchor search will happily pair the bedroom rug with
+    // the living-room sofa and then complain that it does not reach — which is
+    // true and completely irrelevant. Only report when NO rug carries the feet.
+    const carried = entries.some(
+      (r) =>
+        r.def.kind === 'rug' &&
+        !r.def.wallMounted &&
+        feet.every((p) => obbContainsPoint(r.obb, p)),
+    );
+    if (carried) continue;
     const gap = Math.max(...off.map((p) => distToObb(e.obb, p)));
     add_(
       'info',
