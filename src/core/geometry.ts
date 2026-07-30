@@ -922,15 +922,50 @@ function snapToFree(g: Grid, p: Vec2, maxRadius: number): number {
  * counter overhang often covers the exact point you want to route to/from).
  * Returns cell-centre waypoints in world space, or null if unreachable.
  *
- * CALLER BEWARE: this is a pure SHORTEST path, so it hugs the inside of corners
- * and skims obstacles — `pathClearance` on the result reports the width of the
- * gap the route actually squeezes through, not the widest way across the room.
- * That is the right measure for "can you get from A to B", and the wrong one for
- * "how generous is the main circulation route". For the latter, route between
- * points that sit in the middle of each space.
+ * ROUTING MODEL: a pure shortest path is the wrong route to measure. It hugs the
+ * inside of every corner, so `pathClearance` on it reports ~one cell no matter how
+ * open the room is — it measures the tightest line a person *could* trace, not the
+ * line a person *would* walk. So by default the step cost is penalised for walking
+ * close to an obstacle, which pushes the route into the middle of a corridor the
+ * way someone actually moves through a room. `comfort` is the clearance (per side)
+ * below which the penalty starts, so the default 1.5 ft asks for a 3 ft walkway.
+ *
+ * The penalty is non-negative and proportional to step length, so the octile
+ * heuristic stays admissible and A* is still optimal for the penalised cost.
+ *
+ * Pass `shortest: true` for the old behaviour, i.e. the strict "is there any way
+ * through at all" question rather than "how good is the route".
  */
-export function findPath(g: Grid, from: Vec2, to: Vec2): Vec2[] | null {
+export interface PathOptions {
+  /** clearance per side, in ft, below which the obstacle penalty starts */
+  comfort?: number;
+  /** how strongly to avoid tight spots; 0 reproduces the shortest path */
+  weight?: number;
+  /** ignore clearance entirely and return the strict shortest path */
+  shortest?: boolean;
+}
+
+/**
+ * clearanceField is O(n) but not free, and findPath is called several times per
+ * analysis against the same grid, so memoise per Grid instance.
+ */
+const FIELD_CACHE = new WeakMap<Grid, Float32Array>();
+
+/** The clearance field for a grid, computed once per grid instance. */
+export function cachedClearanceField(g: Grid): Float32Array {
+  let f = FIELD_CACHE.get(g);
+  if (!f) {
+    f = clearanceField(g);
+    FIELD_CACHE.set(g, f);
+  }
+  return f;
+}
+
+export function findPath(g: Grid, from: Vec2, to: Vec2, opts: PathOptions = {}): Vec2[] | null {
   const SNAP = 3.0;
+  const comfort = opts.comfort ?? 1.5;
+  const weight = opts.shortest ? 0 : (opts.weight ?? 3);
+  const field = weight > 0 ? cachedClearanceField(g) : null;
   const start = snapToFree(g, from, SNAP);
   const goal = snapToFree(g, to, SNAP);
   if (start < 0 || goal < 0) return null;
@@ -992,7 +1027,10 @@ export function findPath(g: Grid, from: Vec2, to: Vec2): Vec2[] | null {
         if (data[cr * cols + nc] !== FREE || data[nr * cols + cc] !== FREE) continue;
       }
       const step = dc !== 0 && dr !== 0 ? diag : cell;
-      const tentative = gCur + step;
+      // Walking within `comfort` of an obstacle costs extra, scaled by how far
+      // inside that margin you are. Always >= 0, so the heuristic stays admissible.
+      const squeeze = field ? Math.max(0, comfort - field[ni]!) : 0;
+      const tentative = gCur + step * (1 + weight * squeeze);
       if (tentative < gScore[ni]! - 1e-12) {
         gScore[ni] = tentative;
         cameFrom[ni] = cur;
