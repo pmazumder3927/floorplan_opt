@@ -789,10 +789,116 @@ def build_outlook(args: Args, meshes: list[bpy.types.Object]) -> None:
         build_context(meshes)
 
 
+# ------------------------------------------------------------------ dollhouse
+
+#: Object-name prefixes the lid-off view removes. Matched case-insensitively
+#: against the glb node name, which build.ts controls (polygonSlab(..., 'ceiling')
+#: and the 'downlights' group).
+DOLLHOUSE_HIDE_NAMES = ('ceiling', 'downlight', 'soffit')
+
+#: ...and the materials, checked through materials.resolve() so a rename upstream
+#: cannot silently leave the lid on. Same belt-and-braces as main()'s has_ceiling.
+DOLLHOUSE_HIDE_MATERIALS = ('concrete-soffit', 'downlight-lens', 'downlight-trim')
+
+
+def strip_lid(meshes: list[bpy.types.Object]) -> int:
+    """Hide the soffit and its downlights so a camera above can see the plan.
+
+    hide_render per OBJECT, not per parent: Blender does not propagate that flag
+    down a parent chain for rendering, and the glb arrives as a flat-ish node
+    tree anyway. Hiding rather than deleting keeps the objects available to the
+    axis check and to any later pass that wants them back.
+    """
+    n = 0
+    for ob in meshes:
+        name = ob.name.lower()
+        hit = any(name.startswith(p) for p in DOLLHOUSE_HIDE_NAMES)
+        if not hit:
+            for s in ob.material_slots:
+                if s.material and materials.resolve(ob.name, s.material.name)[0] in DOLLHOUSE_HIDE_MATERIALS:
+                    hit = True
+                    break
+        if hit:
+            ob.hide_render = True
+            n += 1
+    return n
+
+
+def add_studio_dome(strength: float, sun_strength: float,
+                    az_deg: float = 215.0, el_deg: float = 58.0) -> None:
+    """The lighting a dollhouse plate is shot under: a big soft dome, no sky.
+
+    WHY NOT THE DAYLIGHT RIG. With the lid off, the Nishita dome is no longer
+    seen through four window openings — it falls on every surface at once, at
+    100,000 lux, and the frame is a white sheet with furniture-shaped stains on
+    it. Worse, it would be a LIE about the room: this plate is a diagram of the
+    plan, not a photograph taken at 4pm, and the interior frames are where the
+    daylight argument gets made honestly (see the exposure table in raytrace.ts).
+
+    So this is a product-photography rig, and it says so:
+      - a two-tone dome, near-white overhead falling to a mid grey below, which
+        is what a softbox over a white cyc actually looks like from inside;
+      - one very soft sun (20 deg of angular size against the real 0.53) purely
+        to give the walls a light and a dark side. Without it every object sits
+        in flat ambient and the plan reads as a sticker sheet.
+      - film_transparent, set by the caller: the background is alpha, and
+        raytrace.ts flattens it onto white. Compositing white IN the render would
+        have to fight AgX's shoulder for a value that lands on 255,255,255;
+        flattening after the view transform just is white.
+    """
+    world_data = bpy.data.worlds.new('dollhouse')
+    bpy.context.scene.world = world_data
+    world_data.use_nodes = True
+    nt = world_data.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new('ShaderNodeOutputWorld')
+    bg = nt.nodes.new('ShaderNodeBackground')
+    bg.inputs['Strength'].default_value = strength
+
+    # Generated coords in a world shader = the ray direction, so Z is up.
+    coord = nt.nodes.new('ShaderNodeTexCoord')
+    sep = nt.nodes.new('ShaderNodeSeparateXYZ')
+    nt.links.new(coord.outputs['Generated'], sep.inputs[0])
+    ramp = nt.nodes.new('ShaderNodeMapRange')
+    ramp.clamp = True
+    nt.links.new(sep.outputs['Z'], ramp.inputs['Value'])
+    ramp.inputs['From Min'].default_value = -0.35
+    ramp.inputs['From Max'].default_value = 0.55
+    ramp.inputs['To Min'].default_value = 0.0
+    ramp.inputs['To Max'].default_value = 1.0
+    mix = nt.nodes.new('ShaderNodeMix')
+    mix.data_type = 'RGBA'
+    nt.links.new(ramp.outputs[0], materials._sock(mix, 'Factor', 'VALUE'))
+    materials._sock(mix, 'A', 'RGBA').default_value = (0.42, 0.43, 0.45, 1.0)   # floor-ward
+    materials._sock(mix, 'B', 'RGBA').default_value = (0.97, 0.975, 1.0, 1.0)   # overhead
+    nt.links.new([o for o in mix.outputs if o.type == 'RGBA'][0], bg.inputs['Color'])
+    nt.links.new(bg.outputs[0], out.inputs['Surface'])
+
+    data = bpy.data.lights.new('key', type='SUN')
+    data.energy = sun_strength
+    data.angle = math.radians(20.0)     # a softbox, not the sun
+    data.color = (1.0, 0.975, 0.945)
+    key = bpy.data.objects.new('key', data)
+    bpy.context.scene.collection.objects.link(key)
+    d = sun_vector(az_deg, el_deg)
+    key.rotation_euler = d.to_track_quat('Z', 'Y').to_euler()
+    log(f'  dollhouse: studio dome x{strength:.2f}, soft key {sun_strength:.2f} W/m2 '
+        f'from az={az_deg:.0f} el={el_deg:.0f}')
+
+
+def build_dollhouse(args: 'Args', meshes: list[bpy.types.Object]) -> None:
+    """The whole lid-off setup: no city, no sky, no ground, no ceiling."""
+    hidden = strip_lid(meshes)
+    log(f'  dollhouse: hid {hidden} lid object(s) (ceiling + downlights)')
+    drop_glb_ground(meshes)
+    add_studio_dome(strength=args.dome_strength, sun_strength=args.key_strength)
+
+
 # --------------------------------------------------------------------- cycles
 
 def configure_cycles(samples: int, exposure: float, res: tuple[int, int],
-                     backend: str, wb_kelvin: float = 5100.0) -> None:
+                     backend: str, wb_kelvin: float = 5100.0,
+                     film_transparent: bool = False) -> None:
     """Interior GI settings. Every one of these is here for a reason."""
     scene = bpy.context.scene
     c = scene.cycles
@@ -800,10 +906,10 @@ def configure_cycles(samples: int, exposure: float, res: tuple[int, int],
     scene.render.resolution_x, scene.render.resolution_y = res
     scene.render.resolution_percentage = 100
     scene.render.image_settings.file_format = 'PNG'
-    scene.render.image_settings.color_mode = 'RGB'
+    scene.render.image_settings.color_mode = 'RGBA' if film_transparent else 'RGB'
     scene.render.image_settings.color_depth = '8'
     scene.render.image_settings.compression = 15
-    scene.render.film_transparent = False
+    scene.render.film_transparent = film_transparent
     scene.render.use_persistent_data = False
 
     # ---- sampling
@@ -941,6 +1047,10 @@ class Args:
     sky_strength: float
     sun_explicit: bool
     context: bool
+    #: lid-off plate: no ceiling, no sky, no city, alpha background
+    dollhouse: bool
+    dome_strength: float
+    key_strength: float
     allow_axis_mismatch: bool
     cpu: bool
 
@@ -980,6 +1090,17 @@ def parse_args(argv: list[str]) -> Args:
                    help='skip the exterior city/sky context')
     p.add_argument('--allow-axis-mismatch', action='store_true',
                    help='render even if the kitchen-counter axis check fails')
+    # ---- dollhouse. A DIFFERENT PICTURE, not a different camera angle: the lid
+    # comes off, the daylight rig is replaced by a studio dome, and the background
+    # is alpha. Everything that makes an interior frame physically defensible
+    # (Nishita sky, real city, one glazed wall doing all the work) is deliberately
+    # off, because with no ceiling none of it means anything.
+    p.add_argument('--dollhouse', action='store_true',
+                   help='lid-off plan plate: hide the soffit, studio dome, transparent background')
+    p.add_argument('--dome-strength', type=float, default=1.5,
+                   help='dollhouse only: strength of the studio dome')
+    p.add_argument('--key-strength', type=float, default=2.5,
+                   help='dollhouse only: W/m2 of the soft key that gives the walls a light side')
     # WEATHER. These multiply world.py's physically-scaled Nishita sky; they are
     # NOT the W/m2 values used by the add_daylight() fallback further down.
     # DEFAULT WEATHER = THE REFERENCE PHOTO'S WEATHER, and it is measured, not
@@ -1044,6 +1165,8 @@ def parse_args(argv: list[str]) -> Args:
                 up_z=a.up_z, camera_name=a.camera_name, wb=a.wb,
                 sun_intensity=a.sun_intensity, sky_strength=a.sky_strength,
                 context=a.context,
+                dollhouse=a.dollhouse, dome_strength=a.dome_strength,
+                key_strength=a.key_strength,
                 allow_axis_mismatch=a.allow_axis_mismatch, cpu=a.cpu)
 
 
@@ -1075,7 +1198,9 @@ def main() -> int:
     has_ceiling = any(
         materials.resolve(ob.name, s.material.name)[0] == 'concrete-soffit'
         for ob in meshes for s in ob.material_slots if s.material)
-    if not has_ceiling:
+    if not has_ceiling and args.dollhouse:
+        log('  no ceiling in the glb — fine here, the dollhouse takes it off anyway')
+    elif not has_ceiling:
         log('  !! no ceiling/soffit material in the glb — the interior is OPEN TO '
             'THE SKY, so every surface will blow out. Export with showCeiling.')
 
@@ -1087,8 +1212,12 @@ def main() -> int:
 
     cam = add_camera(args.camera_pos, args.camera_target, args.fov, args.res, args.up_z)
     check_against_exported_camera(cam, args.camera_name)
-    build_outlook(args, meshes)
-    configure_cycles(args.samples, args.exposure, args.res, backend, args.wb)
+    if args.dollhouse:
+        build_dollhouse(args, meshes)
+    else:
+        build_outlook(args, meshes)
+    configure_cycles(args.samples, args.exposure, args.res, backend, args.wb,
+                     film_transparent=args.dollhouse)
 
     out = os.path.abspath(args.out)
     os.makedirs(os.path.dirname(out), exist_ok=True)

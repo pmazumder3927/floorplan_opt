@@ -29,12 +29,26 @@
  * north, the panel faces SOUTH, and the glass is on the user's LEFT: daylight
  * rakes across the work surface and never down the barrel of the display.
  *
+ * THE SLEEPING END, REVISED 31 Jul 2026. The bed was originally the place this
+ * scheme saved money — a $79 white steel GRIMSBU with a wall-hung ledge and a
+ * wall-hung String shelf over it — and it rendered exactly like that. It is now
+ * an alcove that is designed rather than deferred, under two rules the client
+ * set: NOTHING GETS FIXED TO A WALL, and the bed has to look like something.
+ * That is an Awara bamboo queen with no headboard (the head of this bed is a
+ * window, so there cannot be one), oat linen with a terracotta bed cover, a
+ * TONSTAD oak nightstand standing in the aisle, a cordless Flos Bellhop on it,
+ * and the storage moved into the 8.3" under the frame. It cost $599, 1 1/8" of
+ * the walk behind the bed and 0.8 degrees of sofa axis — and it bought back
+ * 29.7 points of the picture from the bed, because the 5'-11" floor lamp that
+ * used to stand at the foot was eating a third of it. See the three SLEEPING
+ * ALCOVE / COLOUR notes at the bottom of this file.
+ *
  * WHAT THIS SCHEME CANNOT DO — stated up front, because a brief that only sells
  * is useless. It cannot show a watchable picture in daylight with the shades up
  * (see the PROJECTION note: 1.9:1 in-room contrast, a grey rectangle). It has no
  * dresser and no wardrobe. It has no coffee table. Its queen has one long side
  * against a wall, which the analyzer flags and which this file accepts on
- * purpose. And the sofa sits 13.7 degrees off the screen's centreline.
+ * purpose. And the sofa sits 14.5 degrees off the screen's centreline.
  */
 
 import type { Layout } from '@/core/types';
@@ -94,18 +108,32 @@ const PLINTH_H = 14 / 12; // 1.16667 — the projector's z
 const PLINTH_X = BATH_W_FACE - PLINTH_D / 2; // 17.865
 
 // ----------------------------------------------------------------- the sleeper
-// GRIMSBU queen, 61" x 80 3/8", frame 21 5/8" tall — the only queen in the
-// catalog whose headboard clears the 2'-6" glazing rule outright. Turned side-on
-// (rot 270) with the head to the glazing and the north long side against the
-// notch's north wall.
-const BED_L = 6.697917; // 80 3/8" head-to-foot
-const BED_W = 5.083333; // 61" across
-// Head 1/2" clear of the analyzer's 1'-0" window band, so nothing of the bed —
-// not even a 21 5/8" headboard — counts as standing in front of the glass.
-const BED_HEAD_X = GLASS_BAND_E + 0.05; // 1.64 -> foot at 8.338
-const BED_CX = BED_HEAD_X + BED_L / 2; // 4.98896
-const BED_CY = N_FACE + 0.02 + BED_W / 2; // 3.19167 -> y 0.65 .. 5.73333
-const BED_FOOT_S = BED_CY + BED_W / 2; // 5.73333, the south long side
+// Awara Japanese Joinery bamboo queen, 63.9" x 83.9", 12" frame, NO HEADBOARD
+// and no footboard — the tallest thing on it is a pillow at about 26". Turned
+// side-on (rot 270) with the head to the glazing and the north long side
+// against the notch's north wall. See the SLEEPING ALCOVE note for why this
+// frame and not the $79 GRIMSBU it replaces.
+const BED_L = 6.991667; // 83.9" head-to-foot
+const BED_W = 5.325; // 63.9" across
+// Head 1/2" clear of the analyzer's 1'-0" window band, so no part of the bed —
+// mattress, pillow or frame — counts as standing in front of the glass.
+const BED_HEAD_X = GLASS_BAND_E + 0.05; // 1.64 -> foot at 8.63167
+const BED_FOOT_X = BED_HEAD_X + BED_L; // 8.63167
+const BED_CX = BED_HEAD_X + BED_L / 2; // 5.13583
+const BED_CY = N_FACE + 0.02 + BED_W / 2; // 3.3125 -> y 0.65 .. 5.975
+const BED_FOOT_S = BED_CY + BED_W / 2; // 5.975, the south long side
+// Sleeping surface: 12" frame + a 10" mattress. Everything that sits ON the bed
+// (the folded bed cover) is placed at this z.
+const MATTRESS_TOP = 22 / 12; // 1.83333
+
+// The bedside, and the reason it is where it is. There is no floor at the head
+// of this bed on the north (wall) or the west (glass), so the ONLY bedside
+// position in the plan is the south-west corner of the mattress, standing in
+// the aisle. A 15 3/4" square is the largest object that can do that without
+// closing the walk — see the BEDSIDE note.
+const NIGHT_SQ = 1.3125; // 15 3/4"
+const NIGHT_X = BED_HEAD_X + NIGHT_SQ / 2; // 2.29625 -> x 1.64 .. 2.9525
+const NIGHT_Y = BED_FOOT_S + 0.04 + NIGHT_SQ / 2; // 6.67125 -> y 6.015 .. 7.3275
 
 // -------------------------------------------------------------------- the desk
 // Jarvis 60 x 30 bamboo, back to the wide leg's north wall, pushed east so the
@@ -129,10 +157,13 @@ const CHAIR_Y = DESK_FRONT + 0.03 + 2.25 / 2; // 6.895 -> y 5.77 .. 8.02
 // 56" of seat running north-south, 34" deep, so the front face lands 1'-5" east
 // of the centre at x 9.41667 and the back face 1'-5" west of it at x 6.58333.
 const SOFA_W = 4.666667; // 56"
-// North face set 2'-8 5/8" south of the bed's south side: that gap is BOTH the
+// North face set 2'-7 1/2" south of the bed's south side: that gap is BOTH the
 // bed's access aisle and the main east-west walk, and it is the single tightest
-// dimension in the scheme.
-const SOFA_N = BED_FOOT_S + 2.716667; // 8.45
+// dimension in the scheme. It used to be 2'-8 5/8". The bamboo frame is 2 7/8"
+// wider than the GRIMSBU it replaces, and that 2 7/8" is split: the sofa moves
+// 1 3/4" south (which is all the kitchen aisle can spare — it leaves 3 5/8")
+// and the aisle gives up the other 1 1/8".
+const SOFA_N = BED_FOOT_S + 2.625; // 8.6
 const SOFA_CY = SOFA_N + SOFA_W / 2; // 10.78333 -> y 8.45 .. 13.11667
 // 10'-8 7/8" of perpendicular standoff from the fabric; 11'-1 3/8" straight-line
 // to the image centre, which subtends 36.2 deg — the THX maximum is 36 deg.
@@ -266,13 +297,6 @@ const layout: Layout = {
       note: 'Defines the viewing floor: from under the sofa\'s front feet east to 1\'-8" short of the plinth. 7 mm total build — the thinnest rug in the catalog — which is the reason it can run under the parked task chair without rucking, and why it is this rug and not a pile.',
     },
     {
-      id: 'lamp-notch',
-      def: 'lamp-floor-hektar',
-      at: [9.2, 2.4],
-      rot: 0,
-      note: 'The only floor lamp, deliberately parked in the dead 1\'-6" shoulder east of the bed where it is out of every seat-to-screen sightline. Nothing tall stands in the viewing zone.',
-    },
-    {
       id: 'plant-screen',
       def: 'plant-medium-40in',
       at: [16.9, 12.3],
@@ -323,31 +347,63 @@ const layout: Layout = {
     },
 
     // =============================================================== SLEEP
+    //
+    // NOTHING IN THIS GROUP IS FIXED TO A WALL. The previous version of this
+    // scheme hung a floating ledge and a 5'-9 3/8" String shelf over the bed;
+    // both are gone. Everything below stands on the floor, sits on the bed, or
+    // lives in the 8.3" of clearance under the frame.
     {
       id: 'bed',
-      def: 'bed-queen-grimsbu',
+      def: 'bed-queen-awara-bamboo',
       at: [BED_CX, BED_CY],
       rot: 270,
-      label: 'GRIMSBU queen, 61" x 80 3/8", frame 21 5/8"',
-      note: 'Head to the glazing, 1\'-0 1/2" off the glass so no part of it counts as standing in front of the window; north long side against the notch wall, in from the south. The lowest-headboard queen in the catalog, which is the only reason a real queen can point at this window at all.',
+      label: 'Awara bamboo queen, 63.9" x 83.9", 12" frame, no headboard',
+      note: 'Head to the glazing, 1\'-0 1/2" off the glass, north long side against the notch wall, in from the south. NO HEADBOARD is the point rather than an omission: the head of this bed is a floor-to-ceiling window, and every headboard sourced — including this frame\'s own $269 bamboo one at 39" — breaks the 2\'-6" glazing rule. Made up, the tallest thing here is a pillow at about 2\'-2", so from the sofa the west glass reads full height over the bed.',
     },
     {
-      id: 'bed-ledge',
-      def: 'nightstand-floating-walnut',
-      at: [2.4, N_FACE + 0.02 + 1.033 / 2],
-      rot: 0,
-      z: 2.0,
-      label: 'Floating walnut ledge, 24" AFF',
-      note: 'Wall-hung at the head end at 24", just above the 20" mattress top. There is no floor either side of the head for a nightstand, so the bedside surface has to hang.',
+      id: 'bed-cover',
+      def: 'bedcover-linen-terracotta-queen',
+      at: [BED_FOOT_X - 0.16 - 26 / 24, BED_CY],
+      rot: 270,
+      z: MATTRESS_TOP,
+      label: 'Vintage-wash linen bed cover, terracotta — folded across the foot',
+      note: 'Drawn where it actually lies: turned back and folded over the last 2\'-2" of the mattress, 1 1/2" in from the foot rail. It is the ONLY colour in the alcove and it is the piece that makes oat linen on pale bamboo read as a made bed rather than as a showroom.',
     },
     {
-      id: 'bed-shelf',
-      def: 'shelf-string-wall-3bay',
-      at: [6.0, N_FACE + 0.02 + 0.99 / 2],
+      id: 'bed-nightstand',
+      def: 'nightstand-tonstad',
+      at: [NIGHT_X, NIGHT_Y],
       rot: 0,
-      z: 2.5,
-      label: 'String 3-bay wall shelf, 30" AFF',
-      note: 'Runs above the bed\'s north side at 30", clear of the 21 5/8" frame. With no dresser and no wardrobe in this scheme, these three bays plus the 8 1/4" of flat-bin space under the GRIMSBU frame are the only bedroom storage outside the built-in closets.',
+      label: 'TONSTAD nightstand, oak veneer, 15 3/4" square',
+      note: 'Stands on the floor at the south-west corner of the mattress — the only bedside position this plan has, since the head has glass on one side and a wall on the other. 23 1/4" puts its top 1 1/4" above the mattress, which is where a bedside surface wants to be. Nothing else in this scheme is oak and that is on purpose: it is the only piece of case furniture at the sleeping end, so it is meant to read as one considered object rather than as half of a matching set.',
+    },
+    {
+      id: 'bed-lamp',
+      def: 'lamp-bellhop-portable',
+      at: [NIGHT_X, NIGHT_Y],
+      rot: 0,
+      z: 23.25 / 12,
+      label: 'Flos Bellhop Unplugged, on the nightstand',
+      note: 'CORDLESS, and that is why it is here rather than a ceramic lamp: there is no outlet at a glazed wall in the traced plan, and a cord to this corner would cross the tightest walkway in the apartment. It is also the only light left in the scheme that is not a ceiling downlight or a desk clamp: 8 1/4" of lamp on a 23 1/4" nightstand tops out at 31 1/2", which is west of every seat and out of every ray — where a floor lamp tall enough to be useful is not, and that is exactly what the old scheme got wrong.',
+    },
+    // Under-bed storage: the GRIMSBU's 8 1/4" of flat-bin clearance was the old
+    // scheme's whole answer to having no dresser. The Awara gives 8.3", so a
+    // 7 1/2" SKUBB case clears it by 3/4" instead of 3/8" — four of them fit
+    // under a queen and three are drawn.
+    ...[0, 1, 2].map((i) => ({
+      id: `bed-storage-${i + 1}`,
+      def: 'storage-skubb-underbed',
+      at: [BED_HEAD_X + 1.1 + i * 1.95, BED_CY] as [number, number],
+      rot: 270,
+      label: 'SKUBB case under the bed, 35 1/2 x 20 3/4 x 7 1/2',
+    })),
+    {
+      id: 'bed-plant',
+      def: 'plant-sansevieria-24',
+      at: [9.28, 1.72],
+      rot: 0,
+      label: 'SANSEVIERIA, 8" pot — the notch shoulder',
+      note: 'The 1\'-3 5/8" of floor between the foot of the bed and the step in the north wall. THIS IS THE SPOT THE FLOOR LAMP USED TO STAND IN, and swapping a 5\'-11 1/4" lamp for a 23 1/2" plant is worth 33.8% of the picture from the bed (measured — pnpm sightline). A sansevieria is also the one plant here that survives a west window behind blackout shades.',
     },
 
     // ============================================================== DINING
@@ -399,19 +455,23 @@ const layout: Layout = {
     'BLACKOUT — THE UGLY PART, SAID OUT LOUD. The glazing head is 104". SelectBlinds\' per-lift maximum heights are 84" cordless, 84" no-drill and 96" motorised; only the CONTINUOUS CORD LOOP reaches 120". So a shade tall enough for these bays cannot be cordless and cannot be no-drill: it is four cord loops hanging down a floor-to-ceiling glass wall, which is a real aesthetic cost in a minimal scheme and has to be shown to the client before they choose cellular over a roller. Expect a ~1/8" factory deduction per side, i.e. eight visible light halos, which is what the side channels are for — and the channels\' "97-99% of side light blocked" is vendor marketing, not a tested figure.',
     'DESK ORIENTATION AND PULL-BACK. The Jarvis 60 x 30 bamboo top runs east-west on the wide leg\'s north wall, x 11\'-0" to 16\'-0", y 3\'-2 7/8" to 5\'-8 7/8". The user faces NORTH, the 32" panel faces SOUTH, and the west glazing is on the user\'s LEFT — side light across the work surface, never down the barrel of the display. A panel facing the glass, or facing away with the glass behind the user, is unreadable from about 3pm every day. The layout reserves the full 2\'-6" of CLEARANCE.deskChair and the Aeron (2\'-3" deep) is drawn PARKED inside it rather than tucked under a solid-box desk. The sourced real-world minimum for a task chair to roll back and stand is nearer 3\'-0" to 3\'-6": THIS LAYOUT ACHIEVES IT, because there is 7\'-10" of continuous clear floor south of the top before the kitchen aisle and only the first 2\'-3" of it is the parked chair.',
     'DESK POSITION IS DICTATED BY THE PLINTH. The top could not sit further east: the plinth occupies x 16\'-10 3/8" to 18\'-10 3/8" and needs 2\'-0" of clear floor in front of its push-open bays. As drawn the desk clips only 3.5% of that zone (its front corner, over 4 1/8" of depth). Further west and the parked chair severs the walk between the bed and the sofa; further east and the desk stands under the screen.',
-    'SEATING DISTANCES, ALL THREE OF THEM. Sofa 11\'-1 3/8" from the image centre (36.2 deg — the THX maximum is 36 deg) and 10\'-8 7/8" of perpendicular standoff from the fabric. North pouf 13\'-4 3/8" (30.4 deg, which is the SMPTE reference). South pouf 13\'-8 5/8" (29.7 deg). The analyzer\'s bounds are 8\'-9 1/4" (45 deg) and 18\'-8 1/4" (22 deg); nothing here is within 2\'-4" of either. Four seats on the picture, plus two folding chairs that are not aimed at it.',
-    'TRADE-OFF — THE SOFA IS 13.7 DEG OFF AXIS, AND I AM KEEPING THE SEAT. The conflict is arithmetic: the queen is 5\'-1" across, the sofa 4\'-8", the walkway between them 2\'-8 5/8", and the desk\'s pull-back eats the north end. That is 12\'-6" of the 12\'-11 1/4" available between the notch\'s north wall and the kitchen aisle. It fits, but only by pushing the sofa 2\'-7 5/8" south of the screen\'s centreline, which is 13.7 deg off axis at 11\'-1 3/8". The alternative was to give up the second seat and centre a single armchair — I did not, because a CONGREGATION AREA is one of the four hard requirements and 13.7 deg on a screen published at 170 deg of viewing angle is a geometric non-event. What it does cost is keystone-free symmetry of the room, not of the image: the picture is square on the wall, it is the audience that is offset.',
-    'BED AND ITS AISLES — AND THE ONE WARNING THIS LAYOUT ACCEPTS. GRIMSBU queen, 61" x 80 3/8", turned side-on with the head 1\'-0 1/2" off the glazing and the north long side flush to the notch\'s north wall. You get in from the SOUTH, where the aisle measures 2\'-8 5/8" at its tightest (against the sofa\'s back) and 3\'-0" or more down the rest of it. The analyzer flags bed-access, because a mattress 53" or wider is supposed to have 24" on BOTH long sides and this one has a wall on the north. THAT WARNING IS DELIBERATE AND IT IS THE PRICE OF THE SCHEME: pulling the bed 2\'-0" off the notch wall pushes the sofa\'s north face to 9\'-8 3/4", which puts the sofa either into the kitchen aisle or 2\'-0" further off the screen axis, and the walk between bed and sofa drops under 2\'-6". One long side against a wall in a 448 sq ft studio is normal; a severed circulation route is not.',
-    'GLAZING RULE. Nothing over 2\'-6" tall comes within 1\'-0" of the glass, and nothing in this layout stands in the analyzer\'s 1\'-0" window band at all. The closest pieces are the bed head at 1\'-0 1/2" (frame 21 5/8", under the limit anyway) and the folded gateleg at 1\'-0 3/4" (2\'-5 1/8"). The two FRÖSVI folding chairs are 2\'-6 3/8" — 3/8" over the rule — and they stand 1\'-0 3/4" and 2\'-7" off the wall face, i.e. 3/4" and 1\'-7" outside the 1\'-0" band, which is the same trade layout D makes with its two stored FROSVI and for the same reason: they fold flat into the reach-in closet when nobody is eating. The Cleon sofa is 2\'-4" tall and the queen frame 1\'-9 5/8", so from every seat in the room the glazing reads full height over the furniture.',
-    'CIRCULATION, AND WHERE IT IS TIGHTEST. Two numbers carry the plan: the east-west walk between the bed\'s south side and the sofa\'s back is 2\'-8 5/8", and the north-south connector east of the sofa, between the sofa\'s front face and the parked desk chair, is 2\'-11 1/2". Measured end to end, the required trips come out at 3\'-6" front door to bathroom, 3\'-0" front door to kitchen sink, 3\'-0" bathroom to bed, 4\'-0" sink to refrigerator, and 2\'-7" front door to the west windows — that last one is the walk down the promenade past the folded console and the poufs, and it is 1" over the 2\'-6" absolute minimum. The desk chair does sever the north wall walk at x 12\'-4 1/2" to 14\'-7 1/2"; you go round it, which is what the 2\'-11 1/2" connector is for.',
+    'SEATING DISTANCES, ALL THREE OF THEM. Sofa 11\'-1 1/8" from the image centre (36.2 deg — the THX maximum is 36 deg) and 10\'-8 7/8" of perpendicular standoff from the fabric at the seat centre. North pouf 13\'-4 3/8" (30.4 deg, which is the SMPTE reference). South pouf 13\'-8 5/8" (29.7 deg). The analyzer\'s bounds are 8\'-9 1/4" (45 deg) and 18\'-8 1/4" (22 deg); nothing here is within 2\'-4" of either. Four seats on the picture, plus two folding chairs that are not aimed at it.',
+    'TRADE-OFF — THE SOFA IS 14.5 DEG OFF AXIS, AND I AM KEEPING THE SEAT. The conflict is arithmetic: the queen is 5\'-3 7/8" across, the sofa 4\'-8", the walkway between them 2\'-7 1/2". That is 12\'-7 3/8" of the 12\'-11 1/4" available between the notch\'s north wall and the kitchen aisle, and the 3 5/8" left over is the whole margin. It fits, but only by pushing the sofa 2\'-9 3/8" south of the screen\'s centreline, which is 14.5 deg off axis at 11\'-1 1/8". THE BAMBOO FRAME IS WHAT PAID FOR THAT: it is 2 7/8" wider than the GRIMSBU it replaces, and in this plate bed width converts directly into off-axis angle. The alternative was to give up the second seat and centre a single armchair — I did not, because a CONGREGATION AREA is one of the four hard requirements and 14.5 deg on a screen published at 170 deg of viewing angle is a geometric non-event. What it does cost is keystone-free symmetry of the room, not of the image: the picture is square on the wall, it is the audience that is offset.',
+    'BED AND ITS AISLES — AND THE ONE WARNING THIS LAYOUT ACCEPTS. Awara bamboo queen, 63.9" x 83.9", turned side-on with the head 1\'-0 1/2" off the glazing and the north long side flush to the notch\'s north wall. You get in from the SOUTH, where the aisle measures 2\'-7 1/2" at its tightest (against the sofa\'s back) and 3\'-0" or more down the rest of it. The analyzer flags bed-access, because a mattress 53" or wider is supposed to have 24" on BOTH long sides and this one has a wall on the north. THAT WARNING IS DELIBERATE AND IT IS THE PRICE OF THE SCHEME: pulling the bed 2\'-0" off the notch wall pushes the sofa\'s north face to 9\'-11 3/4", which puts the sofa either into the kitchen aisle or 2\'-0" further off the screen axis, and the walk between bed and sofa drops under 2\'-6". One long side against a wall in a 448 sq ft studio is normal; a severed circulation route is not.',
+    'THE SLEEPING ALCOVE, AND WHY IT IS BUILT THE WAY IT IS. The first version of this scheme spent $79 on the bed — a white powder-coated GRIMSBU — and hung the rest of the bedroom on the wall: a floating walnut ledge at 24" and a 5\'-9 3/8" String shelf at 30". Path-traced, that reads exactly as what it is, a white slab under two brackets, and it also required drilling a rented wall in three places. THE REVISED ALCOVE FIXES BOTH, AND EVERY PIECE IN IT STANDS ON THE FLOOR, SITS ON THE BED, OR LIVES UNDER IT. (1) The frame is an Awara Japanese Joinery bamboo queen, $768, 12" tall, no headboard, tool-free interlocking joinery — pale warm bamboo against an espresso floor, and the same material as the Jarvis desktop 9 ft away, which is the cheapest coherence available in a one-room apartment. (2) The head of the bed is a WINDOW, so there is no headboard at all and there cannot be: this frame\'s own bamboo headboard is 39" and every other one sourced is worse. Made up, the tallest thing on the bed is a pillow at about 2\'-2", i.e. 4" under the glazing rule, so from the sofa the west glass reads full height straight over the bed. (3) The bedside is a TONSTAD oak nightstand standing in the aisle at the south-west corner of the mattress, because the head has glass on one side and a wall on the other and that corner is the only bedside position this plan owns. It is 15 3/4" square, and the analyzer confirms it costs the walk NOTHING — the route widths are identical with it in and with it out. (4) On it stands a Flos Bellhop, which is CORDLESS: there is no outlet at a glazed wall and a cord to that corner would cross the tightest walkway in the apartment. (5) Storage moved under the bed — the Awara\'s 8.3" of clearance swallows four 7 1/2" SKUBB cases (three are drawn), which is roughly a three-drawer chest of folded clothes, hidden, and it is what replaces the String shelf.',
+    'WHY THE BED IS NOT TURNED 90 DEG — ASKED, BUILT, MEASURED, REJECTED. The obvious move is to put the head against the notch\'s NORTH wall with the foot pointing south, which would buy three real things: both long sides accessible (the bed-access warning above disappears), a solid wall behind the pillows so a proper headboard becomes legal — this frame\'s own bamboo one, $269 — and a matching nightstand on each side. IT WAS DRAWN AS A LAYOUT AND RUN THROUGH pnpm check, TWICE (bed centred with 2\'-0" each side, and bed shoved west with 1\'-0"), AND BOTH FAIL THE SAME WAY: the required routes collapse to 1\'-3" and 1\'-6" against a 2\'-6" absolute minimum, i.e. two tight-path warnings instead of one bed-access warning, and the bed-access warning does not even go away (the notch is 9\'-4 1/8" wide and a 5\'-3 7/8" bed leaves 4\'-0 1/8" to split, so each side reads 1\'-11" against a 2\'-0" requirement — one inch short, on both sides at once). THE ARITHMETIC IS THE WHOLE ANSWER, and it is one line. Between the notch\'s north wall and the kitchen aisle there is 12\'-11 1/4" of depth. Side-on the bed spends 5\'-3 7/8" of it, which leaves 2\'-6" of walk and a 4\'-8" sofa with 5 3/8" to spare. Turned 90 deg it spends 6\'-11 7/8" — 1\'-8" more — and the same walk and the same sofa now need 14\'-1 7/8" of a 12\'-11 1/4" room. IT IS SHORT BY 1\'-2 5/8", so the sofa\'s back and the bed\'s foot end up 11 1/2" apart and that gap becomes the only east-west route in the apartment. Turning the bed does not cost circulation, it costs THE CONGREGATION AREA, which is one of the four hard requirements. Two schemes in this repo do take that trade deliberately and neither of them does it by rotating a bed into a walkway: layout C makes the bed the back ROW of the seating (no aisle needed between them because the bed IS a seat), and layout E puts the queen on the wall so the floor is empty. If the client wants a headboard and two nightstands, the answer is C or E, not a rotation of A.',
+    'THE ALCOVE ALSO BOUGHT BACK 30% OF THE PICTURE, WHICH WAS NOT THE POINT BUT IS THE BEST PART. The old scheme parked a 5\'-11 1/4" HEKTAR floor lamp in the dead shoulder east of the bed and the note claimed it was "out of every seat-to-screen sightline". IT WAS NOT: pnpm sightline casts 5 eye points per seat at 169 points on the image, and from the bed that lamp ate 33.8% of the picture — the bed could see 52.2% of what it was pointed at. A 23 1/2" sansevieria now stands in the same shoulder and blocks nothing, because 23 1/2" is below the 28 1/2" image bottom and therefore mathematically incapable of crossing any ray. The bed now sees 81.9% and the sofa 92.0%. WHAT STILL BLOCKS: the parked Aeron, 18.1% from the bed and 6.6% from the sofa, and that one is structural to this layout rather than fixable in it — see layout E, which was drawn around exactly this problem. This scheme now has NO FLOOR LAMP anywhere, on purpose: any lamp tall enough to be useful in the viewing zone is tall enough to stand in the picture.',
+    'COLOUR — ONE SCHEME, STATED ONCE. The room is fixed by things nobody chose: an espresso wide-plank floor, flat white walls, a bare concrete soffit and BLACK anodised window frames, which are the only true black in the apartment. Against that, this layout runs two warm neutrals and exactly one accent. THE NEUTRALS: pale bamboo (bed frame, Jarvis desktop) and brushed oak (nightstand) for wood; oat linen for the bed — Quince European Linen sheets in Oat with the duvet cover set in Sand, so the bed has two values in it instead of one flat white, which is what stops a white-bedded room from reading as a hotel. THE ACCENT: terracotta, and it appears exactly three times — the vintage-wash linen bed cover folded across the foot, the pot the sansevieria stands in, and the warm brown of the Nordic Knots Desert rug at the other end of the room, which is the same family a half-tone darker. THE DARKS ARE THE EQUIPMENT: charcoal Cleon, near-black poufs, the black screen frame and the black window frames all belong to the same family and read as one thing. WHAT IS DELIBERATELY ABSENT: grey-blue anything (it fights the warm floor), a second accent colour, and a white bed. Sheets are a design decision in a studio, not a utility purchase — the bed is in every sightline in the apartment, which is the whole reason the brief for this room is different from the brief for a bedroom.',
+    'GLAZING RULE. Nothing over 2\'-6" tall comes within 1\'-0" of the glass, and nothing in this layout stands in the analyzer\'s 1\'-0" window band at all. The closest pieces are the bed head at 1\'-0 1/2" (2\'-2" made up, pillows included — under the limit anyway), the nightstand at 1\'-0 1/2" (1\'-11 1/4") and the folded gateleg at 1\'-0 3/4" (2\'-5 1/8"). The two FRÖSVI folding chairs are 2\'-6 3/8" — 3/8" over the rule — and they stand 1\'-0 3/4" and 2\'-7" off the wall face, i.e. 3/4" and 1\'-7" outside the 1\'-0" band, which is the same trade layout D makes with its two stored FROSVI and for the same reason: they fold flat into the reach-in closet when nobody is eating. The Cleon sofa is 2\'-4" tall and the made-up queen 2\'-2", so from every seat in the room the glazing reads full height over the furniture.',
+    'CIRCULATION, AND WHERE IT IS TIGHTEST. Two numbers carry the plan: the east-west walk between the bed\'s south side and the sofa\'s back is 2\'-7 1/2", and the north-south connector east of the sofa, between the sofa\'s front face and the parked desk chair, is 2\'-11 1/2". Measured end to end, the required trips come out at 3\'-6" front door to bathroom, 3\'-0" front door to kitchen sink, 4\'-0" sink to refrigerator, and 2\'-6" for both the bathroom-to-bed trip and the walk down the promenade to the west windows. THOSE LAST TWO USED TO READ 3\'-0" AND 2\'-7", AND THE WIDER BED IS WHY: 2 7/8" of extra frame comes out of the aisle it stands in. They are at the absolute minimum and not under it, which is the honest way to say that this alcove is bought with circulation. The desk chair does sever the north wall walk at x 12\'-4 1/2" to 14\'-7 1/2"; you go round it, which is what the 2\'-11 1/2" connector is for.',
     'BUILT-INS HELD CLEAR. The 3\'-6" kitchen work aisle (nothing south of y 13\'-6 7/8" for x < 17\'-11 3/8"), the 3\'-0" fridge and laundry zones and the 2\'-6" strip in front of the four reach-in closet doors are all clear. The bathroom door\'s 2\'-8" leaf and the 3\'-2" entry door arc are clear. The rug is walkable and stops 1/4" short of the kitchen aisle line.',
-    'STORAGE, AND WHAT IS MISSING. There is NO DRESSER and NO WARDROBE in this scheme, and there is no wall left to put one on: the notch north wall is the bed, the wide leg north wall is the desk, the east wall is the screen, and the 10 3/8" between the desk\'s east end and the plinth is a gap, not a wall. What you get instead is the 8\'-0" run of built-in reach-in closets on the south wall of the east leg (four doors), the bathroom linen closet, three bays of String shelf over the bed, the floating walnut ledge, 8 1/4" of flat-bin clearance under the GRIMSBU frame, two push-open bays in the plinth, two wall-hung TRONES at the entry, and two hollow storage poufs. If the client owns more clothes than that holds, take a different layout.',
+    'STORAGE, AND WHAT IS MISSING. There is NO DRESSER and NO WARDROBE in this scheme, and there is no wall left to put one on: the notch north wall is the bed, the wide leg north wall is the desk, the east wall is the screen, and the 10 3/8" between the desk\'s east end and the plinth is a gap, not a wall. What you get instead is the 8\'-0" run of built-in reach-in closets on the south wall of the east leg (four doors), the bathroom linen closet, FOUR SKUBB cases in the 8.3" under the bed frame (three drawn — roughly a three-drawer chest of folded clothes, and the reason the wall shelf could go), the TONSTAD\'s drawer, two push-open bays in the plinth, two wall-hung TRONES at the entry, and two hollow storage poufs. The bedroom storage this scheme USED to have — three bays of String shelf and a floating ledge, $735 of wall-hung joinery between them — is deliberately gone, because both need holes in a wall and the brief asked for none. If the client owns more clothes than the closets plus four flat cases hold, take a different layout.',
     'TRADE-OFF — NO COFFEE TABLE. The Cleon needs 1\'-4" of clear floor in front of it to be reachable, and anything put in that band either fails the clearance check or stands in the UST\'s beam. The 66" plinth top is the surface, and its west edge is 7\'-5 3/8" from the sofa\'s front face, which means you stand up to put a glass down. That is a real cost of an armless 34"-deep sofa in a 10\'-4" deep room, and it is the correct trade against losing a seat.',
     'TRADE-OFF — DINING IS A FOLDED GATELEG AND TWO PARKED FOLDING CHAIRS. 2\'-7 3/8" x 10 1/4" folded, back to the glazing wall and 3/4" clear of the 1\'-0" band, opening its east leaf into the promenade. The two FRÖSVI chairs stand parked side by side 1\'-3" south of it, facing SOUTH down the open floor — the only orientation in this room that gives a folding chair its full 2\'-6" of pull-back, since west of them is glass 1\'-11 1/2" away and east of them is a pouf. It seats two properly and four badly, and for most of the year it is a console. A four-top does not exist in a plan carrying a queen, a Jarvis, a 56" sofa and a 66" plinth in 213 sq ft of usable floor. You also eat at the desk, which is why the desk got a single 32" panel instead of two 27"s.',
     'TRADE-OFF — THIS IS AN EVENING ROOM. With the shades up the picture is unwatchable, and no amount of ALR fixes it on a west-facing wall (see BLACKOUT). With the shades down the apartment loses its entire west elevation — the one thing it has. So the room has two states and you choose one: daylight and a view, or a 100" picture. Nothing in the catalog splits the difference. The 550-lumen XGIMI MoGo 4 on a painted wall would be honest for camping trips and is not honest for a congregation area.',
     'ACOUSTICS AND HEAT, BRIEFLY. The soffit is exposed structural concrete and the floor is dark LVP, so the room will ring; the 8x10 wool/jute flatweave and the blackout cellular stacks are the only absorption in the scheme and it is not enough for a cinema — budget a fabric panel or two, off catalog. The PX3-PRO measures 39.1 dBA at 3 ft with no published rating, and at 11\'-1 3/8" that is audible in quiet passages. CEILING MOUNTING IS NOT AN OPTION and no layout here draws one: the soffit needs a GPR scan, masonry anchors and a silica vacuum, there is no power in it, and the glazing head leaves 4" of concrete above the glass.',
-    'BUDGET. $15,562 of catalogue total, and the shape of it is the argument: $6,648 of that is the cinema (PX3-PRO $2,799, VIVIDSTORM 100" UST ALR $1,439, plinth $650, four blackout shades $1,280, four sets of side channels $480) and $4,658 is the desk kit (Jarvis 60 x 30 $1,325, Aeron $2,150, 32" panel $799, single arm $175, CPU sling $99, felt mat $95, clamp light $15, cable tray included). Those two line items are 73% of the total and the whole bed costs $79. That is deliberate: the projector wall and the desk are the two hard requirements this apartment has to be built around, and the GRIMSBU is what pays for them.',
-    'BUDGET CAVEAT. Catalogue prices are furniture and AV only, and three of the biggest lines are estimates rather than quotations. The $650 plinth is a JOINERY ALLOWANCE for a veneered slab carcass, not a cabinetmaker\'s number. The $320 per blackout shade is a configured-size ESTIMATE — the only verified figure is SelectBlinds\' $161.99 starting price, and at 104" of drop the real number will be materially higher — and the $120 per bay of side channels is an estimate with no published price behind it. The GRIMSBU line is a FRAME ONLY at roughly $79 (IKEA US art. 90508513): the slatted base is a separate purchase and so is the mattress, so add $700-1,200. Bedding, cookware, the fabric absorption above and the kitchen itself are all outside the total. The Cleon does not knock down and ships freight — measure the angled front door, the corridor turn and the lift car before ordering it.',
+    'BUDGET. $16,717 of catalogue total, and the shape of it is still the argument: $7,204 is the cinema (PX3-PRO $2,799, VIVIDSTORM 100" UST ALR $1,439, plinth $650, four blackout shades $1,976, four sets of side channels $340) and $4,643 is the desk kit (Aeron $2,150, Jarvis 60 x 30 $1,325, 32" panel $799, single arm $175, CPU sling $99, felt mat $95, cable tray included). Those two are 71% of the total. THE SLEEPING ALCOVE IS $1,482 OF IT — Awara frame $768, Flos Bellhop $370, TONSTAD nightstand $150, linen bed cover $130, three SKUBB cases $39, sansevieria $25 — against $883 for the version it replaces (GRIMSBU $79, String shelf $645, floating ledge $90, HEKTAR $69). SO THE REAL NUMBER IS +$599, and it is worth saying what that $599 buys and what it does not: it buys a bed that is an object rather than a hospital frame, a room with no holes drilled in its walls, and 29.7 points of picture visibility from the bed. It buys no extra floor, no extra storage volume beyond a wash, and nothing at all for the picture the guests see.',
+    'BUDGET CAVEAT. Catalogue prices are furniture and AV only, and the biggest lines are estimates rather than quotations. The $650 plinth is a JOINERY ALLOWANCE for a veneered slab carcass, not a cabinetmaker\'s number. The $494 per blackout shade and the $85 per bay of side channel are configured-size ESTIMATES, and at 104" of drop the real number can move a long way. ON THE ALCOVE SPECIFICALLY: the Awara $768 is the FRAME ONLY, read off awarasleep.com on 31 Jul 2026 — a 10" queen mattress is $499-$1,999 on top of it (its own allowance line) and its deck height is not published, so measure before buying anything thicker than 10". The Flos Bellhop is recorded at its $370 LIST price although it was $240.50 on the same day; the linen bed cover was flagged LOW STOCK when priced and its "from $129.90" is the throw size, so the full/queen may be dearer. SHEETS AND DUVET ARE NOT IN THE CATALOGUE TOTAL — they are the bedding allowance, and this scheme spends it on a specified thing rather than a class average: Quince European Linen sheet set in Oat and the linen duvet cover set (cover + 2 shams) in Sand, $298 the pair on the day\'s promotion and $603 at list. The Cleon does not knock down and ships freight — measure the angled front door, the corridor turn and the lift car before ordering it.',
   ],
 };
 

@@ -35,6 +35,19 @@ the cost is that it is an evening room.
 
 ![Layout A, looking east from the glazing: 100" screen on the bathroom partition, Jarvis desk on the left](docs/renders/a-night-wall.jpg)
 
+The sleeping end was rebuilt on 31 Jul 2026 under two rules: **nothing gets fixed
+to a wall**, and the bed has to look like something. Out went a $79 white steel
+frame, a wall-hung ledge and a wall-hung shelf; in came an Awara bamboo queen with
+no headboard — the head of this bed is a window, so there cannot be one — oat
+linen with a terracotta bed cover, an oak nightstand standing in the aisle, a
+cordless Flos Bellhop on it, and four flat cases in the 8.3" under the frame doing
+the job the shelf used to do. It cost $599, 1 1/8" of the walk behind the bed and
+0.8° of sofa axis. It also **bought back 29.7 points of the picture**: the 5'-11"
+floor lamp that used to stand at the foot of the bed was eating a third of the
+screen from it, which no drawing showed and `pnpm sightline` did.
+
+![Layout A, the sleeping alcove: bamboo queen with the west glazing as its headboard, oak nightstand and a terracotta linen bed cover](docs/renders/a-night-wall-sleeping.jpg)
+
 ### B — Fold away
 
 The picture goes **in the west glazing** on a floor-rising screen that stows to an
@@ -62,6 +75,22 @@ of it, and the honest cost is a standard-throw lens standing in front of the
 audience at 550 lumens, i.e. after dark only.
 
 ![Layout D, looking east: the painted screen area reads as a faint rectangle on the partition](docs/renders/d-paint-and-go.jpg)
+
+### E — Clear shot
+
+Same picture as A, on the same wall, but planned around **what you can see of it**
+rather than around where it goes. The desk moves into the north-west notch — the
+only floor in the plate that no seat-to-screen ray crosses — and the queen goes
+**onto the wall**, so for sixteen hours a day there is no bed in the apartment at
+all. That frees the sofa to sit dead on the screen centreline, which none of the
+first four manage. Every seat sees **100% of the picture**; the other four see 52%
+to 92%. It is the only layout with no errors *and* no warnings. The costs are
+$2,159 of wall bed, a floor that has to stay empty for it to land on, and dining
+that is a drop-leaf for two.
+
+![Layout E, looking west down the promenade: the sofa on the screen centreline, the city behind the glazing](docs/renders/e-clear-shot.jpg)
+
+![Layout E, the low queen head-to-the-north-wall with the desk nook at the left and the screen at the right](docs/renders/e-clear-shot-sleeping.jpg)
 
 ### The 2D side of the same model
 
@@ -95,7 +124,7 @@ against, so the renders' finishes are matched to the unit rather than invented.
 
 ---
 
-## The four schemes
+## The five schemes
 
 | | Layout | Where the picture goes | The cost |
 |---|---|---|---|
@@ -103,6 +132,31 @@ against, so the renders' finishes are matched to the unit rather than invented.
 | **B** | `b-fold-away` | floor-rising screen in the west glazing | one-ended Murphy bed, audience faces the glass |
 | **C** | `c-second-row` | bathroom partition, with the bed as the back row | the bed is public |
 | **D** | `d-paint-and-go` | 118" of screen paint, portable projector | 550 lumens and a lens in front of the audience |
+| **E** | `e-clear-shot` | bathroom partition again, but planned around the SIGHTLINE | a wall bed and a floor that must stay empty for it |
+
+**E is the one to read first if you only read one.** The other four were drawn
+around where the picture goes; E was drawn around what you can actually see of
+it. `scripts/sightline.ts` casts a grid of rays — five eye positions per seat
+against 169 points on the image — instead of the single seat-centre-to-screen-centre
+ray `analysis.ts` uses, and it turns out every earlier scheme is obstructed:
+
+```
+  a-night-wall   sofa 92.0%   poufs 86.6% / 89.7%   bed 81.9%
+  b-fold-away    worst seat 79.5%
+  c-second-row   worst seat 89.0%
+  d-paint-and-go worst seat 91.8%
+  e-clear-shot   every seat 100.0%
+```
+
+In A, B, C and D the main culprit is the parked desk chair. A's bed used to read
+52.2% here, and the difference is one object: a floor lamp parked in the shoulder
+at the foot of the bed, which the layout file asserted was "out of every
+seat-to-screen sightline" and which was in fact eating 33.8% of the picture. It is
+now a 23 1/2" plant, and 23 1/2" cannot cross a ray whose lowest point is 28 1/2". E moves the desk into
+the north-west notch — the only floor in the plate that no seat-to-screen ray
+crosses — and puts a headboard-less queen out in the room under the 28 1/2" image
+bottom, which frees the sofa to sit dead on the screen centreline for the first
+time. It is also the only layout that returns no errors *and* no warnings.
 
 Live figures — item counts, free floor, narrowest circulation path, warnings and
 budget — come out of `pnpm check`, which is also the CI gate: it exits 1 if any
@@ -112,13 +166,14 @@ impassable). Sample output:
 ```
   LAYOUT          ITEMS  FREE %  FREE AREA  NARROWEST  ERR  WARN   BUDGET
   ──────────────  ─────  ──────  ─────────  ─────────  ───  ────  ───────
-  a-night-wall       35   79.7%    357 ft²       2'7"    0     1  $15,562
-  b-fold-away        34   82.8%    371 ft²         3'    0     3  $16,848
-  c-second-row       28   79.5%    356 ft²       3'6"    0     2  $11,825
-  d-paint-and-go     26   83.6%    375 ft²       2'6"    0     1   $7,609
+  a-night-wall       39   78.5%    352 ft²       2'6"    0     1  $16,717
+  b-fold-away        34   82.8%    371 ft²         3'    0     3  $16,596
+  c-second-row       28   79.5%    356 ft²       3'6"    0     2  $11,573
+  d-paint-and-go     26   83.6%    375 ft²       2'6"    0     1   $7,357
+  e-clear-shot       37   85.0%    381 ft²      2'10"    0     0  $12,733
 
-  4 layouts · 448 ft² interior · walkway min 3' (tight 2'6")
-  no errors, 7 warnings, 2 info
+  5 layouts · 448 ft² interior · walkway min 3' (tight 2'6")
+  no errors, 7 warnings, 3 info
 ```
 
 `BUDGET` is the catalogue total only. `src/core/budget.ts` additionally produces
@@ -132,7 +187,8 @@ flags which prices in the schedule are unverified rather than quoted.
 
 ```bash
 pnpm install
-pnpm check          # analyze all four layouts; exits 1 on an error-severity issue
+pnpm check          # analyze all five layouts; exits 1 on an error-severity issue
+pnpm sightline      # how much of the projected image each seat can actually see
 pnpm dev            # the interactive lab at http://localhost:4317
 ```
 
@@ -147,7 +203,7 @@ where the twelve `PLAN_NOTES` substitutions get made.
   (the apartment)           (169 furniture defs)
           └───────────────┬───────────────┘
                           ▼
-                  src/layouts/*.ts                  the four schemes
+                  src/layouts/*.ts                  the five schemes
                           │
     ┌─────────────────────┼─────────────────────┐
     ▼                     ▼                     ▼
@@ -181,6 +237,7 @@ Reproducing the frames on this page:
 
 ```bash
 npx tsx scripts/raytrace.ts --layout a-night-wall   --camera eye-window --res 1600x1000 --samples 200 --exposure 2.2
+npx tsx scripts/raytrace.ts --layout a-night-wall   --shots  sleeping   --res 1280x800  --samples 220
 npx tsx scripts/raytrace.ts --layout b-fold-away    --camera eye-living --res 1600x1000 --samples 200 --exposure 2.2
 npx tsx scripts/raytrace.ts --layout c-second-row   --camera eye-hero   --res 1600x1000 --samples 256 --exposure 2.9
 npx tsx scripts/raytrace.ts --layout d-paint-and-go --camera eye-window --res 1600x1000 --samples 200 --exposure 2.2
@@ -196,7 +253,7 @@ drives Chromium with software WebGL, so `pnpm render` works in a container.
 
 ```
 src/core/        the apartment, the catalog, the units, the analyzer, the money
-src/layouts/     the four schemes — one file each, plus faces.ts for shared datums
+src/layouts/     the five schemes — one file each, plus faces.ts for shared datums
 src/render2d/    to-scale plan: SVG writer + React view
 src/render3d/    three.js scene builder, materials, camera presets, city backdrop
 src/app/         the interactive lab, and the chrome-less capture mode scripts drive

@@ -213,15 +213,19 @@ export const ALLOWANCES: AllowanceSpec[] = [
   },
   {
     id: 'bedding',
-    label: 'Bedding — duvet, insert, two pillows, two sets of sheets',
+    label: 'Bedding — linen sheet set, duvet cover set, insert, two pillows',
     group: 'sleep',
-    low: 220,
-    high: 650,
+    low: 370,
+    high: 810,
     why:
-      'Not in any furniture catalog and not optional. Class estimate for a queen set at the linen-' +
-      'shop and the good-linen-shop ends of the market. In this scheme it is also a VISIBLE design ' +
-      'element rather than a utility: in a studio the bed is in every sightline, and in the layout ' +
-      'where the bed is literally part of the seating it is on show whenever anyone visits.',
+      'Not in any furniture catalog and not optional, and in a studio it is a VISIBLE design element ' +
+      'rather than a utility: the bed is in every sightline in the apartment. PRICED AGAINST A ' +
+      'SPECIFIED SET rather than a class average, read off quince.com on 31 Jul 2026 — European ' +
+      'Linen sheet set, queen, in Oat at $144 promotional / $259 list, plus the European Linen duvet ' +
+      'cover set (cover + 2 standard shams) in Sand at $154 / $344. That is $298-$603 for the two, ' +
+      'and the band adds a duvet insert and two pillows at $70-$210 on top. The LOW end depends on a ' +
+      'promotion that was live the day it was read; budget the high end. A folded bed cover, where a ' +
+      'layout specifies one, is a catalogue line and is NOT in this allowance.',
     applies: (c) => c.kinds.has('bed') || c.kinds.has('murphy_bed') || c.kinds.has('sofa_bed'),
   },
   {

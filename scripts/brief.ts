@@ -15,14 +15,22 @@
  * data URI, so a single .html file can be mailed, opened offline or published
  * without dragging a folder of assets behind it.
  *
- * The hero frame is NOT rendered here — path tracing is minutes of GPU time and
- * belongs behind its own explicit command. Run
+ * FRAMES ARE NOT RENDERED HERE — path tracing is GPU time and belongs behind its
+ * own explicit command. A brief carries five of them:
+ *
+ *   the hero      a view of the ROOM, from cameraFor()'s presets. Which preset
+ *                 headlines which layout is an editorial decision, in HERO below.
+ *   the plate     the lid-off dollhouse, next to the 2D plan.
+ *   three shots   views of the LAYOUT, aimed at its own furniture by
+ *                 src/render3d/shots.ts.
+ *
+ * So, before running this:
  *
  *   npx tsx scripts/raytrace.ts --layout <id> --camera <cam> --samples 768
+ *   npx tsx scripts/raytrace.ts --layout <id> --shots all  --samples 768
  *
- * first; this script picks up renders/rt-<id>-<cam>.png if it is there and says
- * so plainly (with the exact command to fix it) if it is not. Which camera
- * headlines which layout is an editorial decision recorded in HERO below.
+ * This script picks up renders/rt-<id>-<name>.png where it finds them and says
+ * so plainly — with the exact command to fix it — where it does not.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -36,6 +44,7 @@ import { getDef } from '@/core/catalog';
 import { briefNote, FINISH_SCHEDULE, TRIM_RULES } from '@/core/finishes';
 import { studio } from '@/core/plan';
 import { renderPlanSVG } from '@/render2d/svg';
+import { shotsFor } from '@/render3d/shots';
 import { formatShort } from '@/core/units';
 import type { CameraPreset, Layout } from '@/core/types';
 
@@ -71,12 +80,12 @@ const FLAGS: FlagSpecs = {
     kind: 'string',
     default: 'renders',
     value: '<dir>',
-    describe: 'where to look for rt-<layout>-<hero camera>.png',
+    describe: 'where to look for rt-<layout>-<camera|shot>.png',
   },
   hero: {
     kind: 'boolean',
     default: true,
-    describe: 'embed the ray-traced hero frame if one exists',
+    describe: 'embed the ray-traced frames (hero, dollhouse plate, shots) if they exist',
   },
   index: {
     kind: 'boolean',
@@ -116,8 +125,20 @@ function splitNote(note: string): { label: string | null; body: string } {
   return { label, body: m[2]!.trim() };
 }
 
-/** Data URI for the hero frame, transcoded to JPEG so a brief stays mailable. */
-function heroDataUri(png: string): { uri: string; bytes: number } | null {
+/**
+ * Data URI for a rendered frame, transcoded to JPEG so a brief stays mailable.
+ *
+ * WIDTH AND QUALITY ARE ARGUMENTS BECAUSE A BRIEF NOW CARRIES FIVE FRAMES, not
+ * one. At the hero's 1600px/q86 a frame costs about 250 KB, and five of those is
+ * a 1.3 MB email attachment before a single table is written. The gallery frames
+ * are supporting evidence viewed at half the width, so they go out at 1200/q82
+ * (~120 KB) and the page lands around 800 KB — still one file, still openable
+ * with no server, still under what any mail system will carry.
+ */
+function heroDataUri(
+  png: string,
+  opts: { width?: number; quality?: number } = {},
+): { uri: string; bytes: number } | null {
   if (!fs.existsSync(png)) return null;
   const jpg = path.join(
     fs.mkdtempSync(path.join(tmpdir(), 'brief-')),
@@ -125,9 +146,27 @@ function heroDataUri(png: string): { uri: string; bytes: number } | null {
   );
   try {
     // ImageMagick is already a hard dependency of the render pipeline's QA crops.
-    execFileSync('convert', [png, '-resize', '1600x', '-quality', '86', jpg], {
-      stdio: 'pipe',
-    });
+    execFileSync(
+      'convert',
+      [
+        png,
+        // A dollhouse frame arrives with an alpha channel (render.py renders it
+        // on transparency and raytrace.ts flattens it; if that flatten was
+        // skipped, JPEG would composite it onto BLACK here). Belt and braces.
+        '-background',
+        'white',
+        '-alpha',
+        'remove',
+        '-alpha',
+        'off',
+        '-resize',
+        `${opts.width ?? 1600}x`,
+        '-quality',
+        String(opts.quality ?? 86),
+        jpg,
+      ],
+      { stdio: 'pipe' },
+    );
     const buf = fs.readFileSync(jpg);
     return { uri: `data:image/jpeg;base64,${buf.toString('base64')}`, bytes: buf.length };
   } catch {
@@ -196,35 +235,56 @@ function budgetCsv(layout: Layout, b: BudgetResult): string {
  * of these was picked by looking at the render, and the ones that are NOT the
  * default are the interesting cases:
  *
- * FOR THESE FOUR SCHEMES THE RULE IS SIMPLE, because every one of them is
- * organised around one wall: SHOOT THE PICTURE. Three of the four put it on the
- * bathroom partition at the east end, so the frame that shows the scheme is
- * eye-window — standing at the glass looking back east down the room's own
- * 18'-4" axis, which is also the axis the seating distance is measured along.
- * The fourth puts the picture IN the west glazing, so it is the opposite frame.
+ * THE RULE CHANGED WHEN THE GALLERY ARRIVED, and the old one is worth writing
+ * down because it was right at the time. When a brief carried ONE frame, that
+ * frame had to be the scheme's whole argument, so it shot the picture: three of
+ * the four put the screen on the bathroom partition at the east end, so the hero
+ * was eye-window — standing at the glass, looking back east down the same 18'-4"
+ * axis the seating distance is measured along — and the fourth, whose picture
+ * rises out of the west glazing, was the opposite frame.
  *
- *   a-night-wall    eye-window  screen, plinth, projector, sofa and poufs all in
- *                               one frame, with the bed in the notch at the edge.
- *   b-fold-away     eye-living  the picture is the floor-riser AT the glazing, so
- *                               the only frame that contains it looks west. It
- *                               also catches the Murphy cabinet on the north wall.
- *   c-second-row    eye-window  the whole point is the low bed lying between the
- *                               floor seats and the screen; looking east down the
- *                               axis is the only view that shows the bed IS row 2.
- *   d-paint-and-go  eye-window  a painted rectangle has no frame and no hardware,
- *                               so the scheme is invisible from any other angle —
- *                               and the honest cost of that is that it is also
- *                               nearly invisible in this one.
+ * src/render3d/shots.ts now owns a screening frame per layout, aimed at that
+ * layout's picture from that layout's seat, and it does that job better than any
+ * plan-derived preset can. A hero that ALSO shoots the picture is then a second
+ * photograph of the same wall three inches further along the page.
+ *
+ * SO THE HERO NOW LOOKS THE OTHER WAY. The gallery argues the scheme; the hero
+ * shows the room the scheme is in — which in this unit means the thing every one
+ * of them is organised around and none of them can move: 18'-6" of floor-to-
+ * ceiling west glazing, and the city behind it.
+ *
+ *   a-night-wall    eye-living  west into the glazing: the outlook, the bed head
+ *                               at the glass on the right, dining at the left.
+ *   b-fold-away     eye-living  the rule says eye-window here, AND IT LOSES. This scheme's
+ *                               picture is a floor-riser standing IN the glazing,
+ *                               so looking west is both the room shot and the
+ *                               screening shot, and the "other way" is a room
+ *                               whose only light source is behind a 100" panel:
+ *                               that frame measures mean L 53 against this one's
+ *                               96. A brief does not open on a murky photograph
+ *                               to avoid a composition it shares with a figure
+ *                               four screens further down.
+ *   c-second-row    eye-living  same as A, and it puts the low queen — the thing
+ *                               that makes this scheme a scheme — across the
+ *                               foreground.
+ *   d-paint-and-go  eye-living  a painted rectangle has no frame and no hardware,
+ *                               so this scheme is invisible from every angle; at
+ *                               least this one shows what the money did NOT go on.
  *
  * eye-hero, the WNW diagonal, is deliberately used by none of them: it looks
  * across the room rather than down its long axis, which is exactly the axis these
  * schemes are built on.
  */
 const HERO: Record<string, CameraPreset> = {
-  'a-night-wall': 'eye-window',
+  'a-night-wall': 'eye-living',
   'b-fold-away': 'eye-living',
-  'c-second-row': 'eye-window',
-  'd-paint-and-go': 'eye-window',
+  'c-second-row': 'eye-living',
+  'd-paint-and-go': 'eye-living',
+  //   e-clear-shot    eye-living  the same axis as A, and it has to be: this scheme's
+  //                               whole claim is that the floor between the seat and
+  //                               the picture is empty, and the only frame that shows
+  //                               an empty floor is the one shot down it.
+  'e-clear-shot': 'eye-living',
 };
 
 const heroCamera = (id: string): CameraPreset => HERO[id] ?? 'eye-hero';
@@ -306,6 +366,20 @@ figcaption { font-size: .82rem; color: var(--muted); margin-top: .6rem; max-widt
 .frame { border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; background: var(--panel); }
 .scroller { overflow-x: auto; }
 /*
+ * The lid-off plate sits on WHITE in both themes, because that is what it is: a
+ * studio plate shot on a cyc, flattened onto white by raytrace.ts. Giving it the
+ * panel colour in dark mode would put a light-grey rectangle inside a white
+ * image and show the seam.
+ */
+.plate { background: #fff; }
+/*
+ * The gallery is deliberately NOT a grid. Each frame is evidence for a specific
+ * claim and its caption is the claim, so they are read in sequence at full width;
+ * a two-up grid halves the frames and orphans the captions beside them.
+ */
+.gallery figure { margin-top: 1.6rem; }
+.gallery figcaption { margin-bottom: 1.6rem; }
+/*
  * FLEX, NOT GRID, and the reason is the last row. With
  * grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)) the tracks exist
  * whether or not there is an item in them, so eight stats in a six-column row
@@ -353,12 +427,22 @@ footer {
 }
 a { color: var(--accent); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
-nav.briefs { display: grid; gap: .6rem; margin: 2rem 0; }
+/*
+ * INDEX CARDS. Two columns down to 46rem, then one — the card carries a lid-off
+ * plate of the scheme, and a plate of a 30 ft plan below about 300px wide stops
+ * being a drawing and becomes a texture.
+ */
+nav.briefs { display: grid; gap: .9rem; margin: 2rem 0; grid-template-columns: repeat(auto-fit, minmax(21rem, 1fr)); }
 nav.briefs a {
   display: block; padding: 1rem 1.2rem; border: 1px solid var(--rule); border-radius: 3px;
   text-decoration: none; color: var(--ink);
 }
 nav.briefs a:hover { border-color: var(--accent); }
+/* White, for the same reason .plate is: the frame is shot on a white cyc. */
+nav.briefs img {
+  width: 100%; height: auto; display: block; margin: .8rem 0 0;
+  background: #fff; border: 1px solid var(--rule); border-radius: 2px;
+}
 nav.briefs .n {
   font: 600 .72rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .12em;
   color: var(--accent); text-transform: uppercase;
@@ -420,6 +504,8 @@ interface Built {
   file: string;
   bytes: number;
   hero: boolean;
+  /** how many ray-traced frames actually made it into the page, hero included */
+  frames: number;
   name: string;
   description: string;
 }
@@ -427,6 +513,7 @@ interface Built {
 function buildBrief(layout: Layout, opts: { renders: string; hero: boolean }): {
   html: string;
   hero: boolean;
+  frames: number;
   csv: string;
 } {
   const result = analyzeLayout(studio, layout);
@@ -441,6 +528,33 @@ function buildBrief(layout: Layout, opts: { renders: string; hero: boolean }): {
   const cam = heroCamera(layout.id);
   const heroPng = path.join(opts.renders, `rt-${layout.id}-${cam}.png`);
   const hero = opts.hero ? heroDataUri(heroPng) : null;
+
+  /**
+   * THE GALLERY — the layout's own shots, as opposed to the hero, which is a
+   * view of the ROOM (see the HERO table and src/render3d/shots.ts).
+   *
+   * Missing frames are reported, not faked: a brief that silently drops the
+   * screening frame reads as a scheme with no screening frame. The `--no-hero`
+   * path skips the lot, which is what makes a text-only rebuild fast.
+   */
+  const shots = shotsFor(studio, layout, 1.6)
+    .map((s) => ({
+      shot: s,
+      png: path.join(opts.renders, `rt-${layout.id}-${s.id}.png`),
+    }))
+    .map((e) => ({
+      ...e,
+      img: opts.hero
+        ? heroDataUri(
+            e.png,
+            // The lid-off plate is the one gallery frame people zoom into: it is
+            // read like a drawing, so it gets the extra 200px.
+            e.shot.mode === 'dollhouse' ? { width: 1400, quality: 84 } : { width: 1200, quality: 82 },
+          )
+        : null,
+    }));
+  const dollhouse = shots.find((s) => s.shot.mode === 'dollhouse');
+  const interiors = shots.filter((s) => s.shot.mode !== 'dollhouse');
 
   // ---- furniture schedule, priciest first so the money is visible ----------
   const rows = layout.items
@@ -598,9 +712,53 @@ ${stat('Analyzer', errs ? `${errs} error${errs > 1 ? 's' : ''}` : warns ? `${war
 <h2>The plan</h2>
 <figure class="frame scroller">${plan.svg}</figure>
 <figcaption>To scale at ${plan.scale} px per foot. Overall 30'-4" × 19'-10", 448 sq ft interior. Every dimension is traced from the real unit; assumptions are recorded in <code>PLAN_NOTES</code>.</figcaption>
+${
+  dollhouse?.img
+    ? `<figure class="frame plate"><img src="${dollhouse.img.uri}" alt="Lid-off view of ${esc(
+        layout.name,
+      )}"></figure>
+<figcaption><b>${esc(dollhouse.shot.title)}.</b> ${esc(dollhouse.shot.caption)}</figcaption>`
+    : ''
+}
 
 <h2>The scheme</h2>
 ${noteHtml}
+
+${
+  interiors.some((s) => s.img)
+    ? `<h2>In the room</h2>
+<p>${['One frame', 'Two frames', 'Three frames', 'Four frames'][
+        Math.min(3, interiors.filter((s) => s.img).length - 1)
+      ]}, each aimed at one of the things this scheme has to get right. The cameras are not hand-placed: <code>src/render3d/shots.ts</code> finds the picture, the desk and the bed in this layout and composes around them, so a frame that looks wrong means the furniture is wrong, not the photography.</p>
+<div class="gallery">
+${interiors
+  .filter((s) => s.img)
+  .map(
+    (s) =>
+      `<figure class="frame"><img src="${s.img!.uri}" alt="${esc(s.shot.title)} — ${esc(
+        layout.name,
+      )}"></figure>
+<figcaption><b>${esc(s.shot.title)}.</b> ${esc(s.shot.caption)}</figcaption>`,
+  )
+  .join('\n')}
+</div>${
+        interiors.some((s) => !s.img)
+          ? `\n<p class="caveat">Missing: ${interiors
+              .filter((s) => !s.img)
+              .map((s) => `<code>${esc(path.basename(s.png))}</code>`)
+              .join(', ')}. Render with <code>npx tsx scripts/raytrace.ts --layout ${esc(
+              layout.id,
+            )} --shots all --samples 768 --res 1600x1000</code>.</p>`
+          : ''
+      }`
+    : opts.hero
+      ? `<p class="caveat">No shot frames found in <code>${esc(
+          opts.renders,
+        )}</code>. Render them with <code>npx tsx scripts/raytrace.ts --layout ${esc(
+          layout.id,
+        )} --shots all --samples 768 --res 1600x1000</code>.</p>`
+      : ''
+}
 
 <h2>Schedule</h2>
 <div class="scroller">
@@ -662,7 +820,8 @@ computed, not transcribed.
 </footer>
 </div>`;
 
-  return { html, hero: !!hero, csv: budgetCsv(layout, budget) };
+  const frames = (hero ? 1 : 0) + shots.filter((s) => s.img).length;
+  return { html, hero: !!hero, frames, csv: budgetCsv(layout, budget) };
 }
 
 // -------------------------------------------------------------------- main
@@ -676,8 +835,9 @@ function main(): void {
         description: 'Write one self-contained HTML brief per layout.',
         specs: FLAGS,
         notes: [
-          'The ray-traced hero frame is picked up from renders/, never rendered here:',
-          '  npx tsx scripts/raytrace.ts --layout <id> --camera eye-hero --samples 768',
+          'Ray-traced frames are picked up from renders/, never rendered here:',
+          '  npx tsx scripts/raytrace.ts --layout <id> --camera eye-window --samples 768',
+          '  npx tsx scripts/raytrace.ts --layout <id> --shots all --samples 768 --res 1600x1000',
         ],
       }),
     );
@@ -700,7 +860,7 @@ function main(): void {
 
   const built: Built[] = [];
   for (const layout of layouts) {
-    const { html, hero, csv } = buildBrief(layout, {
+    const { html, hero, frames, csv } = buildBrief(layout, {
       renders,
       hero: wantHero,
     });
@@ -715,13 +875,14 @@ function main(): void {
       file,
       bytes,
       hero,
+      frames,
       name: layout.name,
       description: layout.description ?? '',
     });
     console.log(
       `  ${c.green('✓')} ${layout.id.padEnd(15)} ${fmtBytes(bytes).padStart(9)}  ${
-        hero ? 'with hero frame' : c.yellow('no hero frame')
-      }  + budget.csv`,
+        frames ? `${frames} frame${frames > 1 ? 's' : ''}` : c.yellow('no frames')
+      }${hero ? '' : c.yellow(' (no hero)')}  + budget.csv`,
     );
   }
 
@@ -749,14 +910,24 @@ fixes it, and an ALR screen does not substitute, because the projection wall fac
 straight down the sightline at the glazing, the one direction a lenticular screen cannot reject.
 If the blackout is not in the budget, buy a television and spend the projector money on the desk
 and the seating.</p>
+<p class="note">Each card carries that scheme's lid-off plate — the same cutaway that heads its
+plan — so the four arrangements can be compared before anything is opened. They are studio-lit
+diagrams, not photographs; the daylight argument is made frame by frame inside each brief.</p>
 <nav class="briefs">
 ${built
-  .map(
-    (b) =>
-      `<a href="./${encodeURIComponent(path.basename(b.file))}"><span class="n">${esc(
-        b.id,
-      )}</span><div>${esc(b.name)}</div><div class="d">${esc(nice(b.description))}</div></a>`,
-  )
+  .map((b) => {
+    // The plate is rendered at 1600 wide; on a card it is never shown above about
+    // 500 CSS px, so 800/q80 is the whole of its useful detail at a third of the
+    // bytes. Four of them keep the index around 300 KB.
+    const plate = wantHero
+      ? heroDataUri(path.join(renders, `rt-${b.id}-dollhouse.png`), { width: 800, quality: 80 })
+      : null;
+    return `<a href="./${encodeURIComponent(path.basename(b.file))}"><span class="n">${esc(
+      b.id,
+    )}</span><div>${esc(b.name)}</div><div class="d">${esc(nice(b.description))}</div>${
+      plate ? `<img src="${plate.uri}" alt="Lid-off plate of ${esc(b.name)}">` : ''
+    }</a>`;
+  })
   .join('\n')}
 </nav>
 <footer>Generated by <code>scripts/brief.ts</code>.</footer>
@@ -769,8 +940,18 @@ ${built
   console.log('');
   console.log(
     renderTable(
-      [{ header: 'BRIEF' }, { header: 'HERO' }, { header: 'BYTES', align: 'right' }],
-      built.map((b) => [path.relative(process.cwd(), b.file), b.hero ? 'yes' : 'no', fmtBytes(b.bytes)]),
+      [
+        { header: 'BRIEF' },
+        { header: 'HERO' },
+        { header: 'FRAMES', align: 'right' },
+        { header: 'BYTES', align: 'right' },
+      ],
+      built.map((b) => [
+        path.relative(process.cwd(), b.file),
+        b.hero ? 'yes' : 'no',
+        String(b.frames),
+        fmtBytes(b.bytes),
+      ]),
       { indent: '  ' },
     ),
   );

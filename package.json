@@ -10,6 +10,7 @@
     "preview": "vite preview --port 4317",
     "typecheck": "tsc --noEmit",
     "check": "tsx scripts/check.ts",
+    "sightline": "tsx scripts/sightline.ts",
     "svg": "tsx scripts/export-svg.ts",
     "render": "tsx scripts/render.ts",
     "brief": "tsx scripts/brief.ts",

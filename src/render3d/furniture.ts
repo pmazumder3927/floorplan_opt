@@ -730,10 +730,24 @@ function buildBench(ctx: Ctx): void {
  * platform frame puts the top of the mattress at 22-25". The FOOT of the bed
  * faces +z (front), so the headboard is at -z.
  */
+/** Mix a hex toward white by `t` (0..1). Used for the sheets-vs-duvet split. */
+function lighten(hex: string, t: number): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return hex;
+  const v = parseInt(m[1]!, 16);
+  const ch = [(v >> 16) & 255, (v >> 8) & 255, v & 255].map((c) => Math.round(c + (255 - c) * t));
+  return `#${ch.map((c) => c.toString(16).padStart(2, '0')).join('')}`;
+}
+
 function buildBed(ctx: Ctx, withArms: boolean): void {
   const { g, w, d, h, body, n } = ctx;
-  // def.accent is the BEDDING color on a bed (OAK frame / OFF_WHITE linen)
-  const linen = ctx.hasAccent ? matFor(ctx.accentColor, { roughness: 0.97 }) : MAT.linen;
+  // def.accent is the BEDDING color on a bed (OAK frame / OFF_WHITE linen).
+  // SHEETS AND DUVET ARE NOT THE SAME COLOUR. One flat tone over the whole bed
+  // is what makes a rendered bed look like a hospital bed; a real made bed has
+  // at least two values in it, the flat sheet and pillowcases being the paler
+  // of them. So the def's accent IS the duvet and the sheets are the same
+  // colour mixed a quarter of the way to white — one catalog field, two tones.
+  const linen = ctx.hasAccent ? matFor(lighten(ctx.accentColor, 0.25), { roughness: 0.97 }) : MAT.linen;
   const duvet = ctx.hasAccent ? matFor(ctx.accentColor, { roughness: 0.99 }) : matFor('#e2ded3', { roughness: 0.98 });
 
   // A def whose whole height is mattress-thick IS a mattress (the catalog has
@@ -754,11 +768,34 @@ function buildBed(ctx: Ctx, withArms: boolean): void {
   const frameTop = Math.max(IN(3), mattTop - mattT);
   const hbT = IN(2.5); // headboard / back panel thickness
 
-  // frame: a platform box, inset 1/2" so the mattress reads as sitting in it
-  addBox(g, body, [w, frameTop, d], [0, frameTop / 2, 0], { name: `${n}/frame` });
+  // FRAME. A bed that meets the floor all the way round reads as a box; every
+  // low platform bed in this catalog is chosen precisely because it has real
+  // under-frame clearance (Awara 8.3", Thuma 9", VEVELSTAD 7 7/8" — that space
+  // is the storage those layouts claim), so the frame is drawn as a deck rail
+  // over a RECESSED base and the shadow line under the rail is what makes it
+  // look like the product. The exception is the beds whose whole point is that
+  // the space underneath is full: a storage bed with drawers, or a Murphy.
+  const hay = `${ctx.def.id} ${ctx.def.name} ${(ctx.def.tags ?? []).join(' ')}`.toLowerCase();
+  const solidSkirt = /storage|drawer|murphy|daybed/.test(hay);
+  if (solidSkirt || frameTop < IN(7)) {
+    addBox(g, body, [w, frameTop, d], [0, frameTop / 2, 0], { name: `${n}/frame` });
+  } else {
+    const railT = Math.min(IN(4), frameTop - IN(3));
+    addBox(g, body, [w, railT, d], [0, frameTop - railT / 2, 0], { name: `${n}/frame` });
+    addBox(g, body, [w - IN(9), frameTop - railT, d - IN(9)], [0, (frameTop - railT) / 2, 0], {
+      name: `${n}/base`,
+    });
+  }
 
-  // headboard (bed) or upholstered back (daybed / sofa bed)
-  addBox(g, body, [w, h, hbT], [0, h / 2, -d / 2 + hbT / 2], { name: `${n}/headboard` });
+  // HEADBOARD — only where the def box has room for one. A def whose height is
+  // the made-up mattress has NO headboard, and inventing a 2 1/2" panel at the
+  // head of it is not a harmless bit of styling: three layouts in this project
+  // point a bed at a window or across a projected picture specifically BECAUSE
+  // the frame has no headboard, and the render was quietly contradicting them.
+  const wantsHeadboard = !/no-headboard/.test(hay) && h - mattTop >= IN(6);
+  if (wantsHeadboard) {
+    addBox(g, body, [w, h, hbT], [0, h / 2, -d / 2 + hbT / 2], { name: `${n}/headboard` });
+  }
   if (withArms) {
     // daybeds and sofa beds have arms; they are used as seating by day
     const armW = IN(4);
@@ -768,21 +805,37 @@ function buildBed(ctx: Ctx, withArms: boolean): void {
   }
 
   const mattW = w - IN(1);
-  const mattD = d - hbT - IN(1);
-  const mattZ = -d / 2 + hbT + mattD / 2;
+  // With no headboard the mattress runs the full length of the frame; with one
+  // it starts at the panel's face.
+  const mattD = d - (wantsHeadboard ? hbT : 0) - IN(1);
+  const mattZ = -d / 2 + (wantsHeadboard ? hbT : IN(0.5)) + mattD / 2;
   addBox(g, linen, [mattW, mattT, mattD], [0, frameTop + mattT / 2, mattZ], { name: `${n}/mattress` });
 
   // Bedding only where the def box has room for it above the mattress — a
   // headboard-less platform bed is only as tall as its mattress.
   const headroom = h - (frameTop + mattT);
 
-  // 2 pillows, 26x20x5, at the head end, tilted up against the headboard
-  if (headroom >= IN(7)) {
+  // 2 pillows, 26x20, at the head end, tilted up against the headboard.
+  //
+  // THE PILLOW THICKNESS IS DRIVEN BY THE HEADROOM, not fixed at 5". The old
+  // rule was "5" thick, and only if there are 7" to put it in", which in this
+  // project meant NO BED EVER GOT PILLOWS: every queen here is chosen for a
+  // room with a window or a projected picture behind it, so every one of them
+  // is a headboard-less platform whose whole def box is 2-5" taller than the
+  // mattress. Rendered, that is a bare white slab — which is exactly what
+  // layout A's bed looked like before anyone noticed. A low bed still has
+  // pillows on it; they are simply flatter than the box allows for, so the
+  // pillow is squashed into whatever room is left instead of being deleted.
+  const pillowT = Math.min(IN(5), headroom - IN(0.75));
+  if (pillowT >= IN(2.5)) {
     const pw = Math.min(mattW / 2 - IN(2), IN(26));
+    // Tilt scales with thickness so a flattened pillow's back corner cannot
+    // poke out through the top of the def box.
+    const tilt = -0.12 * (pillowT / IN(5));
     for (const sx of [-1, 1]) {
-      addBox(g, linen, [pw, IN(5), IN(20)], [sx * (mattW / 4), frameTop + mattT + IN(2.5), mattZ - mattD / 2 + IN(11)], {
+      addBox(g, linen, [pw, pillowT, IN(20)], [sx * (mattW / 4), frameTop + mattT + pillowT / 2, mattZ - mattD / 2 + IN(11)], {
         name: `${n}/pillow`,
-        rotX: -0.12,
+        rotX: tilt,
       });
     }
   }

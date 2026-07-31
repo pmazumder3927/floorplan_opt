@@ -2305,7 +2305,7 @@ function fitBoxDistance(
  * slide the target sideways in the image plane to centre what is actually
  * projected — and it settles in a couple of rounds.
  */
-function frameMassing(
+export function frameMassing(
   plan: FloorPlan,
   w: THREE.Vector3,
   fov: number,

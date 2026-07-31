@@ -5,6 +5,19 @@
  *   npx tsx scripts/raytrace.ts --camera all --samples 512
  *   npx tsx scripts/raytrace.ts --layout open-loft --camera eye-kitchen --res 1920x1200
  *   npx tsx scripts/raytrace.ts --camera eye-living --tod 0.35 --exposure 1.6
+ *   npx tsx scripts/raytrace.ts --layout a-night-wall --shots all   # the brief's gallery
+ *
+ * TWO WAYS TO NAME A FRAME, and they are different in kind:
+ *   --camera <preset>  a view of the ROOM. cameraFor() derives it from the plan
+ *                      and has never seen a sofa, so the same preset frames every
+ *                      layout identically. Good for comparing schemes.
+ *   --shots <id>       a view of the LAYOUT. src/render3d/shots.ts aims each one
+ *                      at a piece of furniture in THIS scheme — the picture, the
+ *                      desk, the bed — so it follows the thing it is about when
+ *                      the layout moves. Good for a brief. `--shots all` renders
+ *                      every shot the layout can support; the 'dollhouse' one is
+ *                      a lid-off studio plate rather than a photograph and gets
+ *                      its own lighting rig (see render.py --dollhouse).
  *
  * What it does, in order:
  *   1. resolves the layout (src/layouts if it exists, else the shot/ fixture)
@@ -22,13 +35,14 @@
  * physically-based material table). This file only decides WHAT to render.
  */
 
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { cameraFor } from '../src/render3d/build';
+import { shotsFor, type Shot } from '../src/render3d/shots';
 import { studio } from '../src/core/plan';
 import type { CameraPreset, Layout } from '../src/core/types';
 
@@ -109,6 +123,8 @@ const BLENDER = process.env.BLENDER ?? join(homedir(), '.local/opt/blender/blend
 interface Args {
   layout: string | null;
   cameras: CameraPreset[];
+  /** shot ids from src/render3d/shots.ts, or 'all'; null = render --camera instead */
+  shots: string[] | null;
   samples: number;
   res: [number, number];
   tod: number;
@@ -167,9 +183,12 @@ function parseArgs(argv: string[]): Args {
   const [w, h] = resArg.toLowerCase().split('x').map(Number);
   if (!w || !h) throw new Error(`--res expects WxH, got ${resArg}`);
 
+  const shotArg = str('shots') ?? (flags.get('shots') === true ? 'all' : undefined);
+
   return {
     layout: str('layout') ?? null,
     cameras,
+    shots: shotArg === undefined ? null : shotArg.split(',').map((s) => s.trim()).filter(Boolean),
     samples: Math.max(1, Math.round(num('samples', 256))),
     res: [Math.round(w), Math.round(h)],
     // 0.72 is the same default as buildScene(): mid-afternoon, sun west-south-west,
@@ -203,7 +222,7 @@ function parseArgs(argv: string[]): Args {
  * import error. Only the SLUG matters here — the glb export owns the geometry,
  * and the cameras come from the plan, which is the same for every layout.
  */
-async function resolveSlug(want: string | null): Promise<string> {
+async function resolveSlug(want: string | null): Promise<{ slug: string; layout: Layout | null }> {
   if (want && want !== 'demo') {
     try {
       // Built at runtime on purpose: src/layouts does not exist yet, and a
@@ -211,7 +230,7 @@ async function resolveSlug(want: string | null): Promise<string> {
       const layoutsModule = ['..', 'src', 'layouts', 'index.ts'].join('/');
       const mod = await import(layoutsModule);
       const l = (mod as { getLayout?: (id: string) => Layout | undefined }).getLayout?.(want);
-      if (l) return l.id;
+      if (l) return { slug: l.id, layout: l };
       console.error(`! layout "${want}" not found in src/layouts; using the demo fixture`);
     } catch {
       console.error('! src/layouts is not importable yet; using the demo fixture');
@@ -219,9 +238,9 @@ async function resolveSlug(want: string | null): Promise<string> {
   }
   try {
     const demo = (await import('../shot/demo-layout.ts')).default as Layout;
-    return demo.id;
+    return { slug: demo.id, layout: demo };
   } catch {
-    return want ?? 'demo';
+    return { slug: want ?? 'demo', layout: null };
   }
 }
 
@@ -441,9 +460,110 @@ function runBlender(args: string[]): Promise<number> {
 
 // ------------------------------------------------------------------ main
 
+/**
+ * One thing to render: a name, a camera, an exposure, and whether it is the
+ * lid-off plate. Presets and shots both collapse to this, so the loop below does
+ * not care which kind it was asked for.
+ */
+interface Frame {
+  name: string;
+  cam: { position: [number, number, number]; target: [number, number, number]; fov: number };
+  exposure: number;
+  dollhouse: boolean;
+  /** top view only: roll the frame so plan north is up */
+  upZ: boolean;
+}
+
+/**
+ * EXPOSURE FOR A SHOT.
+ *
+ * An interior shot is graded like a preset: the base --exposure plus the shot's
+ * own bias, which shots.ts derives from which way the camera looks relative to
+ * the one glazed wall.
+ *
+ * A DOLLHOUSE SHOT IS NOT. Its lighting is a studio dome with no sky and no sun
+ * in it (render.py --dollhouse), so the base exposure — which is calibrated on
+ * the daylight rig, against the reference photograph — means nothing there. Its
+ * number is absolute, and DOLLHOUSE_EXPOSURE below is where it is set.
+ *
+ * Measured on a-night-wall at dome strength 1.5, sweeping exposure and reading a
+ * wall patch and a floor patch off the frame:
+ *
+ *     exposure   wall RGB          floor L   clipped
+ *      +0.35     192 / 189 / 185     117      none
+ *      +0.70     200 / 198 / 194     129      none
+ *      +1.00     207 / 205 / 201     139      none
+ *
+ * Nothing in the unit clips at any of them — a studio dome has no sun in it to
+ * blow — so this is a pure look choice, and it is the top end that looks like a
+ * marketing plate: bright walls, the walnut floor still clearly walnut.
+ */
+const DOLLHOUSE_EXPOSURE = 0.9;
+
+/**
+ * Flatten a transparent dollhouse frame onto white, in place.
+ *
+ * The alpha comes from render.py's film_transparent, and it is deliberate: to
+ * composite white INSIDE the render you have to pick a scene-linear value that
+ * survives AgX's shoulder and lands on 255,255,255, which is a calibration
+ * nobody should have to maintain. After the view transform, white just is white.
+ *
+ * ImageMagick is already a hard dependency of this pipeline (the QA crops and
+ * brief.ts's JPEG transcode both shell out to it). If it is missing the frame is
+ * left with its alpha rather than lost — every browser composites it onto the
+ * page, which is white in the light theme and wrong in the dark one, so the
+ * warning says what to install.
+ */
+function flattenOnWhite(png: string): void {
+  const r = spawnSync('convert', [png, '-background', 'white', '-alpha', 'remove', '-alpha', 'off', png], {
+    stdio: 'pipe',
+  });
+  if (r.error || r.status !== 0) {
+    console.error('  ! could not flatten the dollhouse alpha onto white (install imagemagick);');
+    console.error('    the png keeps its transparency, which will read as the page colour.');
+  }
+}
+
+/**
+ * Shout if a frame came back essentially black.
+ *
+ * This exists because it HAPPENED: a composed camera landed 3" inside the
+ * bathroom's west partition, and Blender dutifully spent 11 seconds path-tracing
+ * 1.6 million pixels of the inside of a wall. Nothing upstream can catch that —
+ * the camera is inside the unit, clear of furniture and pointed at a real
+ * object — and nothing downstream would either, because a brief embeds whatever
+ * PNG it finds. Mean luminance is the one check that would have.
+ *
+ * 6/255 is well under any real interior frame: the darkest legitimate one in this
+ * project (a north-facing corner with the shades down) measures 16.
+ */
+function warnIfBlack(png: string, name: string): void {
+  const r = spawnSync('convert', [png, '-colorspace', 'gray', '-format', '%[fx:255*mean]', 'info:'], {
+    encoding: 'utf8',
+  });
+  if (r.error || r.status !== 0) return; // no imagemagick: not worth failing over
+  const mean = Number(r.stdout.trim());
+  if (Number.isFinite(mean) && mean < 6) {
+    console.error(
+      `  ! ${name} is BLACK (mean luminance ${mean.toFixed(1)}/255). The camera is almost ` +
+        'certainly inside a wall or a solid — check the shot, do not ship the frame.',
+    );
+  }
+}
+
+function frameForShot(s: Shot, base: number): Frame {
+  return {
+    name: s.id,
+    cam: { position: s.position, target: s.target, fov: s.fov },
+    exposure: s.mode === 'dollhouse' ? DOLLHOUSE_EXPOSURE + s.exposure : base + s.exposure,
+    dollhouse: s.mode === 'dollhouse',
+    upZ: false,
+  };
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
-  const slug = await resolveSlug(args.layout);
+  const { slug, layout } = await resolveSlug(args.layout);
   const [W, H] = args.res;
   const aspect = W / H;
 
@@ -454,9 +574,39 @@ async function main(): Promise<void> {
   const outDir = outIsFile ? dirname(args.out) : args.out;
   mkdirSync(isAbsolute(outDir) ? outDir : resolve(ROOT, outDir), { recursive: true });
 
+  // ---- what to render: presets, or this layout's own shots
+  let frames: Frame[];
+  if (args.shots) {
+    if (!layout) throw new Error(`--shots needs a real layout; "${args.layout}" did not resolve to one`);
+    const available = shotsFor(studio, layout, aspect);
+    const want = args.shots.includes('all') ? available : available.filter((s) => args.shots!.includes(s.id));
+    const missing = args.shots.filter((id) => id !== 'all' && !available.some((s) => s.id === id));
+    if (missing.length) {
+      console.error(
+        `! ${slug} has no shot(s) ${missing.join(', ')}; it supports: ${available.map((s) => s.id).join(', ')}`,
+      );
+    }
+    if (!want.length) throw new Error('no shots to render');
+    frames = want.map((s) => frameForShot(s, args.exposure));
+  } else {
+    frames = args.cameras.map((camera) => ({
+      name: camera,
+      cam: cameraFor(camera, studio, aspect),
+      exposure: args.exposure + EXPOSURE_BIAS[camera],
+      dollhouse: false,
+      // The top view must roll to plan-north-up to match the 2D drawing and the
+      // preview's up=(0,0,-1); every other preset uses world up.
+      upZ: camera === 'top',
+    }));
+  }
+  if (outIsFile && frames.length > 1) {
+    throw new Error('--out names a single .png but more than one frame was requested');
+  }
+
   console.log(
     `raytrace  layout=${slug}  ${W}x${H} @ ${args.samples} spp  tod=${args.tod}  ` +
-      `exposure=${args.exposure >= 0 ? '+' : ''}${args.exposure}  cameras=${args.cameras.join(',')}`,
+      `exposure=${args.exposure >= 0 ? '+' : ''}${args.exposure}  ` +
+      `${args.shots ? 'shots' : 'cameras'}=${frames.map((f) => f.name).join(',')}`,
   );
   if (!existsSync(BLENDER)) {
     throw new Error(`no blender at ${BLENDER} (set BLENDER=/path/to/blender)`);
@@ -467,13 +617,13 @@ async function main(): Promise<void> {
   let failed = 0;
   const t0 = Date.now();
 
-  for (const camera of args.cameras) {
-    const cam = cameraFor(camera, studio, aspect);
+  for (const frame of frames) {
+    const cam = frame.cam;
     const png = outIsFile
       ? resolve(ROOT, args.out)
-      : resolve(ROOT, outDir, `rt-${slug}-${camera}.png`);
+      : resolve(ROOT, outDir, `rt-${slug}-${frame.name}.png`);
     // rounded so the flag reads as a number a human wrote, not 1.2000000000000002
-    const exposure = Math.round((args.exposure + EXPOSURE_BIAS[camera]) * 1000) / 1000;
+    const exposure = Math.round(frame.exposure * 1000) / 1000;
 
     // Camera vectors go over as THREE.JS WORLD coordinates, exactly as
     // cameraFor() returns them; render.py applies the one axis conversion (see
@@ -491,17 +641,27 @@ async function main(): Promise<void> {
       ...(args.sunStrength !== undefined ? [`--sun-intensity=${args.sunStrength}`] : []),
       ...(args.skyStrength !== undefined ? [`--sky-strength=${args.skyStrength}`] : []),
       `--exposure=${exposure}`,
-      // Only for the cross-check against the cam:<preset> the exporter stamps
-      // into the glb; render.py still uses the vectors above.
-      `--camera-name=${camera}`,
     ];
-    // The top view must roll to plan-north-up to match the 2D drawing and the
-    // preview's up=(0,0,-1); every other preset uses world up.
-    if (camera === 'top') flags.push('--up-z');
-    if (!args.context) flags.push('--no-context');
+    // Only for the cross-check against the cam:<preset> the exporter stamps into
+    // the glb; render.py still uses the vectors above. A shot has no counterpart
+    // in there, so it does not claim one.
+    if (!args.shots) flags.push(`--camera-name=${frame.name}`);
+    if (frame.upZ) flags.push('--up-z');
+    // The lid-off plate has no city to look at: it has no windows to see one
+    // through, and half the exterior wall is missing from this angle anyway.
+    // ...and no illuminant to balance for: the daylight frames neutralise a 5100 K
+    // amber sun (see render.py's white-balance block), which on a neutral studio
+    // dome would just tint the whole plate blue — measured at R 186 / B 196 on the
+    // walls before this line existed. D65 leaves the dome neutral and the warm key
+    // warm, which is what the plate should look like.
+    if (frame.dollhouse) flags.push('--dollhouse', '--no-context', '--wb=6500');
+    else if (!args.context) flags.push('--no-context');
 
     const argv = ['-b', '--factory-startup', '--python', script, '--', ...flags];
-    console.log(`\n▶ ${camera}  fov ${cam.fov}  exposure ${exposure >= 0 ? '+' : ''}${exposure.toFixed(2)}`);
+    console.log(
+      `\n▶ ${frame.name}  fov ${cam.fov}  exposure ${exposure >= 0 ? '+' : ''}${exposure.toFixed(2)}` +
+        (frame.dollhouse ? '  [dollhouse]' : ''),
+    );
     if (args.dryRun) {
       console.log(`  (dry run) LD_LIBRARY_PATH=${WSL_GPU_LIBS} ${BLENDER} ${argv.join(' ')}`);
       continue;
@@ -511,15 +671,17 @@ async function main(): Promise<void> {
     const code = await runBlender(argv);
     const secs = (Date.now() - t) / 1000;
     if (code === 0) {
-      console.log(`✓ ${camera.padEnd(11)} ${secs.toFixed(2)}s wall  -> ${png.replace(`${ROOT}/`, '')}`);
+      if (frame.dollhouse) flattenOnWhite(png);
+      console.log(`✓ ${frame.name.padEnd(11)} ${secs.toFixed(2)}s wall  -> ${png.replace(`${ROOT}/`, '')}`);
+      if (!frame.dollhouse) warnIfBlack(png, frame.name);
     } else {
       failed++;
-      console.error(`✗ ${camera.padEnd(11)} ${secs.toFixed(2)}s wall  blender exited ${code}`);
+      console.error(`✗ ${frame.name.padEnd(11)} ${secs.toFixed(2)}s wall  blender exited ${code}`);
     }
   }
 
   const total = (Date.now() - t0) / 1000;
-  const n = args.cameras.length;
+  const n = frames.length;
   console.log(
     `\n${n - failed}/${n} frame(s) in ${total.toFixed(2)}s` +
       (n > 1 ? ` (${(total / n).toFixed(2)}s each)` : ''),

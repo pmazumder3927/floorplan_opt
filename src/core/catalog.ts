@@ -2613,13 +2613,14 @@ IT LOSES ON FIVE THINGS, AND THE FIRST IS THE REAL ONE. (1) FLATNESS: on a 103"-
     color: BLACKOUT,
     accent: NEAR_BLACK,
     source: `SelectBlinds Select Blackout Cellular, 3/4" single cell, orderable 13"-120" wide and 12"-120" high - one of only two product families found that actually reaches this unit's 104" glazing head. Blocks 99% of light THROUGH the fabric. Read off the SelectBlinds page: single cell from $161.99, 1/2" double cell from $180.99; lifts include cordless, continuous loop, top-down/bottom-up and motorised; Click2Fit no-drill is INSIDE MOUNT ONLY and is a different, shorter product. PRICE $320 IS AN ESTIMATE for a configured 36" x 106" shade - the site's calculator would not render, and the only verified figure is the $161.99 starting price. At 104" of drop the real number will be materially higher. SelectBlinds' own copy admits a ~1/8" factory deduction per side on an inside mount, so expect a visible halo down every vertical edge; four bays means EIGHT of them. HARD CONSTRAINT FOUND ON AN ADVERSARIAL CHECK, 30 Jul 2026, and it changes the specification: SelectBlinds' PER-LIFT maximum heights are Cordless Lift & Lock 84", no-drill headrail 84", motorised 96", and CONTINUOUS CORD LOOP 120". This unit's glazing head is 104". So a shade tall enough for these bays can ONLY be ordered on a continuous cord loop - it cannot be cordless and it cannot be no-drill. The blanket "12-120 inches high" quoted earlier hid that. Practical consequence: four cord loops hanging down a floor-to-ceiling glass wall, which is a real aesthetic cost in a minimal scheme and should be shown to the client before they choose cellular over a roller. The $161.99 and $180.99 starting prices are confirmed.
+PRICE RESOLVED, 30 Jul 2026 — AND THE ESTIMATE WAS LOW. The configurator was reached on a re-check: Select Blackout Cellular, inside mount, CONTINUOUS CORD LOOP, at a 104" drop prices at $493.89 for a 32 3/4"-wide bay and $544.89 for a 42"-wide bay. This unit's four bays are 32 3/4", 32 1/4", 33 1/4" and 42", so the real four-bay total is about $2,026 — $746 MORE than the $1,280 the earlier layouts carried at $320 a bay. The $320 in the 'price' field has therefore been replaced with $494, the verified narrow-bay figure; a layout with the 3'-6" bay should expect roughly $51 more on that one. THE PRACTICAL CONCLUSION IS THE ROLLER: at $181.99 a bay for the same 104" drop, blackout rollers do the same optical job for about $1,300 less across four bays and without four continuous cord loops hanging down a glass wall, which is the aesthetic cost this entry has been warning about all along.
 STATE, AND WHY THE DEFAULT IS UP. A blind has two states and the drawing has to pick one. This def is dimensioned STOWED: h is the cassette plus rolled fabric at the head, and defaultZ puts it at the 8'-8" glazing head, so a layout that simply places one gets the state the window is in for twenty hours a day. That is not a cosmetic choice - drawn at full drop, four bays of blackout turn the 3D scene into a genuinely dark room and every daylight frame renders lit only by two downlights, which is true of a film night and a lie about the apartment. To draw the DEPLOYED state for an evening frame, override it: size: { h: 8.667 } with z: 0, which is the full 8'-8" drop from head to floor.`,
     frontClearance: 0,
     wallMounted: true,
     defaultZ: FTIN(8, 8) - IN(4.5),
     walkable: true, // never a collision: it lives in the glazing reveal
-    tags: ['shade', 'blackout', 'cellular', 'honeycomb', 'window', 'projection', 'recommended'],
-    price: 320,
+    tags: ['shade', 'blackout', 'cellular', 'honeycomb', 'window', 'projection'],
+    price: 494,
   },
   {
     id: 'shade-blackout-roller-bay',
@@ -2630,14 +2631,14 @@ STATE, AND WHY THE DEFAULT IS UP. A blind has two states and the drawing has to 
     h: IN(3.5),
     color: BLACKOUT,
     accent: ANOD_BLACK,
-    source: `Blinds.com Classic Roller with a blackout fabric: height 12"-144" across all lift types (the most headroom of anything found), width 8"-118" on a cord loop, 18"-96" cordless, 16"-96" motorised - so the 33"-42" bays here are fine cordless and it still reaches 144" tall. Starting price read off the page at $29.82 after 30% off (reg. $42.60). "Light Guard" side light blockers are listed as an add-on but ARE NOT PRICED on the page, and the page states plainly that an inside mount "creates a light gap on each side". PRICE $210 IS AN ESTIMATE for a configured 36" x 106" blackout - get a quote. A roller stack at the head is far less visually present than a cellular stack, which matters when the shade sits 4" below a 9'-0" exposed concrete soffit.
+    source: `Blinds.com Classic Roller with a blackout fabric: height 12"-144" across all lift types (the most headroom of anything found), width 8"-118" on a cord loop, 18"-96" cordless, 16"-96" motorised - so the 33"-42" bays here are fine cordless and it still reaches 144" tall. Starting price read off the page at $29.82 after 30% off (reg. $42.60). "Light Guard" side light blockers are listed as an add-on but ARE NOT PRICED on the page, and the page states plainly that an inside mount "creates a light gap on each side". PRICE RESOLVED, 30 Jul 2026: SelectBlinds Select Blackout Roller, inside mount, exposed roll, 32 3/4" wide x 104" drop configures at $181.99 — so the earlier $210 estimate was HIGH, and a roller is $312 a bay cheaper than the equivalent cellular. 'price' now carries the verified $182. A roller stack at the head is far less visually present than a cellular stack, which matters when the shade sits 4" below a 9'-0" exposed concrete soffit.
 STATE, AND WHY THE DEFAULT IS UP. A blind has two states and the drawing has to pick one. This def is dimensioned STOWED: h is the cassette plus rolled fabric at the head, and defaultZ puts it at the 8'-8" glazing head, so a layout that simply places one gets the state the window is in for twenty hours a day. That is not a cosmetic choice - drawn at full drop, four bays of blackout turn the 3D scene into a genuinely dark room and every daylight frame renders lit only by two downlights, which is true of a film night and a lie about the apartment. To draw the DEPLOYED state for an evening frame, override it: size: { h: 8.667 } with z: 0, which is the full 8'-8" drop from head to floor.`,
     frontClearance: 0,
     wallMounted: true,
     defaultZ: FTIN(8, 8) - IN(3.5),
     walkable: true, // never a collision: it lives in the glazing reveal
-    tags: ['shade', 'blackout', 'roller', 'window', 'projection', 'value'],
-    price: 210,
+    tags: ['shade', 'blackout', 'roller', 'window', 'projection', 'value', 'recommended'],
+    price: 182,
   },
   {
     id: 'shade-side-channels-bay',
@@ -2648,12 +2649,13 @@ STATE, AND WHY THE DEFAULT IS UP. A blind has two states and the drawing has to 
     h: IN(104),
     color: ANOD_BLACK,
     accent: ANOD_BLACK,
-    source: `Sleepy Time Tracks blackout side channels / L-tracks, in a removable-magnetic or permanent-adhesive version; ship in two pieces and are "easily trimmed to fit" with scissors or tin snips, so 104" is reachable by joining sections. Their page publishes NEITHER lengths NOR prices NOR a light-blocking percentage - the $120 per bay is an ESTIMATE and the widely-quoted "97-99% of side light blocked" is vendor and blog marketing, not a tested spec. Renter-relevant caveat straight off their page: on the removable version "the adhesive-backed magnetic strip attached to the wall is intended to remain in place long term", so it is the CHANNEL that comes off, not the strip. Only the jamb face is touched, never the mullion. This is the piece that converts a 98-99% shade into a room a projector can actually work in - and on four bays with only 4" of mullion between them it means EIGHT channel runs.`,
+    source: `Sleepy Time Tracks blackout side channels / L-tracks, in a removable-magnetic or permanent-adhesive version; ship in two pieces and are "easily trimmed to fit" with scissors or tin snips, so 104" is reachable by joining sections. Their page publishes NEITHER lengths NOR prices NOR a light-blocking percentage - the $120 per bay is an ESTIMATE and the widely-quoted "97-99% of side light blocked" is vendor and blog marketing, not a tested spec. Renter-relevant caveat straight off their page: on the removable version "the adhesive-backed magnetic strip attached to the wall is intended to remain in place long term", so it is the CHANNEL that comes off, not the strip. Only the jamb face is touched, never the mullion. This is the piece that converts a 98-99% shade into a room a projector can actually work in - and on four bays with only 4" of mullion between them it means EIGHT channel runs.
+A PRICED ALTERNATIVE, 30 Jul 2026: SmartWings sells Side Rail Tracks for blackout shades at about $85 per window, which is the first real number found for this part and is $35 under the estimate that has been carried since. 'price' now reads $85; it remains THIRD-PARTY rather than read off a spec table, and it is per window, so four bays is $340.`,
     frontClearance: 0,
     wallMounted: true,
     walkable: true, // never a collision: it lives in the glazing reveal
     tags: ['shade', 'blackout', 'side-channel', 'window', 'projection', 'light-leak'],
-    price: 120,
+    price: 85,
   },
   // =====================================================================
   // MODERN / MINIMAL, 2026 — real products, re-sourced 30 Jul 2026
@@ -2698,7 +2700,7 @@ STATE, AND WHY THE DEFAULT IS UP. A blind has two states and the drawing has to 
     d: IN(86),
     // Deck 7 1/2" + a 10" mattress = a 17 1/2" sleeping height, the lowest real
     // queen available. `h` is the made-up bed, which is what the drawings need;
-    // `price` is the FRAME, which is what you actually buy.
+    // 'price' is the FRAME, which is what you actually buy.
     h: IN(17.5),
     seatHeight: IN(17.5),
     color: WALNUT,
@@ -3317,6 +3319,466 @@ STATE, AND WHY THE DEFAULT IS UP. A blind has two states and the drawing has to 
     price: 1146,
   },
 
+  // =====================================================================
+  // JAPANDI LIGHT — the value pass, sourced 30 Jul 2026
+  //
+  // WHY THIS BLOCK EXISTS. The first four layouts were priced around two
+  // premium anchors — a $2,150 Aeron and a $1,960 Blu Dot Cleon — which
+  // between them are 26% of layout A's whole catalogue total. This block is
+  // the answer to "same room, half the money, pale oak instead of charcoal",
+  // and it is dimensioned to a harder rule than the earlier entries: in a
+  // room with a projected picture, the governing sightline ray falls from a
+  // 46" seated eye to the 28 1/2" image bottom, so h(t) = 46 - 17.5t inches.
+  // ANY object 28 1/2" tall or shorter is mathematically incapable of
+  // crossing the image rectangle from any seat, and every low piece below is
+  // chosen against that number rather than against a style board.
+  //
+  // SOURCING HONESTY, unchanged from the rest of the file: `source` says what
+  // was read off a manufacturer spec table and what was not. IKEA repriced
+  // several of these as 2026 introductions; expect movement.
+  // =====================================================================
+
+  // ---- seating: the shallow two-seat that replaces the Cleon ------------
+  {
+    id: 'sofa-saltmyran-58-loveseat',
+    name: 'SALTMYRAN loveseat, Öreryd grey-beige',
+    kind: 'loveseat',
+    w: IN(57.875),
+    d: IN(31.125),
+    h: IN(30.375),
+    seatHeight: IN(16.875),
+    color: OATMEAL,
+    accent: CREAM,
+    source: `IKEA SALTMYRAN 2-seat sofa, Öreryd grey-beige: 57 7/8" W x 31 1/8" D x 30 3/8" H, seat height 16 7/8", ARM HEIGHT 18 1/2" — i.e. 1 5/8" above the seat, which is as close to armless as anything in this price band gets. Read off the IKEA US measurements table, 30 Jul 2026; $299. THE REASON IT BEATS THE CLEON HERE IS DEPTH AND FREIGHT, not price: 31 1/8" is 2 7/8" shallower than the Blu Dot Cleon's contested 34", and in a plate where the whole west-to-partition run is 16'-3 1/4" those inches are the coffee table. It also packs the backrest INSIDE the armrests and ships in small cartons, which retires the freight risk the one-piece 56" Cleon frame carried through an angled front door. HONEST COSTS, three of them. (1) 30 3/8" overall is 3/8" OVER the project's 30" glazing rule — the structural back is only 26" and the extra is compressible cushion loft, so it may not stand within 12" of the glass without an argument. (2) "Öreryd" is 100% polyester (min. 90% recycled), not linen; a Bemz or Comfort Works cover is the route to real linen on this frame. (3) It is a 2026 introduction, so the price is young.`,
+    frontClearance: IN(16),
+    tags: ['seating', 'loveseat', 'low-arm', 'shallow', 'flat-pack', 'japandi', 'value', 'recommended'],
+    price: 299,
+  },
+  {
+    id: 'pouf-tolkning-rattan-20',
+    name: 'TOLKNING pouf with storage, handmade rattan',
+    kind: 'ottoman',
+    w: IN(19.625),
+    d: IN(19.625),
+    h: IN(16.125),
+    seatHeight: IN(16.125),
+    color: JUTE,
+    accent: OAK,
+    source: `IKEA TOLKNING pouf with storage, handmade rattan: 19 5/8" x 19 5/8" x 16 1/8", hollow with a lift-off lid. Read off the IKEA US measurements table, 30 Jul 2026; $99.99. The only genuinely natural fibre in this scheme's soft goods — the sofa, the poufs and the rug in the earlier layouts are all polyester or wool blends — and at 16 1/8" it is 12 3/8" below the lowest point of any seat-to-image ray, so it can stand anywhere in the room including directly in front of the picture. Being hollow it stores the throw it is sitting under. HONEST COST: handmade rattan means visible variation and it will shed if it is dragged; and a 16" seat is a perch, not a chair — nobody watches a two-hour film on it.`,
+    frontClearance: 0,
+    lowProfile: true,
+    tags: ['seating', 'ottoman', 'pouf', 'storage', 'rattan', 'natural', 'low', 'japandi', 'value'],
+    price: 100,
+  },
+  {
+    id: 'coffee-guttane-46',
+    name: 'GUTTANE coffee table, oak',
+    kind: 'coffee_table',
+    w: IN(45.625),
+    d: IN(15.375),
+    h: IN(12.625),
+    color: OAK,
+    accent: OAK,
+    source: `IKEA GUTTANE coffee table, oak: 45 5/8" W x 15 3/8" D x 12 5/8" H. Read off the IKEA US measurements table, 30 Jul 2026; $249.99. THE DEPTH IS THE POINT. Layout A concluded it had no room for a coffee table, and it was right about a normal one — a 24"-deep table in front of a sofa in this plate closes the walk. At 15 3/8" GUTTANE fits the slot between a 16" sofa-to-table gap and a bed, and at 12 5/8" tall it sits a foot below the lowest sightline ray. Real oak on the surface rather than the "oak effect" paper foil of the cheaper HOLMERUD. HONEST COST: 15 3/8" deep is a bench, not a table — it takes two mugs and a remote across its length and it will not hold a board game.`,
+    frontClearance: 0,
+    lowProfile: true,
+    tags: ['table', 'coffee-table', 'oak', 'low', 'shallow', 'japandi', 'recommended'],
+    price: 250,
+  },
+
+  // ---- sleep: the lowest real queen, because the bed is in the sightline -
+  {
+    id: 'bed-queen-vevelstad',
+    name: 'VEVELSTAD queen bed frame, white — no headboard',
+    kind: 'bed',
+    w: IN(62.25),
+    d: IN(81.875),
+    // The made-up bed: an inferred ~9" deck plus a 9 1/2" VALEVAG mattress.
+    // There is no headboard at all, so this height IS the mattress top.
+    h: IN(18.5),
+    seatHeight: IN(18.5),
+    color: OFF_WHITE,
+    accent: CREAM,
+    source: `IKEA VEVELSTAD bed frame, Queen, white: length 81 7/8", width 62 1/4", FOOTBOARD 10 5/8", height under furniture 7 7/8", mattress area 79 1/2" x 59 7/8"; slatted base AND midbeam included in the one flat pack. Read off the IKEA US measurements table, 30 Jul 2026; $149. THIS IS THE BED FOR A ROOM WHERE THE BED IS IN THE PICTURE'S WAY: there is NO HEADBOARD, and the tallest part of the whole frame is a 10 5/8" footboard that sits below the mattress top — so the bed's silhouette is literally just the mattress, about 18 1/2" made up. Against the governing ray (46 - 17.5t, minimum 28 1/2") that leaves 10" of headroom for pillows and a duvet before anything crosses the image. DECK HEIGHT IS INFERRED at ~9" from the 7 7/8" under-frame clearance; IKEA does not publish it, and if the deck is really 10 5/8" the made-up height is 20" — still fine, but measure it. HONEST COST: it is white powder-coated steel, not pale oak, so in a Japandi scheme the warmth has to come from the linen, the jute and the oak elsewhere. The Awara Japanese Joinery bamboo queen ($768, tool-free interlocking joinery, 8.3" clearance, ~21" made up) is the same idea in the right material for $619 more. Note also that GRIMSBU, the previous cheapest passing queen, was flagged "last chance to buy" on IKEA US the same day — do not design around it.`,
+    frontClearance: 0,
+    tags: ['bed', 'queen', 'platform', 'low', 'no-headboard', 'glazing-safe', 'flat-pack', 'value', 'recommended'],
+    price: 149,
+  },
+  {
+    id: 'mattress-queen-valevag-95',
+    name: 'VALEVÅG pocket sprung mattress, queen — 9 1/2"',
+    kind: 'bed',
+    w: IN(59.875),
+    d: IN(79.5),
+    h: IN(9.5),
+    color: OFF_WHITE,
+    accent: CREAM,
+    source: `IKEA VALEVAG pocket sprung mattress, Queen, medium firm: 79 1/2" L x 59 7/8" W x 9 1/2" thick, individually pocketed springs, five comfort zones, 10-year limited warranty. Read off the IKEA US measurements table, 30 Jul 2026; $399. CATALOGUED SEPARATELY BECAUSE EVERY OTHER BED IN THIS FILE PRICES THE FRAME ALONE and then carries a mattress allowance — in a layout where the bed stands inside a projected sightline the mattress thickness is a DESIGN dimension, not a comfort one, so it gets a real line. At 9 1/2" it is the thinnest non-foam-slab queen sourced and it buys back half an inch of pillow headroom against every 10" foam mattress. HONEST COST: $399 is $169 more than a 10" Zinus Green Tea at $229.99, and it is a firm-ish European spring feel that not everyone likes. Placed layouts should NOT draw this as a separate item — the bed defs already include a made-up mattress in their height.`,
+    frontClearance: 0,
+    lowProfile: true,
+    tags: ['bed', 'mattress', 'queen', 'low', 'value'],
+    price: 399,
+  },
+  {
+    id: 'storage-skubb-underbed',
+    name: 'SKUBB storage case, 35 1/2 x 20 3/4 x 7 1/2',
+    kind: 'box',
+    w: IN(35.5),
+    d: IN(20.75),
+    h: IN(7.5),
+    color: OFF_WHITE,
+    accent: OFF_WHITE,
+    source: `IKEA SKUBB storage case, white: 35 1/2" W x 20 3/4" D x 7 1/2" H, zippered fabric with a ventilation net. Read off the IKEA US page, 30 Jul 2026; $12.99. IN THIS PROJECT IT IS NOT AN ACCESSORY, IT IS THE WARDROBE: a queen with 7 7/8" of under-frame clearance swallows four of these, which is roughly a three-drawer chest of folded clothes hidden entirely below the sightline and below the eye. HONEST COST: 7 1/2" under a 7 7/8" rail is a 3/8" tolerance and a rug or a bowed rail eats it — buy two, test, then buy the rest. And soft zip cases are not a dresser: hanging and daily-use clothes still need somewhere else.`,
+    frontClearance: 0,
+    walkable: true, // lives under the bed frame, inside its footprint
+    lowProfile: true,
+    tags: ['storage', 'under-bed', 'bedroom', 'value'],
+    price: 13,
+  },
+  {
+    id: 'nightstand-tonstad',
+    name: 'TONSTAD nightstand, oak veneer',
+    kind: 'nightstand',
+    w: IN(15.75),
+    d: IN(15.75),
+    h: IN(23.25),
+    color: OAK,
+    accent: OAK,
+    source: `IKEA TONSTAD nightstand, brushed oak veneer (art. 804.893.22): 15 3/4" square x 23 1/4" H, drawer interior 11" x 11 3/4", 4 3/8" of clear floor underneath, soft-close drawer on round solid-wood legs. Read off the IKEA US measurements table, 30 Jul 2026; $149.99. It is the same veneer as the TONSTAD chest, which matters more than usual here: a bed with no headboard and no wall behind its head is seen from every angle in a studio, so its one bedside object has to look deliberate rather than left over. At 23 1/4" it is below the 30" glazing limit and below the 28 1/2" sightline floor, so it may stand anywhere. HONEST COST: $149.99 is a great deal of money for one small drawer, and legs-plus-floating-drawer gives it no visual mass.`,
+    frontClearance: 0,
+    lowProfile: true,
+    tags: ['nightstand', 'oak', 'low', 'japandi', 'bedroom'],
+    price: 150,
+  },
+
+  // ---- storage: the dresser layout A had no wall for --------------------
+  {
+    id: 'dresser-tonstad-4drawer',
+    name: 'TONSTAD 4-drawer chest, oak veneer',
+    kind: 'dresser',
+    w: IN(32.25),
+    d: IN(18.5),
+    h: IN(35.375),
+    color: OAK,
+    accent: OAK,
+    source: `IKEA TONSTAD chest of 4 drawers, brushed oak veneer (art. 906.146.17): 32 1/4" W x 18 1/2" D x 35 3/8" H, drawer interior 28 3/8" x 15 3/4", 9 5/8" pull-out, 4.0 cu ft, soft-close runners, solid-oak knobs. Read off the IKEA US measurements table, 30 Jul 2026; $299.99 regular ($249.99 on a 16% promotion the same day — the REGULAR price is recorded so a budget does not depend on a sale). HONEST COSTS. (1) At 35 3/8" it is the tallest object in a Japandi scheme apart from the desk, so it is a genuine sightline object: on the 46 - 17.5t ray it blocks anywhere past t = 0.61, i.e. over the last 40% of every run to the picture. It has to live somewhere no seat looks past it — in this project, the north-west notch. If the plan cannot give it that, swap to NORDLI 6-drawer white (47 1/4 x 18 1/2 x 29 7/8, $349.99), which is under the 28 1/2" floor everywhere except the last 8%. (2) It is particleboard under veneer: a piece that looks like oak, not an oak piece.`,
+    frontClearance: IN(30),
+    tags: ['storage', 'dresser', 'oak', 'bedroom', 'japandi', 'flat-pack', 'recommended'],
+    price: 300,
+  },
+  {
+    id: 'shelf-string-pocket',
+    name: 'String Pocket shelf — ash / white',
+    kind: 'shelf',
+    w: IN(23.625),
+    d: IN(6),
+    h: IN(19.75),
+    color: OAK,
+    accent: OFF_WHITE,
+    source: `String Furniture String Pocket, ash shelves on white side panels: 23 5/8" W x 6" D x 19 3/4" H, three shelves, rated 55 lb. The small sibling of the String wall system the earlier layouts used at $645 for three 24" bays; $230 buys the same designed object at a quarter of the wall. HONEST COST: 6" deep and three shelves is a considered ledge for books and objects, not storage — if the requirement is volume, an IKEA BERGSHULT/GRANHULT combination gives 26 linear feet for $204, but on nickel brackets rated 22 lb a shelf and with a hardware-store look.`,
+    frontClearance: 0,
+    wallMounted: true,
+    defaultZ: IN(42),
+    tags: ['storage', 'shelf', 'wall', 'ash', 'japandi', 'recommended'],
+    price: 230,
+  },
+
+  // ---- dining: a two-top that folds to 5 7/8" ---------------------------
+  {
+    id: 'dining-norberg-wallmount',
+    name: 'NORBERG wall-mounted drop-leaf table (drawn FOLDED)',
+    kind: 'dining_table',
+    w: IN(25.25),
+    d: IN(5.875), // folded. Open it is 23 5/8" deep.
+    h: IN(29.5),
+    color: OFF_WHITE,
+    accent: OFF_WHITE,
+    source: `IKEA NORBERG wall-mounted drop-leaf table with storage, white (art. 204.979.28): 25 1/4" W x 23 5/8" D open x 29 1/2" H, folding to 5 7/8" deep against the wall, with a shallow storage compartment behind the leaf. Read off the IKEA US measurements table, 30 Jul 2026; $109.99. CATALOGUED AT ITS FOLDED DEPTH, following the NORDEN gateleg convention in this file, because folded is how it stands for most of the year and a layout has to be honest about the floor it does NOT occupy. In 213 sq ft of usable floor it returns about 6 1/2 sq ft and a clear projector cone every time it goes up, which is worth more than the two extra seats a 40" pedestal would add. HONEST COSTS: it seats two and only two; it needs a fixing into real structure, and the wall it hangs on in this unit has not been probed; and a table that has to be cleared and folded is a table you will stop opening.`,
+    frontClearance: IN(30),
+    wallMounted: true,
+    tags: ['dining', 'table', 'fold-away', 'wall-mounted', 'small-space', 'value', 'recommended'],
+    price: 110,
+  },
+  {
+    id: 'chair-teodores',
+    name: 'TEODORES chair, white — stackable',
+    kind: 'chair',
+    w: IN(18.125),
+    d: IN(21.25),
+    h: IN(31.5),
+    seatHeight: IN(17.75),
+    color: OFF_WHITE,
+    accent: OFF_WHITE,
+    source: `IKEA TEODORES chair, white: 18 1/8" W x 21 1/4" D x 31 1/2" H, seat height 17 3/4", one-piece moulded plastic, STACKS SIX HIGH. Read off the IKEA US measurements table, 30 Jul 2026; $55. Stacking is the specification that matters in this project and it is why this is here instead of the prettier LISABO ash chair at $80 — IKEA does not market LISABO as stackable, so a scheme that depends on clearing the chairs for a film cannot use it. HONEST COSTS: at 31 1/2" a TEODORES back is 3" above the 28 1/2" sightline floor, so a chair parked in the last third of a seat-to-picture run WILL clip the image — park them in the front two-thirds or stack them out of the cone. And stacked two high they are about 38", which blocks from much further back.`,
+    frontClearance: IN(30),
+    tags: ['chair', 'dining', 'stackable', 'light', 'value'],
+    price: 55,
+  },
+
+  // ---- work: the desk kit at half of layout A's ------------------------
+  {
+    id: 'desk-standing-jarvis-laminate-60x27-oak',
+    name: 'Fully Jarvis laminate standing desk, 60" x 27" — oak',
+    kind: 'desk',
+    w: IN(60),
+    d: IN(27),
+    h: IN(29.5),
+    seatHeight: IN(29.5),
+    color: OAK,
+    accent: NEAR_BLACK,
+    source: `Fully (MillerKnoll) Jarvis Laminate Standing Desk, 60" x 27", oak laminate on the black 3-stage frame: 3-stage legs travel 25 3/4"-51 1/4" (24 3/4"-50 1/4" with a 1" top), 350 lb capacity, cable tray included, 15-year frame warranty. $1,325, the same price as the bamboo rectangle. THE 27" DEPTH IS WHY IT IS SPECIFIED HERE RATHER THAN THE 30": the north-west notch in this unit is 2'-7 1/8" deep, so a 30" top leaves 1" of slack at the front and a 27" leaves 4 1/8" — the difference between a desk wedged into an alcove and a desk that fits it. The oak laminate is also the right value against a warm walnut floor in a pale scheme, where the bamboo reads distinctly yellow. PRICE AND FINISH ARE THIRD-PARTY: MillerKnoll's Fully pages are a JS shell and the laminate colourway list was not read off a spec table. Confirm the oak option still ships before ordering, and note that Fully was running a 15%-off-$1,000 tier that makes desk-plus-arm cheaper bought together.`,
+    frontClearance: IN(30),
+    tags: ['desk', 'standing', 'sit-stand', 'jarvis', 'fully', 'oak', 'wfh', 'japandi', 'recommended'],
+    price: 1325,
+  },
+  {
+    id: 'chair-steelcase-series1',
+    name: 'Steelcase Series 1 task chair — Oatmeal',
+    kind: 'chair',
+    w: IN(27),
+    d: IN(23.75),
+    h: IN(41.25),
+    seatHeight: IN(18),
+    color: OATMEAL,
+    accent: NEAR_BLACK,
+    source: `Steelcase Series 1 work chair: overall 23 1/2"-27" W (arms in / out) x 21"-23 3/4" D x 36 1/2"-41 1/4" H, seat height 16 1/2"-21 1/2", functional seat depth 15 1/2"-17 3/4", back width 17 1/4", lumbar adjusts 6 1/2"-8 3/4" above the seat, with height-, width-, pivot- and depth-adjustable arms standard on every arm model — Steelcase Seating Specification Guide, Feb 2024, p.186, i.e. the manufacturer's own table. About $499 in Oatmeal on a black frame, 12-year commercial warranty. IT IS HERE INSTEAD OF THE AERON FOR A GEOMETRIC REASON AS WELL AS A FINANCIAL ONE: in a studio the task chair is seen from the sofa and stands inside the projected sightline, and Series 1 is the lowest-backed genuinely ergonomic chair sourced — on the 46 - 17.5t ray it only starts to block past t = 0.27 at its 41 1/4" maximum, and past t = 0.54 dropped to 36 1/2". It also saves $1,651 against an Aeron size B. HONEST COSTS: the $499 is a dealer/review figure, not store.steelcase.com (a JS shell); some Series 1 builds price adjustable lumbar as an option, so confirm the SKU includes it; and it is not an Aeron — the mesh and the recline are a tier down, which is what a tier down costs.`,
+    frontClearance: IN(30),
+    tags: ['chair', 'task', 'office', 'ergonomic', 'wfh', 'japandi', 'value', 'recommended'],
+    price: 499,
+  },
+  {
+    id: 'monitor-lg-27up850n',
+    name: 'LG UltraFine 27UP850N-W, 27" 4K USB-C',
+    kind: 'tv',
+    w: IN(24.2),
+    d: IN(9.4),
+    h: IN(22.4),
+    color: OFF_WHITE,
+    accent: ANOD_BLACK,
+    source: `LG UltraFine 27UP850N-W: 27" 3840x2160 IPS, 400 nits, DisplayHDR 400, 96% DCI-P3, USB-C with 96 W power delivery, VESA 100. About $399. Specified over the $799 32" of the earlier layouts because in this scheme the desk is 27" deep in a 2'-7" alcove and a 32" panel at that depth sits closer to the face than it should; a 27" 4K also matches the desk's own width proportion and, on a single-cable USB-C connection, removes a dock from a room with nowhere to hide one. The white bezel is the reason for this SKU rather than a black-bezel equivalent — in a pale alcove the monitor is the only large dark object. DIMENSIONS ARE THIRD-PARTY (retailer listings and reviews), not read off LG's own spec sheet, and the depth quoted is the panel without the stand, since it is going on an arm.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // rides a monitor arm, inside the desk footprint
+    defaultZ: IN(29.5),
+    tags: ['wfh', 'monitor', 'screen', 'work', 'desk-accessory', '4k', 'value'],
+    price: 399,
+  },
+  {
+    id: 'lamp-tertial-work',
+    name: 'TERTIAL work lamp, clamp — dark grey',
+    kind: 'table_lamp',
+    w: IN(18),
+    d: IN(8),
+    h: IN(21.7),
+    color: CHARCOAL,
+    accent: NEAR_BLACK,
+    source: `IKEA TERTIAL work lamp with clamp, dark grey: base/clamp 8", shade 7", max height about 21 3/4", steel, GU10 or E12 depending on market. Read off the IKEA US page, 30 Jul 2026; $19.99. Clamps to the back edge of the desk so it travels with a sit-stand top instead of standing on it. HONEST COST: it is a $20 lamp and looks like one from three feet away; the arm creeps down over a year.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true, // clamped to the desk, inside its footprint
+    defaultZ: IN(29.5),
+    tags: ['lighting', 'task', 'desk-accessory', 'wfh', 'value'],
+    price: 20,
+  },
+
+  // ---- light and greenery, all plug-in: the soffit has no power ---------
+  {
+    id: 'lamp-strandad-floor-lantern',
+    name: 'STRANDAD floor lamp, paper shade',
+    kind: 'floor_lamp',
+    w: IN(8),
+    d: IN(8),
+    h: IN(44),
+    color: OFF_WHITE,
+    accent: NEAR_BLACK,
+    source: `IKEA STRANDAD floor lamp, white/black: shade about 8" across, overall 44" tall, paper shade on a slim metal stem. Read off the IKEA US page, 30 Jul 2026; $19.99. THE HONEST AKARI. A real Isamu Noguchi AKARI 10A from the Noguchi Museum shop is $700 and 48" tall — and 48" is ABOVE a 46" seated eye, so the genuine article blocks at every point of every seat-to-screen ray and has to be hidden in exactly the same corner this one does. You would be paying $680 more for a lamp you must keep out of the room's one good sightline. HONEST COST: at 44" this is still well above the 28 1/2" sightline floor, so it is not free to place — it has to live west of every seat, and the paper will yellow.`,
+    frontClearance: 0,
+    tags: ['lighting', 'floor-lamp', 'paper', 'lantern', 'japandi', 'value'],
+    price: 20,
+  },
+  {
+    id: 'lamp-nymane-wall-reading',
+    name: 'NYMÅNE wall reading lamp, plug-in',
+    kind: 'table_lamp',
+    w: IN(4),
+    d: IN(7),
+    h: IN(4),
+    color: OFF_WHITE,
+    accent: OFF_WHITE,
+    source: `IKEA NYMANE wall/reading lamp, white: small articulated head on a wall plate, integrated LED, supplied with a cord and plug so it needs no junction box. Read off the IKEA US page, 30 Jul 2026; $44.99. It exists in this scheme because a bed with no headboard and no wall beside its head has nowhere to stand a table lamp — the reading light has to come off the wall above the pillow. Dimensions are the wall plate and head only and are APPROXIMATE. HONEST COST: plug-in means a visible cord down a white wall unless it is chased or covered.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true,
+    defaultZ: IN(46),
+    tags: ['lighting', 'wall', 'reading', 'bedroom', 'value'],
+    price: 45,
+  },
+  {
+    id: 'plant-sansevieria-24',
+    name: 'SANSEVIERIA potted plant, 8" pot',
+    kind: 'plant',
+    w: IN(15),
+    d: IN(15),
+    h: IN(23.5),
+    color: LEAF,
+    accent: TERRACOTTA,
+    source: `IKEA SANSEVIERIA (mother-in-law's tongue) in an 8" pot: about 23 1/2" tall overall. Read off the IKEA US page, 30 Jul 2026; $24.99. THE ONLY PLANT IN THIS CATALOG THAT MAY STAND ANYWHERE IN A PROJECTION ROOM: at 23 1/2" it is 5" below the 28 1/2" floor of every sightline ray, where the 40" floor plant used by the earlier layouts blocks over the last third of every run — and the 6' fiddle leaf blocks everything. It also survives a west-facing apartment with blackout shades down half the daylight hours, which a fiddle leaf does not. HONEST COST: it grows slowly and it is a spiky vertical, not a soft one.`,
+    frontClearance: 0,
+    lowProfile: true,
+    tags: ['plant', 'greenery', 'low', 'low-light', 'japandi', 'recommended'],
+    price: 25,
+  },
+  {
+    id: 'plant-zz-18',
+    name: 'ZAMIOCULCAS (ZZ plant), 6" pot',
+    kind: 'plant',
+    w: IN(11),
+    d: IN(11),
+    h: IN(17.75),
+    color: LEAF,
+    accent: TERRACOTTA,
+    source: `IKEA ZAMIOCULCAS (aroid palm / ZZ plant) in a 6" pot: about 17 3/4" tall overall. Read off the IKEA US page, 30 Jul 2026; $12.99. The glossy low mound that goes with the SANSEVIERIA's vertical, and the single most shade-tolerant plant sold at scale — it is the right species for a room whose blackout is down whenever the picture is on. At 17 3/4" it clears every sightline ray by more than 10". HONEST COST: it is slow, it is common, and it will rot if it is watered like a fern.`,
+    frontClearance: 0,
+    lowProfile: true,
+    tags: ['plant', 'greenery', 'low', 'low-light', 'japandi', 'value'],
+    price: 13,
+  },
+  // ---- the wall bed: how a queen leaves the floor -----------------------
+  {
+    id: 'bed-murphy-queen-lori-closed',
+    name: 'Lori Bed Queen Vertical wall bed, closed',
+    kind: 'murphy_bed',
+    w: IN(64),
+    d: IN(23),
+    h: IN(83),
+    color: OFF_WHITE,
+    accent: OAK,
+    source: `Lori Beds "The Lori Bed" Queen VERTICAL: CLOSED 64" W x 23" D x 83" H; OPEN 64" W x 105" D x 10" H (the 105" is measured from the wall and INCLUDES the 23" cabinet, which stays put — the platform pivots out of it). 100% cabinet-grade plywood with a textured woodgrain laminate, no particle board or MDF; double-chamber gas-piston lift; mounts with SIX SCREWS INTO WOOD OR METAL STUDS; lockable. Takes any mattress up to 10" thick, 70-130 lb, with a recommended maximum of 80 lb for the queen. Dimensions and the construction/mount/mattress notes are from loribeds.com search summaries and the Amazon listing, 31 Jul 2026 — the product page and the dimensions table both returned HTTP 429 on repeated attempts, so NOTHING here was read off a spec table directly and it should be confirmed before anyone drills.
+PRICE IS UNRESOLVED AND THE SPREAD IS LARGE. Two figures were returned on the same day: "entry pricing starting at $1,387" and "vertical and horizontal styles start from $2,159". $2,159 is recorded because a budget should not lean on the lower of two unconfirmed numbers, but the real figure may be $770 less — get a quote before committing, and note Lori also sells queen configurations up to $2,962 with storage towers.
+WHY THIS RATHER THAN A BUILT-IN. A vertical queen is the only wall bed that fits the wide leg of this plate at all: a HORIZONTAL queen is about 85" wide, and the run between the notch step and the UST plinth is 83", so it does not go in. And the 80 lb mattress ceiling is a real specification, not fine print — it rules out the pocket-sprung VALEVAG this catalog carries for standing beds and points at a 10" foam queen instead.`,
+    frontClearance: IN(30), // you stand here to swing it down; the deployed def is the real test
+    tags: ['sleeping', 'murphy', 'wall-bed', 'queen', 'small-space', 'convertible', 'sleeps-2', 'recommended'],
+    price: 2159,
+  },
+  {
+    id: 'bed-murphy-queen-lori-open',
+    name: 'Lori Bed Queen Vertical wall bed, deployed',
+    kind: 'murphy_bed',
+    w: IN(64),
+    d: IN(105), // from the wall, cabinet included
+    // 10" platform + a 10" mattress. That 20" is the whole point: even with the
+    // bed DOWN it stands 8 1/2" below the 28 1/2" floor of any projected
+    // sightline, so a wall bed in this room never crosses the picture.
+    h: IN(20),
+    seatHeight: IN(20),
+    color: OFF_WHITE,
+    accent: CREAM,
+    source: `The same purchase as bed-murphy-queen-lori-closed, drawn DEPLOYED so a layout can test whether the room still works at night: 64" wide x 105" from the wall x 20" made up. Price is 0 because it is not a second thing to buy. Following the convention this file uses for the NORDEN gateleg and the floor-rising screen, a layout should place ONE of the two states and state in a note where the other one lands.`,
+    frontClearance: 0,
+    lowProfile: true,
+    tags: ['sleeping', 'murphy', 'wall-bed', 'queen', 'deployed', 'sleeps-2'],
+    price: 0,
+  },
+  {
+    id: 'rug-tiokrona-8x10',
+    name: 'TIOKRONA rug, flatwoven natural — 7\'10" x 9\'10"',
+    kind: 'rug',
+    w: FTIN(7, 10),
+    d: FTIN(9, 10),
+    h: IN(0.25),
+    color: RUG_BASE,
+    accent: JUTE,
+    source: `IKEA TIOKRONA rug, flatwoven, natural: 7'10" x 9'10", 1/4" thick. Read off the IKEA US page, 30 Jul 2026; $129.99. The cheap equivalent of the Nordic Knots Desert 8x10 at $395, and at 1/4" it is even thinner than the Desert's 7 mm, so a task chair rolls over it without rucking. HONEST COST: it is jute rather than a 50/50 wool-jute, so it is scratchier underfoot and it will not take a bare foot the way the Desert does; and it is a striped field, not a plain one. Take it if $265 has to go somewhere else in the budget. Do NOT take LOHALS instead — it is dearer than this and twice as thick.`,
+    frontClearance: 0,
+    walkable: true,
+    lowProfile: true,
+    tags: ['rug', 'flatweave', 'jute', 'natural', 'thin', 'caster-friendly', 'value'],
+    price: 130,
+  },
+
+  // =====================================================================
+  // THE SLEEPING ALCOVE — sourced 31 Jul 2026
+  //
+  // WHY THIS BLOCK EXISTS. Layout A's bed was designed as a budget sink: a
+  // $79 white powder-coated GRIMSBU with a wall-hung ledge and a wall-hung
+  // String shelf over it, so that the whole bedroom cost less than the
+  // monitor arm and the money went to the picture and the desk. Rendered,
+  // that is exactly what it looks like — a white slab under two floating
+  // brackets. This block is the answer to "make the bed area a designed
+  // room, and do it WITHOUT drilling the walls".
+  //
+  // THREE CONSTRAINTS SHAPE EVERY ENTRY BELOW, and they are the same three
+  // that shaped the layout:
+  //   1. NO WALL FIXING. Anything that would hang has to stand instead, or
+  //      go under the bed, or not exist. The blackout shades are the one
+  //      exception in the scheme and they are a co-requisite of the screen,
+  //      not decor.
+  //   2. THE HEAD OF THE BED IS A WINDOW. Nothing at the head may break the
+  //      2'-6" glazing rule, which rules out every headboard sold — so the
+  //      bed has to be beautiful from the FRAME and the LINEN alone.
+  //   3. THE BED IS ALSO A SEAT. It looks down the room at a 100" picture
+  //      whose bottom edge is 28 1/2" AFF, so h(t) = 46 - 17.5t inches is
+  //      the governing ray here too: a 5'-11" floor lamp beside it costs a
+  //      third of the picture (measured — see scripts/sightline.ts).
+  // =====================================================================
+
+  {
+    id: 'bed-queen-awara-bamboo',
+    name: 'Awara Japanese Joinery bamboo platform bed, queen — natural, no headboard',
+    kind: 'bed',
+    w: IN(63.9),
+    d: IN(83.9),
+    // h IS THE MADE-UP BED INCLUDING THE PILLOWS, and on a headboard-less
+    // frame that is the honest reading of "tallest part of the piece": a 12"
+    // frame + a 10" mattress puts the sleeping surface at about 22", and two
+    // pillows and a turned-back duvet take the silhouette to about 26" —
+    // still 4" under the 2'-6" glazing rule with the head at the glass.
+    h: IN(26),
+    seatHeight: IN(22),
+    color: BAMBOO,
+    // accent = the DUVET (Quince European Linen in Sand); the renderer takes
+    // the sheets and pillowcases a quarter of the way to white off the same
+    // value, which is the Oat sheet set specified in the layout's COLOUR note.
+    accent: OATMEAL,
+    source: `Awara Japanese Joinery Bamboo Platform Bed, Queen, Natural: 63.9" W x 83.9" L x 12" H, 8.3" of under-bed clearance, 66 lb, solid bamboo with traditional interlocking joinery — no tools, no screws, no nails, ~20 minutes to build. Read directly off the awarasleep.com product page, 31 Jul 2026; $768 frame only (the attachable bamboo headboard is a separate $269 and takes the overall height to 39", which FAILS the 2'-6" glazing rule — specify it WITHOUT). Also sold as the Nectar Japanese Joinery bamboo bed. WHY IT IS IN THIS CATALOG. It is the only frame sourced that answers all four of this project's bed constraints at once: no headboard (so it can point at a window), a genuinely warm pale material rather than powder-coated steel (so the bed is an object and not a hospital bed), tool-free assembly (so it gets through a lift and an angled front door in cartons), and 8.3" of clearance, which is 3/4" more than a SKUBB case needs — so the under-bed volume is real storage rather than a claim. It is also the same MATERIAL as the Jarvis bamboo desktop at the other end of the room, which is the cheapest kind of coherence there is. HONEST COSTS: (1) $768 is $689 more than the GRIMSBU it replaces and there is no version of this argument in which that is a performance upgrade — it is an appearance upgrade, said plainly. (2) At 63.9" it is 2.9" wider than the GRIMSBU, and in this plan every inch of bed width comes straight out of the aisle behind it. (3) The 12" frame height is published; the DECK height is not, so the 22" sleeping surface is inferred as ~11 1/2" of deck plus a 10" mattress — measure before ordering a mattress thicker than 10". (4) Bamboo is a grass: it moves with humidity and it dents.`,
+    frontClearance: 0,
+    tags: ['bed', 'queen', 'platform', 'low', 'bamboo', 'no-headboard', 'glazing-safe', 'flat-pack', 'japandi', 'recommended'],
+    price: 768,
+  },
+  {
+    id: 'bedcover-linen-terracotta-queen',
+    name: 'Vintage-wash European linen bed cover, full/queen — terracotta',
+    kind: 'box',
+    // Drawn as it is USED, not as it folds out: a bed cover turned back and
+    // folded across the foot of the mattress, 60" across the bed x 26" of
+    // its length x about 3 1/2" of loft.
+    w: IN(60),
+    d: IN(26),
+    h: IN(3.5),
+    color: TERRACOTTA,
+    accent: TERRACOTTA,
+    source: `Quince Vintage Wash European Linen Bed Cover, full/queen, Terracotta: from $129.90, read off quince.com's linen blankets page 31 Jul 2026 (listed as a best seller and LOW STOCK the same day — treat availability as a risk, and note the "from" price is the throw size; the full/queen is at or above it). Sized in the catalog as a FOLDED object because that is the only state a drawing cares about. IT IS THE ONE PIECE OF COLOUR IN THE SLEEPING ALCOVE and it is doing a specific job: the bed is otherwise oat linen on pale bamboo, which against an espresso floor is two warm neutrals and no incident, and a washed terracotta at the foot picks up both the Nordic Knots Desert rug (a faded warm brown) and the terracotta pot the sansevieria stands in. HONEST COST: it is one accent and it has to be the ONLY one — a second colour in a 448 sq ft studio that is already carrying charcoal seating, black window frames and a dark floor reads as clutter, not as layering.`,
+    frontClearance: 0,
+    walkable: true, // it lies ON the mattress, inside the bed's own footprint
+    lowProfile: true,
+    tags: ['bedding', 'linen', 'terracotta', 'accent', 'textile'],
+    price: 130,
+  },
+  {
+    id: 'lamp-bellhop-portable',
+    name: 'Flos Bellhop Unplugged rechargeable table lamp',
+    kind: 'table_lamp',
+    w: IN(4.92),
+    d: IN(4.92),
+    h: IN(8.27),
+    color: CONCRETE,
+    accent: OFF_WHITE,
+    source: `Flos Bellhop Unplugged (Ed. 2018), Barber & Osgerby: 8.27" H x 4.92" dia, 1.65 lb, 3 W LED at 2700 K, four-step dimming with a battery indicator, USB-C, 0-100% in 3 hours and up to 24 hours of run time, injection-moulded polycarbonate base and dome. Read off flos.com 31 Jul 2026: $370.00 list, $240.50 on sale the same day — the LIST price is recorded so a budget does not depend on a promotion. Colours: grey, white, grey-blue, matt black, yellow; grey is specified here. IT IS CORDLESS, AND IN THIS PLAN THAT IS THE WHOLE ARGUMENT. The bed's head stands at a floor-to-ceiling glazed wall; the traced plan records no outlet there and a cord run to a bedside surface would either cross the room's tightest walkway or be taped to the glass. A lamp that charges in a drawer and lives on the bedside for a day at a time removes the problem instead of routing it. At 8 1/4" tall it is also 20" below the lowest sightline ray, so unlike a floor lamp it can stand anywhere in this room. HONEST COSTS: $370 is a great deal of money for 3 W; it is polycarbonate, not glass or metal; and 2700 K at four steps is a bedside light, not a reading light — pair it with the ceiling downlights for anything else.`,
+    frontClearance: 0,
+    lowProfile: true,
+    tags: ['lighting', 'table-lamp', 'portable', 'rechargeable', 'cordless', 'design', 'premium'],
+    price: 370,
+  },
 ];
 
 // ---------------------------------------------------------------- exports
