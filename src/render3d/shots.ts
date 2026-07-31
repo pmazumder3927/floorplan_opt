@@ -524,6 +524,157 @@ function screeningShot(
 }
 
 /**
+ * THE LOUNGE SHOT — the frame this project did not have, and the reason a
+ * client could see a problem none of the drawings could.
+ *
+ * WHY IT EXISTS. Read the four frames that came before it. `dollhouse` is a
+ * studio plate. `screening` stands BEHIND the seat and looks at the picture, and
+ * its own caption admits that on these schemes the seating ends up behind the
+ * camera. `desk` shoots the north wall. `sleeping` shoots the notch. So the
+ * congregation area — the piece of furniture the brief's fourth hard requirement
+ * is actually about, and the largest single object in the room — appeared in no
+ * frame at all except edge-on and out of focus. The client's note on layout A
+ * was that the area around and behind the sofa needed work; there was no
+ * photograph of it to look at, and that is a failure of the gallery, not of
+ * their attention.
+ *
+ * SO THIS ONE STANDS IN FRONT OF THE SOFA AND LOOKS BACK AT IT. That single
+ * decision is what makes the frame useful and what makes it hard:
+ *
+ *   - it is the only shot whose subject is the SEATING GROUP rather than one
+ *     piece, so the second row, whatever backs the sofa up, and the floor
+ *     between them are all in it;
+ *   - looking back at a sofa in this unit means looking WEST, which means
+ *     looking into 18'-6" of floor-to-ceiling glazing. The subject is between
+ *     the lens and the only light source in the apartment. That is a contre-jour
+ *     frame and it needs the same exposure help layout B's screening shot needs,
+ *     for exactly the same reason.
+ *
+ * TWO NUMBERS THAT WERE TUNED ON A RENDER RATHER THAN REASONED. Standing square
+ * in front of a 56"-wide sofa, the sofa HIDES the zone the frame exists to show:
+ * the first version put the camera 22 deg off the axis at 4'-0" and both of
+ * layout A's second-row poufs disappeared behind the seat back. So the preferred
+ * bearing is 35 deg off the front — a front-quarter view, which is where a
+ * photographer stands for a seating group anyway — and the lens is at 4'-9",
+ * high enough to see over a 28" sofa back and into the floor behind it, low
+ * enough that it is still a photograph of a room and not a survey of a rug.
+ */
+function loungeShot(
+  ps: Placed[],
+  plan: FloorPlan,
+  blockers: OBB[],
+  solids: OBB[],
+  aspect: number,
+): Shot | null {
+  // The anchor is the biggest thing you sit on. Deliberately not "the nearest
+  // seat to the screen" — layout C's front row is four poufs and the object the
+  // frame is about is still the bed behind them.
+  const seats = byKind(ps, 'sofa', 'sectional', 'loveseat', 'armchair')
+    .sort((a, b) => b.obb.w * b.obb.d - a.obb.w * a.obb.d);
+  const anchor = seats[0];
+  if (!anchor) return null;
+
+  /*
+   * THE GROUP IS DEFINED BY THE ANCHOR'S BACK, not by a radius. Everything that
+   * matters to this frame is either seating within reach of the sofa or standing
+   * in the band of floor behind it, and the second half is the half no other
+   * shot has ever contained: a console, a bench, a lamp, a plant, the second row
+   * of poufs. 8'-0" behind and 5'-0" to either side covers the deepest
+   * back-of-sofa zone any of these schemes has (layout A's is 5'-0") without
+   * dragging the bed or the kitchen into the subject list.
+   */
+  const back = neg(anchor.front);
+  const side = rotDir(anchor.front, 90);
+  /*
+   * AN ALLOWLIST, BECAUSE THE DINING CORNER IS NOT THE CONGREGATION. Layout A
+   * parks a folded gateleg and two folding chairs at the glazing, and they fall
+   * inside any purely geometric definition of "behind the sofa". Handed to
+   * compose() as subjects they drag the camera round to the north-east to get
+   * them all in, and the frame stops being a photograph of the seating group and
+   * becomes one of the dining end seen over a sofa back. So the group is the
+   * furniture that BELONGS to a seating arrangement.
+   */
+  const GROUPABLE = new Set([
+    'sofa', 'sectional', 'loveseat', 'armchair', 'ottoman', 'bench',
+    'coffee_table', 'side_table', 'console', 'cabinet', 'floor_lamp', 'plant',
+  ]);
+  const inGroup = (p: Placed): boolean => {
+    if (p === anchor) return false;
+    if (p.def.walkable || p.def.wallMounted) return false;
+    if (!GROUPABLE.has(p.def.kind)) return false;
+    const v: Vec2 = [p.center[0] - anchor.center[0], p.center[1] - anchor.center[1]];
+    const behind = v[0] * back[0] + v[1] * back[1];
+    const across = Math.abs(v[0] * side[0] + v[1] * side[1]);
+    const beside = v[0] * anchor.front[0] + v[1] * anchor.front[1];
+    if (across > 5) return false;
+    // behind the back, or alongside the ends within a couple of feet
+    return behind > 0 ? behind <= 7 : beside <= 2.5;
+  };
+  const group = ps.filter(inGroup);
+
+  // Focus: the anchor, pulled a third of the way back into the zone behind it,
+  // so the frame is about the seat AND its background rather than about the
+  // seat with a wall of glass behind it.
+  const zone = group.filter((p) => {
+    const v: Vec2 = [p.center[0] - anchor.center[0], p.center[1] - anchor.center[1]];
+    return v[0] * back[0] + v[1] * back[1] > 0;
+  });
+  const depth = zone.length
+    ? Math.max(...zone.map((p) => {
+        const v: Vec2 = [p.center[0] - anchor.center[0], p.center[1] - anchor.center[1]];
+        return v[0] * back[0] + v[1] * back[1];
+      }))
+    : 2.5;
+  const focus: Vec2 = addv(anchor.center, back, depth / 3);
+
+  // Stand in front, swung 22 deg off the axis: square-on to a sofa is a
+  // catalogue photograph, and the swing is what shows the depth of the zone.
+  const prefer = anchor.front;
+  const reach = Math.max(...[anchor, ...group].map((p) => dist2(p.center, focus) + subjectOf(p).radius), 4);
+  const { eye, fov, covered } = composeWide(
+    {
+      focus,
+      subjects: [subjectOf(anchor), ...group.map(subjectOf)],
+      prefer: rotDir(prefer, 25),
+      near: Math.max(5, reach * 0.8),
+      far: reach + 6,
+      aspect,
+    },
+    [55, 65, 75],
+    plan,
+    blockers,
+    solids,
+  );
+
+  /*
+   * CONTRE-JOUR CORRECTION. exposureFor() reads the compass bearing and gives a
+   * westward frame nothing, because west is where the light is and a frame
+   * looking west normally sees lit surfaces. This frame is the exception in the
+   * same way layout B's screening frame is: the subject stands between the lens
+   * and the glazing, so every face the camera sees is the shaded one. +0.5 stops
+   * where the lens is pointed west of due north/south, tapering to nothing when
+   * it is not.
+   */
+  const look = norm([focus[0] - eye[0], focus[1] - eye[1]]);
+  const contre = look[0] < 0 ? 0.5 * Math.min(1, -look[0] / 0.5) : 0;
+  return {
+    id: 'lounge',
+    title: 'The congregation, and the floor behind it',
+    caption:
+      `The seating group and the band of floor behind it — the one part of this plan no other frame contains. ` +
+      (zone.length
+        ? `${zone.length} piece(s) stand in the ${Math.round(depth * 10) / 10} ft between the sofa's back and the glazing.`
+        : `Nothing stands between the sofa's back and the glazing: that floor is empty, which is a decision and shows here as one.`) +
+      (covered < group.length + 1 ? ' Not everything in the group fits one frame at this room\'s depth.' : ''),
+    position: world(eye, 4.75),
+    target: [focus[0], 2.2, focus[1]],
+    fov,
+    exposure: Math.round((exposureFor(eye, focus) + contre) * 100) / 100,
+    mode: 'interior',
+  };
+}
+
+/**
  * THE DESK SHOT — the second hard requirement, and the one a plan drawing is
  * worst at: whether a 60" top with a monitor on it feels like a workstation or
  * like a shelf depends entirely on what is around and behind it.
@@ -687,6 +838,7 @@ export function shotsFor(plan: FloorPlan, layout: Layout, aspect: number): Shot[
   const shots: (Shot | null)[] = [
     dollhouseShot(plan, aspect),
     screeningShot(ps, plan, blockers, solids, aspect),
+    loungeShot(ps, plan, blockers, solids, aspect),
     deskShot(ps, plan, blockers, solids, aspect),
     bedShot(ps, plan, blockers, solids, aspect),
   ];

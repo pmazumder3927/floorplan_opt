@@ -1,0 +1,48 @@
+section,item,catalog_id,qty,unit_usd,total_usd,low_usd,high_usd,tier,price_verified,note
+"Screening — projector, picture, plinth, sound","Hisense PX3-PRO TriChroma laser cinema (UST)","projector-ust-hisense-px3-pro",1,2799,2799,,,recommended,yes,""
+"Screening — projector, picture, plinth, sound","VIVIDSTORM CineVision Pro UST ALR fixed frame, 100"" 16:9","screen-ust-alr-vividstorm-100",1,1439,1439,,,recommended,no,"catalog source flags this price as unverified"
+"Screening — projector, picture, plinth, sound","UST plinth, bespoke 66"" x 24"" x 14""","plinth-ust-bespoke-66",1,650,650,,,recommended,no,"catalog source flags this price as unverified"
+"Screening — projector, picture, plinth, sound","Projected image, 100"" (switched on)","projection-image-100",1,0,0,,,unspecified,yes,""
+"Screening — projector, picture, plinth, sound — SUBTOTAL",,,,,4888,,,,,
+"Light control — the co-requisite, not an accessory","Blackout roller shade, per glazing bay","shade-blackout-roller-bay",4,182,728,,,value,yes,""
+"Light control — the co-requisite, not an accessory","Blackout side channels, per glazing bay (pair)","shade-side-channels-bay",4,85,340,,,unspecified,no,"catalog source flags this price as unverified"
+"Light control — the co-requisite, not an accessory — SUBTOTAL",,,,,1068,,,,,
+"Work — the desk and everything on it","Herman Miller Aeron task chair, size B","chair-ergonomic-aeron",1,2150,2150,,,unspecified,yes,""
+"Work — the desk and everything on it","Monitor, 32"" 16:9","monitor-32",1,799,799,,,unspecified,yes,""
+"Work — the desk and everything on it","Secretlab MAGNUS Pro metal standing desk, 59.1"" x 27.6""","desk-standing-magnus-pro",1,799,799,,,unspecified,no,"catalog source flags this price as unverified"
+"Work — the desk and everything on it","Fully Jarvis single monitor arm","monitor-arm-single-jarvis",1,175,175,,,unspecified,no,"catalog source flags this price as unverified"
+"Work — the desk and everything on it","Under-desk CPU / mini-PC mount","cpu-mount-underdesk",1,99,99,,,unspecified,yes,""
+"Work — the desk and everything on it","Desk mat, 36"" x 17""","desk-mat-felt",1,95,95,,,unspecified,yes,""
+"Work — the desk and everything on it — SUBTOTAL",,,,,4117,,,,,
+"Sleep","Article Basi platform bed, queen — white oak, no headboard","bed-queen-basi-white-oak",1,399,399,,,value,yes,""
+"Sleep","TONSTAD nightstand, oak veneer","nightstand-tonstad",1,150,150,,,unspecified,yes,""
+"Sleep — SUBTOTAL",,,,,549,,,,,
+"Seating — the congregation area","Blu Dot Cleon 56"" armless sofa — Maharam Mode in Clavicle","sofa-cleon-56-armless-oat",1,1960,1960,,,premium,no,"catalog source flags this price as unverified"
+"Seating — the congregation area","Article Seno 55"" bench, oak","bench-seno-55-oak",1,399,399,,,unspecified,yes,""
+"Seating — the congregation area","TOLKNING pouf with storage, handmade rattan","pouf-tolkning-rattan",1,100,100,,,value,yes,""
+"Seating — the congregation area — SUBTOTAL",,,,,2459,,,,,
+"Dining","NORDEN gateleg table (folded)","dining-gateleg-norden",1,350,350,,,unspecified,yes,""
+"Dining","FRÖSVI folding chair, beech","chair-frosvi-folding-beech",2,25,50,,,value,yes,""
+"Dining — SUBTOTAL",,,,,400,,,,,
+"Storage","Vintage-wash European linen bed cover, full/queen — terracotta","bedcover-linen-terracotta-queen",1,130,130,,,unspecified,yes,""
+"Storage","TRONES shoe cabinet, wall-mounted","entry-trones-shoe",2,40,80,,,value,no,"catalog source flags this price as unverified"
+"Storage","Low-profile under-bed case, 33 x 17 x 4 1/2","storage-lowprofile-underbed-45l",4,15,60,,,value,no,"catalog source flags this price as unverified"
+"Storage — SUBTOTAL",,,,,270,,,,,
+"Soft goods","Nordic Knots Zero flatweave rug, 8x10 — Warm Gray","rug-nordicknots-zero-warmgray-8x10",1,395,395,,,recommended,yes,""
+"Soft goods — SUBTOTAL",,,,,395,,,,,
+"Light and greenery","Flos Bellhop Unplugged rechargeable table lamp","lamp-bellhop-portable",1,370,370,,,premium,yes,""
+"Light and greenery","Isamu Noguchi Akari 1A table lantern","lamp-akari-1a-table",1,195,195,,,unspecified,yes,""
+"Light and greenery","Full-length mirror, wall-hung","mirror-full-length-wall",1,179,179,,,unspecified,yes,""
+"Light and greenery","Medium floor plant, 40""","plant-medium-40in",1,79,79,,,unspecified,yes,""
+"Light and greenery","SANSEVIERIA potted plant, 8"" pot","plant-sansevieria-24",1,25,25,,,recommended,yes,""
+"Light and greenery","Clamp-on task lamp","lamp-task-clamp",1,15,15,,,unspecified,yes,""
+"Light and greenery — SUBTOTAL",,,,,863,,,,,
+"FURNITURE TOTAL",,,,,15009,,,,,
+"ALLOWANCE","Queen mattress (10-11"")","mattress",1,,,499,1999,,band,"Every bed frame in the catalog is a FRAME — its height includes a 10"" mattress so the drawings show a made bed, but its price is the frame alone. Verified end points: Zinus Original Green Tea 10"" at $499 (sale, from $718, read off the Zinus PDP) and Avocado Green Hybrid 11"" at $1,999. Stay at 10-11"": every extra inch of mattress raises the sleeping height and pushes the bed's silhouette up toward the glazing, and Avocado's 13"" Pillow Top would put a Thuma's sleeping surface at 26""."
+"ALLOWANCE","Bedding — linen sheet set, duvet cover set, insert, two pillows","bedding",1,,,370,810,,band,"Not in any furniture catalog and not optional, and in a studio it is a VISIBLE design element rather than a utility: the bed is in every sightline in the apartment. PRICED AGAINST A SPECIFIED SET rather than a class average, read off quince.com on 31 Jul 2026 — European Linen sheet set, queen, in Oat at $144 promotional / $259 list, plus the European Linen duvet cover set (cover + 2 standard shams) in Sand at $154 / $344. That is $298-$603 for the two, and the band adds a duvet insert and two pillows at $70-$210 on top. The LOW end depends on a promotion that was live the day it was read; budget the high end. A folded bed cover, where a layout specifies one, is a catalogue line and is NOT in this allowance."
+"ALLOWANCE","Power + HDMI at the projector position, and cable concealment","av-power",1,,,150,500,,band,"A projector needs mains where it stands, and in this unit that is a real question rather than a detail: there is no power in the concrete soffit, so anything overhead is out, and a screen or plinth against the bathroom partition needs an outlet behind it or a cord run somewhere visible. The low end is a floor outlet already in the right place plus a cable channel; the high end is an electrician adding a receptacle. Motorised screens and floor-risers all plug in."
+"ALLOWANCE","Laser measure — before ordering any screen","laser-measure",1,,,30,60,,band,"This is a small line with a large consequence. The plan is traced from a listing graphic at ±0.3 ft, i.e. ±3.6"" — which is LARGER than the reveal a 120"" frame would leave on the 9'-6"" bathroom partition and comparable to the reveal a 110"" leaves. Do not order a screen over 110"" on the strength of a traced plan. Measure the wall, and while the meter is out, confirm the ceiling height and the glazing head — the 9'-0"" ceiling in this model is ASSUMED, and every screen-size and cassette limit falls out of it."
+"ALLOWANCE","Blackout shade installation and the eight side-channel runs","shade-install",1,,,200,600,,band,"Four inside-mount shades means four headrails and EIGHT vertical light gaps, and the manufacturer's own copy admits a ~1/8"" factory deduction per side. On a west wall between 3pm and sunset that puts visible bars of daylight across a projected image. The side channels are catalogued per bay, but fitting them is eight adhesive runs plus four bracket sets into the jambs — and note that at this unit's 8'-8"" (104"") head, a cellular shade tall enough to reach can only be ordered on a CONTINUOUS CORD LOOP: not cordless, not no-drill."
+"ALLOWANCE","Delivery, lift booking and assembly","delivery",1,,,1201,1801,,band,"8-12% of the furniture total. It is a real number here rather than a rounding error because the entry nook has an ANGLED front door: the pieces that do not knock down — a 56"" one-piece sofa frame, a 70"" one-piece modular unit — ship freight and have to make that turn. Measure the door swing, the corridor turn and the lift car before committing to anything that does not flat-pack."
+"ALLOWANCES TOTAL",,,,,,2450,5770,,,
+"ALL-IN",,,,,,17459,20779,,,"layout g-west-light"

@@ -9,23 +9,43 @@ plan, the clearance analysis, the WebGL preview, the path-traced hero frames, th
 furniture schedule and the client brief — is **generated from that one model**, so
 no drawing can quietly disagree with the layout it describes.
 
-Six schemes are designed against the same brief. All six carry the same four
-hard requirements — a real queen bed, modern/minimal decor, a real Fully Jarvis
-sit-stand desk, and a congregation area for watching things on a projector with
-the throw geometry and the seating distances both actually correct. In five of
-them what differs is **where the picture goes**, and every other decision falls
-out of that; the sixth (F) holds the picture still and turns the **bed** instead.
+Seven schemes are designed against the same brief. All seven carry the same four
+hard requirements — a real queen bed, modern/minimal decor, a real sit-stand desk
+setup (a Secretlab MAGNUS Pro since 31 Jul 2026; it was a Fully Jarvis before
+that, and some prose here still says so), and a congregation area for watching
+things on a projector with the throw geometry and the seating distances both
+actually correct. In five of them what differs is **where the picture goes**, and
+every other decision falls out of that; F holds the picture still and turns the
+**bed** instead; G holds everything still and moves the **darkness**.
 
 ---
 
 ## Sample renders
 
 All frames below are GPU path-traced in Blender Cycles from the same glTF export
-the WebGL preview uses, at the same 1600×1000, with a physically-scaled Nishita
-sky. They are dark on purpose: blackout on all four glazing bays is a
-co-requisite of every scheme (a screen face taking 500 lux of ambient sits at
-1.9:1 in-room contrast — a grey rectangle), so the shades are down in the model
-and the room is lit by its own downlights.
+the WebGL preview uses, with a physically-scaled Nishita sky.
+
+> **What these frames actually are, corrected 31 Jul 2026.** This section used to
+> say the frames were "dark on purpose… the shades are down in the model and the
+> room is lit by its own downlights", and at the same 1600×1000. All three claims
+> were false and the audit that found them is worth repeating, because the
+> project's whole premise is that a drawing cannot quietly disagree with the model
+> it describes.
+> **(1) The shades have never been drawn down, in any layout.** `catalog.ts`
+> dimensions `shade-blackout-*-bay` STOWED — a 4½" cassette at the 8'-8" head —
+> and its own note says a layout wanting the deployed state must override
+> `size: { h: 8.667 }, z: 0`. `grep -rn "8.667" src/layouts/` returns nothing.
+> Every frame here has the glazing wide open.
+> **(2) The room is not lit by its downlights.** It is lit by the sky through that
+> open glazing at 2.2×; the recessed fittings are geometry with a faint emissive
+> lens. Kill the sky and the frame drops from 47% mean luminance to 15%.
+> **(3) The resolutions differ** — several frames are 1280×800.
+> What *does* make them read cool and low-key is the pipeline's default weather:
+> `--sun-intensity 0.04` (a hazy overcast with no sun disc), `--sky-strength 2.2`
+> and `--wb 5100`, which together render the espresso floor at R−B **−17**, i.e. a
+> warm walnut as blue-grey. Frames made to judge a *palette* should use
+> `--sun-intensity 0.25 --sky-strength 2.0`, the one row of `render.py`'s own
+> measured sweep that lifts the soffit without clipping the floor.
 
 ### A — Night wall
 
@@ -116,6 +136,89 @@ narrowest route against A's 2'-6", and a worst seat at 89.2% against A's 81.9%.
 
 ![Layout F, lid off: the turned bed in the notch, the row of two armchairs facing the screen, the desk on the north wall](docs/renders/f-headboard-dollhouse.jpg)
 
+### G — West light
+
+Not a seventh answer to where the picture goes. **G is layout A, optimised** —
+the client liked A and said it felt "too dark or something", so two things
+finally got measured instead of asserted.
+
+**The darkness.** `pnpm tone` is the new script that made the argument possible:
+it walks every surface in the open studio, converts each hex to an LRV and
+reports the area-weighted mean, split at the notch. Layout A's furniture measures
+**13.0% LRV in the living end against 39.6% in the sleeping alcove** — the half
+of the flat you stand in is three times darker than the half you sleep in, and
+the shell is innocent (walls 88%, soffit 47%).
+
+A defends its darks optically, and the defence is real but mis-aimed. With the
+shades down the room returns about 3.3% of the projector's own light to its own
+screen and **83% of that comes off the walls and the soffit**; every placed
+furnishing together is about 10%. Taking the sofa from 3.7% to 50% LRV costs 3.5%
+of the black level (131:1 → 126:1). Taking the near-black poufs with it costs
+**zero, measured**. Meanwhile the parked Aeron is worth 22%, the plinth 13% and
+the desk top 12.5%, because those three are close, low and in the picture's
+field. So: **dark is worth buying within about six feet of the lens and worth
+nothing beyond it**, and A had it the wrong way round.
+
+The same camera, the same light, the same exposure — A above, G below:
+
+![Layout A, the congregation seen from the front quarter: a charcoal sofa alone on a grey rug with the promenade behind it blocked by two parked folding chairs](docs/renders/a-night-wall-lounge.jpg)
+
+![Layout G, the same frame: the sofa in oat Maharam hopsack, an oak bench giving it a back, a washi lantern on the bench, and a clear promenade to the glazing](docs/renders/g-west-light-lounge.jpg)
+
+**The sightline.** A pins the desk's east end at x 16'-0" and argues it cannot go
+west because the parked chair would sever the walk between the bed and the sofa.
+Swept with `pnpm sightline`, that does not survive: the same chair already severs
+that walk 1'-1⅝" further east. Sliding the top west until its west end sits flush
+with the re-entrant corner — the only position on that wall with an
+architectural reason behind it — takes the **worst seat from 80.5% to 87.2%** and
+the sofa from 93.8% to 97.2%. East, which is the intuitive fix, is worse: a chair
+nearer the screen subtends a bigger angle from every seat.
+
+**The floor behind the sofa** was the other half of the brief, and it reads as
+leftover in A because it *is*: a 4'-11 15/16" strip that has to carry a 3'-0"
+route, leaving 2'-0" for furniture where a second row you can put your knees
+under needs 3'-0". A's two poufs stand 4" off a 28" sofa back — a footstool
+position, not a seat. G stops pretending: **one 55" Article Seno oak bench at
+17½"**, ten inches below the sofa's back line so it never reads as a fence, with
+an Akari 1A on it — the first light in this apartment that is not a downlight, a
+desk clamp or a bedside lamp.
+
+And then the thing nobody was looking for. Sweeping the strip at half-inch steps
+instead of reading a route number, **layout A's promenade is sealed**: it pinches
+to **3⅞"** at y 11'-9⅜", where the two parked folding chairs meet the south pouf,
+so the walk from the kitchen end to the west windows is a 26 ft detour. `pnpm
+check` reports 2'-6" there and does not warn — a grid artifact, because the
+route's own target sits inside the pinch where endpoint protection exempts the
+cells. Fold the chairs into the closet where A's own note says they live and
+every required route reaches **3'-0"**, which no scheme in this folder had
+managed.
+
+| | A | G |
+|---|---|---|
+| worst seat on the picture | 80.5% | **87.2%** |
+| the sofa | 93.8% | **97.2%** |
+| narrowest path | 2'-6" | **3'-0"** |
+| front door → west windows | 2'-6" | **3'-0"** |
+| living-end furniture, LRV | 13.0 | **24.6** |
+| room, area-weighted, LRV | 48.0 | **50.8** |
+| budget | $15,843 | **$15,009** |
+
+G is **$834 cheaper** than A, because the catalog's own blackout entry has been
+recommending rollers over cellular since 30 Jul on a $1,248 saving and no layout
+had spent it. Take the rollers out and the bench and the lantern cost $414.
+
+**One thing is drawn as an option rather than a decision**: painting the screen
+partition in Sherwin-Williams Urbane Bronze (LRV 8). It makes a visibly better
+picture — a 100" image is judged against its surround, and in A that surround is
+55 sq ft of 88%-LRV white half an inch from the picture's edge — and it makes the
+room measurably darker: 50.8% falls to **46.3%**, below layout A. Handing that to
+someone who said "too dark" is a decision they should make with their own eyes,
+so here it is both ways, and the scheme defaults to the left-hand one:
+
+![Layout G looking east with the partition left white: the screen as a white rectangle, the desk, chair and plinth reading as separate dark objects](docs/renders/g-west-light.jpg)
+
+![The same frame with the partition painted Urbane Bronze: the screen sits in a dark field and the plinth and projector read as one dark end of a warm room](docs/renders/g-west-light-painted-option.jpg)
+
 ### The 2D side of the same model
 
 Same layout, same numbers, drawn to scale with dimensions, door swings, a
@@ -148,7 +251,7 @@ against, so the renders' finishes are matched to the unit rather than invented.
 
 ---
 
-## The six schemes
+## The seven schemes
 
 | | Layout | Where the picture goes | The cost |
 |---|---|---|---|
@@ -158,6 +261,7 @@ against, so the renders' finishes are matched to the unit rather than invented.
 | **D** | `d-paint-and-go` | 118" of screen paint, portable projector | 550 lumens and a lens in front of the audience |
 | **E** | `e-clear-shot` | bathroom partition again, but planned around the SIGHTLINE | a wall bed and a floor that must stay empty for it |
 | **F** | `f-headboard` | same as A — F moves the BED, not the picture | the sofa, and the bed stops being a seat |
+| **G** | `g-west-light` | same as A — G moves the DARKNESS and the DESK, not the picture | a pale seat in a one-room flat, 5 points of in-room contrast, and a desk 1'-1⅝" further into the room |
 
 **E is the one to read first if you only read one.** The first four were drawn
 around where the picture goes; E was drawn around what you can actually see of
@@ -172,6 +276,7 @@ ray `analysis.ts` uses, and it turns out every earlier scheme is obstructed:
   d-paint-and-go worst seat 91.8%
   e-clear-shot   every seat 100.0%
   f-headboard    row 97.2% / 91.6% / 89.2%
+  g-west-light   sofa 97.2%   bench 93.0%   bed 87.2%
 ```
 
 In A, B, C and D the main culprit is the parked desk chair. A's bed used to read
@@ -192,15 +297,16 @@ impassable). Sample output:
 ```
   LAYOUT          ITEMS  FREE %  FREE AREA  NARROWEST  ERR  WARN   BUDGET
   ──────────────  ─────  ──────  ─────────  ─────────  ───  ────  ───────
-  a-night-wall       39   78.5%    352 ft²       2'6"    0     1  $16,717
-  b-fold-away        34   82.8%    371 ft²         3'    0     3  $16,596
-  c-second-row       28   79.5%    356 ft²       3'6"    0     2  $11,573
+  a-night-wall       39   79.0%    354 ft²       2'6"    0     1  $15,843
+  b-fold-away        33   82.5%    370 ft²         3'    0     3  $16,070
+  c-second-row       28   79.5%    356 ft²       3'6"    0     2  $11,047
   d-paint-and-go     26   83.6%    375 ft²       2'6"    0     1   $7,357
-  e-clear-shot       37   85.0%    381 ft²      2'10"    0     0  $12,733
-  f-headboard        40   80.3%    360 ft²       2'9"    0     0  $16,089
+  e-clear-shot       36   85.0%    381 ft²      2'10"    0     0  $12,207
+  f-headboard        39   80.5%    361 ft²       2'9"    0     0  $15,563
+  g-west-light       40   78.7%    353 ft²         3'    0     1  $15,009
 
-  6 layouts · 448 ft² interior · walkway min 3' (tight 2'6")
-  no errors, 7 warnings, 4 info
+  7 layouts · 448 ft² interior · walkway min 3' (tight 2'6")
+  no errors, 8 warnings, 4 info
 ```
 
 `BUDGET` is the catalogue total only. `src/core/budget.ts` additionally produces
@@ -253,6 +359,8 @@ where the twelve `PLAN_NOTES` substitutions get made.
 |---|---|
 | `pnpm dev` | the interactive lab — layout picker, 2D/3D views, camera and theme presets, live analysis, item schedule, catalog browser |
 | `pnpm check` | clearance / collision / circulation report. `--json` for machine-readable, `--quiet` for the summary table only |
+| `pnpm sightline` | how much of the projected image each seat can actually see — a grid of rays, not one |
+| `pnpm tone` | how dark a scheme is, as a number: area-weighted LRV of every visible surface, split shell / furnishings and living end / sleeping alcove, plus each surface's share of the projector light the room returns to its own screen |
 | `pnpm svg` | to-scale architectural plan as SVG (vector, diffable, prints) |
 | `pnpm render` | headless PNGs of the 2D plan and the WebGL 3D view — how an agent looks at its own work |
 | `pnpm glb` | export the three.js scene as `.glb`; the only thing Blender ever sees |
@@ -263,12 +371,22 @@ where the twelve `PLAN_NOTES` substitutions get made.
 Reproducing the frames on this page:
 
 ```bash
-npx tsx scripts/raytrace.ts --layout a-night-wall   --camera eye-window --res 1600x1000 --samples 200 --exposure 2.2
+# The A hero was made with the SCREENING SHOT at the pipeline defaults, not with
+# --camera eye-window --exposure 2.2 as this block used to claim. Verified by
+# re-rendering and matching mean luminance: 47.23% against the committed 47.08%.
+npx tsx scripts/raytrace.ts --layout a-night-wall   --shots  screening  --res 1600x1000 --samples 200
 npx tsx scripts/raytrace.ts --layout a-night-wall   --shots  sleeping   --res 1280x800  --samples 220
 npx tsx scripts/raytrace.ts --layout f-headboard    --shots  all        --res 1280x800  --samples 200
 npx tsx scripts/raytrace.ts --layout b-fold-away    --camera eye-living --res 1600x1000 --samples 200 --exposure 2.2
 npx tsx scripts/raytrace.ts --layout c-second-row   --camera eye-hero   --res 1600x1000 --samples 256 --exposure 2.9
 npx tsx scripts/raytrace.ts --layout d-paint-and-go --camera eye-window --res 1600x1000 --samples 200 --exposure 2.2
+# The A/G comparison pair: same camera, same weather, same exposure, so the only
+# variable is the scheme. --sun-intensity 0.25 --sky-strength 2.0 is the one row
+# of render.py's own measured sweep that lifts the soffit without clipping the
+# floor, and it is what any frame judging a PALETTE should use.
+npx tsx scripts/raytrace.ts --layout a-night-wall   --shots lounge    --res 1600x1000 --samples 320 --sun-intensity 0.25 --sky-strength 2.0 --tod 0.62 --exposure 0.35
+npx tsx scripts/raytrace.ts --layout g-west-light   --shots lounge    --res 1600x1000 --samples 400 --sun-intensity 0.25 --sky-strength 2.0 --tod 0.62 --exposure 0.35
+npx tsx scripts/raytrace.ts --layout g-west-light   --shots screening --res 1600x1000 --samples 400 --sun-intensity 0.25 --sky-strength 2.0 --tod 0.62 --exposure 0.9
 npx tsx scripts/render.ts   --view 2d
 ```
 
@@ -281,7 +399,7 @@ drives Chromium with software WebGL, so `pnpm render` works in a container.
 
 ```
 src/core/        the apartment, the catalog, the units, the analyzer, the money
-src/layouts/     the six schemes — one file each, plus faces.ts for shared datums
+src/layouts/     the seven schemes — one file each, plus faces.ts for shared datums
 src/render2d/    to-scale plan: SVG writer + React view
 src/render3d/    three.js scene builder, materials, camera presets, city backdrop
 src/app/         the interactive lab, and the chrome-less capture mode scripts drive

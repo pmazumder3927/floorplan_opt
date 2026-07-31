@@ -5,6 +5,7 @@
  *   npx tsx scripts/raytrace.ts --camera all --samples 512
  *   npx tsx scripts/raytrace.ts --layout open-loft --camera eye-kitchen --res 1920x1200
  *   npx tsx scripts/raytrace.ts --camera eye-living --tod 0.35 --exposure 1.6
+ *   npx tsx scripts/raytrace.ts --shots lounge --sun-intensity 0.25 --wb 4600
  *   npx tsx scripts/raytrace.ts --layout a-night-wall --shots all   # the brief's gallery
  *
  * TWO WAYS TO NAME A FRAME, and they are different in kind:
@@ -131,6 +132,8 @@ interface Args {
   /** direct-sun / sky irradiance overrides; undefined = render.py's photo-calibrated defaults */
   sunStrength: number | undefined;
   skyStrength: number | undefined;
+  /** white balance in kelvin; undefined = render.py's 5100 K photo match */
+  wb: number | undefined;
   out: string;
   exposure: number;
   force: boolean;
@@ -200,6 +203,24 @@ function parseArgs(argv: string[]): Args {
     tod: num('tod', 0.82),
     sunStrength: str('sun-intensity') === undefined ? undefined : num('sun-intensity', 0),
     skyStrength: str('sky-strength') === undefined ? undefined : num('sky-strength', 0),
+    /**
+     * WHITE BALANCE, IN KELVIN. render.py has had `--wb` since it was written
+     * (default 5100 K, to neutralise the amber Nishita sun the way the phone
+     * that took the reference photograph did) and this file has never forwarded
+     * it, so every frame in the repo except the dollhouse plate is locked to
+     * 5100 K. That is the correct number for matching the reference photo and it
+     * is a global chroma subtraction: measured on the committed hero frame, the
+     * espresso floor comes back at R-B = -17, i.e. a warm walnut rendered
+     * blue-grey. A scheme whose whole proposition is warm — pale oak, oat linen,
+     * undyed wool — must not be JUDGED at a balance that removes warmth without
+     * at least seeing the other frame. Undefined leaves render.py's default
+     * alone, so nothing already calibrated moves.
+     *
+     * FAIR-COMPARISON RULE: when two schemes are being compared, render both at
+     * the SAME balance. A palette that only looks better at a different white
+     * point has not been improved, it has been photographed differently.
+     */
+    wb: str('wb') === undefined ? undefined : num('wb', 5100),
     out: str('out') ?? 'renders',
     // +0.6 stops over a physical exposure. The daylight is physically scaled (a
     // Nishita sky with a real sun disc — scripts/blender/world.py), so at
@@ -655,7 +676,12 @@ async function main(): Promise<void> {
     // walls before this line existed. D65 leaves the dome neutral and the warm key
     // warm, which is what the plate should look like.
     if (frame.dollhouse) flags.push('--dollhouse', '--no-context', '--wb=6500');
-    else if (!args.context) flags.push('--no-context');
+    else {
+      // The plate's 6500 K is not negotiable (see above), so --wb only reaches
+      // the photographic frames.
+      if (args.wb !== undefined) flags.push(`--wb=${args.wb}`);
+      if (!args.context) flags.push('--no-context');
+    }
 
     const argv = ['-b', '--factory-startup', '--python', script, '--', ...flags];
     console.log(

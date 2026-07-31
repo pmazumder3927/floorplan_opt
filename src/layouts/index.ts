@@ -39,6 +39,20 @@
  *                      on the centreline, no errors and no warnings. The cost is
  *                      $2,159 of wall bed, a floor that must stay empty for it to
  *                      land on, and dining that is a drop-leaf for two.
+ *   G  g-west-light    NOT a seventh answer to where the picture goes — it is
+ *                      layout A, OPTIMISED. The client liked A and found it too
+ *                      dark, so two things finally got measured. The optics:
+ *                      with the shades down the room returns 3.3% of the
+ *                      projector's light to its own screen and 83% of that is
+ *                      walls and soffit, so the sofa's charcoal was buying 3.5%
+ *                      of a black level and the poufs' near-black was buying
+ *                      zero — G spends both and keeps every dark surface within
+ *                      six feet of the lens. And the sightline: A pinned the
+ *                      desk by an argument the ray-caster does not support, and
+ *                      sliding it 1'-1 5/8" west to the wall step takes the
+ *                      worst seat from 80.5% to 87.2%. With the folding chairs
+ *                      stowed it is also the first scheme here to reach 3'-0" on
+ *                      every required route. $884 CHEAPER than A.
  *   F  f-headboard     the client's question, built: the queen TURNED 90 DEGREES so
  *                      its head is against the notch's north wall and it can have a
  *                      real 39" headboard, 2'-0" of floor on both long sides and a
@@ -82,9 +96,18 @@ import cSecondRow from './c-second-row';
 import dPaintAndGo from './d-paint-and-go';
 import eClearShot from './e-clear-shot';
 import fHeadboard from './f-headboard';
+import gWestLight from './g-west-light';
 
 /** Declaration order is presentation order in the app and in every script. */
-export const layoutList: Layout[] = [aNightWall, bFoldAway, cSecondRow, dPaintAndGo, eClearShot, fHeadboard];
+export const layoutList: Layout[] = [
+  aNightWall,
+  bFoldAway,
+  cSecondRow,
+  dPaintAndGo,
+  eClearShot,
+  fHeadboard,
+  gWestLight,
+];
 
 export const layouts: Record<string, Layout> = Object.fromEntries(
   layoutList.map((l) => [l.id, l]),

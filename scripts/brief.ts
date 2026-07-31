@@ -285,6 +285,10 @@ const HERO: Record<string, CameraPreset> = {
   //                               the picture is empty, and the only frame that shows
   //                               an empty floor is the one shot down it.
   'e-clear-shot': 'eye-living',
+  //   g-west-light    eye-living  the same axis as A, and it has to be: G exists
+  //                               to be compared with A, and a comparison shot
+  //                               from a different standpoint is not one.
+  'g-west-light': 'eye-living',
 };
 
 const heroCamera = (id: string): CameraPreset => HERO[id] ?? 'eye-hero';

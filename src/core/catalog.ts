@@ -88,6 +88,15 @@ const ALR_GREY = '#8B8D90'; // lenticular / ALR screen fabric: dark by design, s
 const SCREEN_WHITE = '#E6E5E1'; // matte-white projection vinyl, gain ~1.0
 const JUTE = '#C2A87E'; // natural banana fibre / jute - the one high-tooth texture
 const BLACKOUT = '#3A3833'; // blackout cellular / roller shade fabric
+// ---- added for layout G, and each one is a MEASURED target, not a mood ----
+const CLAVICLE = '#C4BBAE'; // Maharam Mode 009 hopsack, light warm grey. LRV 50,
+// R-B +22. It exists because the sofa is the single biggest tonal decision in
+// the living end and layout A spends it on 3.7% LRV; see the layout G header.
+const INK_WALL = '#54504A'; // Sherwin-Williams Urbane Bronze SW 7048, LRV 8,
+// R-B +10. The ONE dark surface layout G adds, and the only wall in the unit it
+// is allowed on. A warm brown-charcoal, not a blue-black: the anodised sections
+// own the cool black in this apartment and a second, larger cool black would
+// read as a second system.
 
 // -------------------------------------------------------------- entries
 //
@@ -3941,6 +3950,188 @@ WHY THIS RATHER THAN A BUILT-IN. A vertical queen is the only wall bed that fits
     lowProfile: true,
     tags: ['lighting', 'table-lamp', 'portable', 'rechargeable', 'cordless', 'design', 'premium'],
     price: 370,
+  },
+
+  // =====================================================================
+  // LAYOUT G — the pieces that make layout A light, 31 Jul 2026
+  //
+  // Everything in this section exists because of one measurement. Layout A's
+  // living end runs 18.9% LRV in its furnishings against a 64% shell — a fifty
+  // point gap, and the client read it correctly from a render without being
+  // able to say why. The scheme defends its darks on optical grounds, so the
+  // optics were done properly (Monte-Carlo photon transport off the image plane
+  // over the to-scale model, plus `pnpm tone`): with the shades down the room
+  // returns 3.3% of the projector's own light to its own screen, and 83% of
+  // that comes off the WALLS AND THE SOFFIT. Every placed furnishing in the
+  // apartment together is about 10% of it.
+  //
+  // Which makes the ledger blunt. Taking the sofa from 3.7% to 30% LRV raises
+  // the screen's black level by 3.5%, i.e. 131:1 in-room contrast becomes
+  // 126:1. Taking the poufs with it costs ZERO, measured, because a 16 1/2"
+  // pouf behind a 28" sofa occupies none of the screen's hemisphere. Against
+  // that: the parked Aeron is worth 22%, the plinth 13% and the MAGNUS top
+  // 12.5%, because those three are close, low and in the picture's own field.
+  //
+  // SO THE RULE THIS SECTION IS BUILT ON: dark is worth buying within about six
+  // feet of the picture and worth nothing beyond it. Layout A had it the wrong
+  // way round — it darkened the furniture you sit on and left 650 sq ft of
+  // 88%-LRV wall alone.
+  // =====================================================================
+
+  // ---- seating: the same sofa, in the fabric that changes the room ------
+  {
+    id: 'sofa-cleon-56-armless-oat',
+    name: 'Blu Dot Cleon 56" armless sofa — Maharam Mode in Clavicle',
+    kind: 'loveseat',
+    w: IN(56),
+    d: IN(34),
+    h: IN(28),
+    seatHeight: IN(17),
+    color: CLAVICLE,
+    // One fabric, so the cushion face is the frame's colour half a tone up —
+    // the same convention as the charcoal entry, and for the same reason.
+    accent: '#CFC7BB',
+    source: `Blu Dot Cleon 56" Armless Sofa in MAHARAM MODE 009, colourway CLAVICLE. IDENTICAL FRAME, IDENTICAL GEOMETRY, IDENTICAL PRICE to sofa-cleon-56-armless — 56" W x 34" D x 28" H, seat depth 26", seat height 17", 2" base, kiln-dried hardwood frame, sinuous springs, made in USA, 5-year warranty, $1,960 in Maharam fabric. It is a separate catalog entry ONLY because the colour is the design decision. Blu Dot lists Maharam Mode in Clavicle as a stock option on the Cleon range (their own product URLs use the slug 'maharam-clavicle'); the textile is 80% post-consumer recycled polyester / 20% polyester, rated 100,000 double rubs on the Wyzenbeek scale, GreenGuard Gold certified, with a stain-resistant finish. Read off bludot.com 31 Jul 2026. THE LRV IS AN ESTIMATE AND MUST BE CONFIRMED WITH A MEMO SAMPLE: Maharam publishes no LRV, and #C4BBAE / 50% is read off product photography, which is radiance and not albedo. Order the memo, put it on the floor next to the plank, and look at it at 4pm — that is the only test that matters here, and there is a second reason to do it: resellers describe Mode 009 Clavicle as "Off-White" and "White Beige", and finishes.ts's glazing rule says in as many words that "nothing white and large goes in front of [the glass] or it silhouettes to grey". This sofa stands 5 ft in front of 18'-6" of west glazing with its back to it. A light warm GREY passes that rule; a white does not, and the two words are being used interchangeably by people selling the cloth. THE PRICE IS ALSO NOT QUITE THE $0 SWAP IT LOOKS: this catalog prices layout A's Cleon at $1,960 because that is the Maharam-fabric price, so within these budgets the change is free — but bludot.com lists Tait Charcoal (a plain 90/10 polyester-linen) at $1,740 and runs promotions well below that, so a real client comparing real carts may be looking at +$220 or more, not +$0. WHY THIS AND NOT A NEW SOFA: every seating distance in layout A is measured off this frame's front face (10'-8 7/8" of standoff, 36.2 deg subtended, 14.5 deg off axis), so changing the textile is the one move that rewrites the room's tone and re-derives no geometry at all. WHAT IT COSTS, MEASURED: 3.5% of the screen's black level, 131:1 -> 126:1. WHAT IT COSTS THAT IS NOT MEASURED: a light seat in a studio where the same room is the kitchen. 100,000 double rubs and a stain finish is the right spec for that, and it is still a pale sofa 12 ft from a range.`,
+    frontClearance: IN(16),
+    tags: ['seating', 'loveseat', 'armless', 'modular', 'low-back', 'glazing-safe', 'shallow', 'premium', 'light'],
+    price: 1960,
+  },
+
+  // ---- the back of the sofa, which is the other half of this scheme -----
+  //
+  // The zone between the Cleon's back and the west glazing is 4'-11 15/16" of
+  // floor running the depth of the room, and in layout A it holds two 18"
+  // near-black poufs jammed 4" behind the sofa. Photographed, it reads as
+  // leftover; measured, it is worse than that — a second-row seat 4" off a 28"
+  // sofa back has nowhere to put its knees, so layout A's four-seat congregation
+  // is really two seats and two footstools.
+  //
+  // THE DEPTH BUDGET IS THE WHOLE PROBLEM AND IT IS WORTH STATING AS ONE LINE:
+  // 4'-11 15/16" of zone, minus a 3'-0" route to the west windows, leaves 2'-0"
+  // for furniture. A usable second row needs about 1'-6" of seat and 1'-6" of
+  // knee room, i.e. 3'-0". It does not fit, and no arrangement makes it fit.
+  // So layout G stops trying: the permanent piece behind the sofa is 15 1/2"
+  // deep, it gives the sofa the back an armless sofa in the middle of a room
+  // needs, and the overflow seating becomes two things you carry.
+  {
+    id: 'bench-seno-55-oak',
+    name: 'Article Seno 55" bench, oak',
+    kind: 'bench',
+    w: IN(55),
+    d: IN(15.5),
+    h: IN(17.5),
+    seatHeight: IN(17.5),
+    // NOT the palette's OAK (#C0A681, 40 LRV) even though it is oak veneer: the
+    // TONSTAD nightstand is already drawn at exactly that value and the TOLKNING
+    // rattan at 43, so three different natural browns would have landed inside
+    // three LRV points and the scheme's whole claim is that its neutrals
+    // separate by VALUE. Article's Oak stain is a warmer, slightly deeper
+    // mid-oak than IKEA's brushed veneer, which is what this hex draws: 35 LRV,
+    // R-B +67.
+    color: '#B79C74',
+    accent: '#B79C74',
+    source: `Article Seno 55" Bench in Oak: 55" W x 15 1/2" D x 17 1/2" H, solid rubberwood with oak veneer, 31 lb, weight-tested to 600 lb, ships in one carton, about 15 minutes to assemble. $399. Dimensions, materials, weight and price read directly off article.com/product/27607 on 31 Jul 2026. The same bench is made in walnut (product 27606) and THAT IS THE ONE NOT TO ORDER HERE — see the wood rule in finishes.ts: a walnut top would land inside the espresso floor's own value band and the bench would disappear into the floor instead of drawing a line across it. WHY A BENCH AND NOT A CONSOLE. A 26"-30" console behind the sofa would give a better drink surface and more storage, and it was drawn and rejected: it stands 2" ABOVE the Cleon's 28" back from the west side, so from the promenade and from the desk the seating group reads as a fence rather than as one object, and in a plan whose only amenity is 18'-6" of glazing, a second horizontal line at eye level across the middle of the floor is the wrong thing to add. At 17 1/2" the bench is 10 1/2" BELOW the sofa's back: from the cinema side it does not exist, and from the west side it is the low ledge that terminates the sofa. ITS SEAT HEIGHT IS THE POINT: 17 1/2" against the Cleon's 17" reads as one plane, and an eye on it lands near 41" AFF, comfortably above the 28 1/2" image bottom, so it is a legitimate second row for anyone willing to perch. HONEST LIMIT: pushed flush to the sofa's back it is a PERCH and a LEDGE, not a lounge seat — there is no knee room in front of it. Sat on facing WEST, with the sofa's back as a backrest and the city in front of you, it is the best seat in the apartment for sixteen hours a day. That is the reading this scheme intends.`,
+    frontClearance: 0,
+    tags: ['seating', 'bench', 'oak', 'low', 'glazing-safe', 'second-row', 'sightline-safe', 'japandi'],
+    price: 399,
+  },
+  {
+    id: 'pouf-tolkning-rattan',
+    name: 'TOLKNING pouf with storage, handmade rattan',
+    kind: 'ottoman',
+    w: IN(19.625),
+    d: IN(19.625),
+    h: IN(16.125),
+    seatHeight: IN(16.125),
+    color: JUTE,
+    accent: JUTE,
+    // JUTE is 43 LRV, which sits between the sofa's 50 and the nightstand's 40.
+    // New rattan is paler than this and darkens with age; 43 is the middle of
+    // that life and the value the scheme's ladder is drawn against.
+    source: `IKEA TOLKNING pouf with storage, handmade rattan: 19 5/8" diameter x 16 1/8" high, hollow with a lift-off lid, rattan over a powder-coated steel frame with a stained plywood bottom panel and clear acrylic lacquer, hand-woven so no two are identical. $99.99. Diameter, height, materials and price read directly off ikea.com/us 31 Jul 2026. IT REPLACES THE JARRESTAD ONE FOR ONE and the argument is entirely tonal: the JARRESTAD is a 1.5% LRV textile cube, the TOLKNING is about 43% natural rattan, and the measured cost to the projected image of that swap is ZERO — a 16" pouf standing behind a 28" sofa occupies none of the screen's hemisphere, so it returns none of its light. It is also 1 1/2" wider and 3/8" lower. THE OTHER REASON IS THAT IT IS THE ONLY WOVEN NATURAL FIBRE IN THE SCHEME: this apartment's fixed materials are concrete, glass, anodised aluminium, painted drywall and a dark plank floor, i.e. five hard ones, and a room that answers them entirely in wool and linen still has no TEXTURE in it. Rattan is the cheapest possible correction. HONEST COST: hand-woven rattan over a steel frame is not a piece of furniture you drag daily, and IKEA's own care line for the TOLKNING series is that natural fibre wants to stay out of direct sun — which, in an apartment whose whole west wall is glass, means these live in the second row and not at the window.`,
+    frontClearance: 0,
+    lowProfile: true,
+    tags: ['seating', 'pouf', 'storage', 'overflow', 'round', 'rattan', 'natural', 'japandi', 'value'],
+    price: 100,
+  },
+
+  {
+    id: 'chair-frosvi-folding-beech',
+    name: 'FRÖSVI folding chair, beech',
+    kind: 'chair',
+    w: IN(17.375),
+    d: IN(20.125),
+    h: IN(30.375),
+    seatHeight: IN(17.75),
+    color: '#D8C0A0',
+    accent: '#D8C0A0',
+    source: `IKEA FRÖSVI folding chair in BEECH (art. 705.343.15): solid beech with a clear acrylic lacquer, folds flat, comes assembled, $25.00 — the same chair, the same price and the same dimensions as the black version this scheme replaces, which IKEA also sells in white and white/Knisa light grey. Colourways, material and price read off ikea.com/us 31 Jul 2026. Dimensions carried over from the black entry: 17 3/8" W x 20 1/8" D x 30 3/8" H, seat 17 3/4". IT IS A FREE SWAP AND THAT IS THE POINT. Two folding chairs are 36 sq ft of visible surface standing in the middle of the west promenade — in frame in every daylight photograph of this apartment — at 1.5% LRV in black and about 54% in beech, and they are 14 ft from the picture and BEHIND the audience, so the change costs the projected image nothing measurable at all. It is the cheapest tonal move in the whole catalog: $0. THE ONE OBJECTION, and it is real: beech is a third pale wood in a room that already has white oak (the bed) and brushed oak (the nightstand, the bench). Beech is pinker and paler than either. In a folding chair that lives in a closet eleven months of the year that is acceptable; on a piece that stands still it would not be.`,
+    frontClearance: IN(18),
+    tags: ['seating', 'dining-chair', 'folding', 'stowable', 'beech', 'light', 'value'],
+    price: 25,
+  },
+
+  // ---- the light this apartment has never had --------------------------
+  //
+  // Layout A ends with NO FLOOR LAMP ANYWHERE, and the note explaining why is
+  // right about the evidence and wrong about the rule it draws from it: a
+  // 5'-11" HEKTAR standing at the foot of the bed was eating 33.8% of the
+  // picture, so the scheme removed every floor lamp in the apartment. But the
+  // measurement was about that POSITION, not about height. Rays run EAST from
+  // every seat to the picture; a lamp WEST of the westernmost seat is behind
+  // every one of them and cannot cross a single ray, at any height. There is
+  // exactly one such place, and this is the piece that goes in it.
+  {
+    id: 'lamp-akari-10a-floor',
+    name: 'Isamu Noguchi Akari 10A floor lantern',
+    kind: 'floor_lamp',
+    w: IN(21),
+    d: IN(21),
+    h: IN(48),
+    color: CREAM,
+    accent: OFF_WHITE,
+    source: `Akari Light Sculpture model 10A, Isamu Noguchi, 1951 onward — handmade washi paper on bamboo ribbing over a metal frame, still made by Ozeki in Gifu, Japan. 48" H x 21" W x 21" D, $700 ($630 for museum members). Dimensions and price read off shop.noguchi.org 31 Jul 2026; the shop's own note that day was "orders currently shipping in one to two weeks". WHETHER THE 10A SHIPS WITH ITS STAND IS NOT STATED ON THE PAGE AND MUST BE CONFIRMED BEFORE ORDERING — several Akari models price the shade and the stand separately, and a stand is $60-$150. THE ONE PLACE IT CAN STAND, and the reason this entry exists: the west glazing is four bays with SOLID PIERS between them (WINDOW_BAYS in faces.ts gives the gaps at y 5'-6 3/8"..5'-10 1/2", y 8'-6 7/8"..9'-11 1/8" and y 12'-8 3/8"..13'-0 5/8"). The middle pier is 1'-4 1/4" of real wall inside 18'-6" of glass, and finishes.ts calls it "the ONLY place in the west wall you can hang or lean anything". A 4'-0" lantern standing in front of it blocks no view because there is no view behind it, and it is west of every seat so it crosses no ray. Both of the room's rules are satisfied by geometry rather than by exception. HONEST COSTS, THREE. (1) $700 for one light is the most expensive thing per pound in the apartment, and an Akari 1A on the bench top is $195 and does two thirds of the job. (2) A 21" sphere in front of a 16 1/4" pier overlaps the flanking bays by about 2 1/4" a side; that is a real number and it is the price of the position. (3) Washi is paper: it yellows, it tears, and it is the one object here a cat or a moving box will destroy. Ozeki sells replacement shades, which is the answer, and it is also the reason this is a light sculpture rather than a lamp.`,
+    frontClearance: 0,
+    tags: ['lighting', 'floor-lamp', 'paper', 'washi', 'japandi', 'design', 'premium', 'behind-the-audience'],
+    price: 700,
+  },
+
+  {
+    id: 'lamp-akari-1a-table',
+    name: 'Isamu Noguchi Akari 1A table lantern',
+    kind: 'table_lamp',
+    w: IN(10),
+    d: IN(10),
+    h: IN(17),
+    color: CREAM,
+    accent: OFF_WHITE,
+    source: `Akari Light Sculpture model 1A, Isamu Noguchi — handmade washi paper on bamboo ribbing over a metal frame, made by Ozeki in Gifu. 17" H x 10" W x 10" D, $195.00 ($175.50 for museum members). Dimensions, materials and price read off shop.noguchi.org 31 Jul 2026. THE PAGE DOES NOT STATE WHETHER THE STAND AND THE CORD SET ARE INCLUDED and several Akari models price them separately — confirm before ordering, and budget $60-$150 if not. IT IS SPECIFIED HERE INSTEAD OF THE 48" 10A FLOOR MODEL, and the reason is circulation rather than money. The 10A is 21" in diameter, and the only position in this plan where a tall lantern is legal — in front of the west glazing's middle pier, which is the one place a 4 ft object blocks no view and crosses no seat-to-screen ray — sits in the middle of a 3'-8 1/4" promenade. A 21" globe there leaves 1'-9 3/4" and severs the walk to the west windows. Measured, drawn, rejected: see the layout G BACK OF THE SOFA note. On a 17 1/2" bench top this lantern's head lands at 34 1/2" AFF, which is a low warm pool exactly where a room with nothing but ceiling downlights needs one, and it costs nothing at all in floor.`,
+    frontClearance: 0,
+    lowProfile: true,
+    tags: ['lighting', 'table-lamp', 'paper', 'washi', 'japandi', 'design'],
+    price: 195,
+  },
+
+  // ---- the wall, which is the only dark thing this scheme ADDS ----------
+  {
+    id: 'paint-screen-wall-urbane-bronze',
+    name: 'Screen-wall paint, SW 7048 Urbane Bronze — drawn as a surface',
+    kind: 'box',
+    // The full west face of the bathroom partition: 9'-10 1/4" of wall, floor to
+    // soffit. Drawn 1/4" proud so it renders as the wall's face rather than
+    // z-fighting with it.
+    w: FTIN(9, 10.25),
+    d: IN(0.25),
+    h: 8.95,
+    color: INK_WALL,
+    accent: INK_WALL,
+    source: `NOT FURNITURE — this is PAINT, catalogued as an object so that it appears in the schedule, in the budget and in the render, because in this scheme it is a purchase and a decision and not a finish note. Sherwin-Williams Urbane Bronze SW 7048: hex #54504A, LRV 8, a warm brown-charcoal with a faint green under it. Two coats of flat acrylic latex over the existing flat white, corner to corner and floor to soffit, on the WEST FACE OF THE BATHROOM PARTITION ONLY (P1, x = 18'-10 3/8"), which is 85-88 sq ft gross and about 55 sq ft net of the screen frame. $205 IS AN ESTIMATE, not a quotation: two gallons at about $75 plus a roller, a brush, tape and a drop, assuming the client paints it. A painter would charge $300-$450 for one wall including cutting in to a bare concrete soffit, which is the fussy part. FLAT, per the walls rule in finishes.ts — and there is a second reason here: a UST lens throws at 0.22:1, i.e. it rakes this wall at a few degrees, which is the single most merciless light a drywall butt joint will ever get. Any sheen above flat and the joints will read. WHAT IT BUYS, HONESTLY. Very little in the arithmetic and a great deal in the eye. The measured ambient return to the screen is dominated by the north wall and the soffit; this wall is COPLANAR with the picture, so it returns almost nothing to it and darkening it does NOT move the in-room contrast number. What it does is remove the bright surround: a 100" image is judged against whatever is beside it, and 55 sq ft of 88%-LRV white 1/2" from the picture's edge raises the eye's adaptation level and crushes perceived black in a way no contrast ratio records. It also does the thing this whole scheme needs: it puts the dark somewhere deliberate, so the plinth, the projector, the screen frame and the desk stop reading as black objects stranded on white and start reading as one dark end of a warm room. IT IS DRAWN AS AN OPTION AND NOT AS A DECISION, and layout G says why in full: with this wall painted the room measures 46.3% area-weighted against 50.8% without it and 48.0% for layout A, so a client who said "too dark" would be handed a room measurably darker than the one they complained about. There is also an objection that cuts both ways and settles nothing: the ALR fabric is 26.6% LRV, so on an 8% wall the switched-OFF screen becomes three times brighter than the wall behind it. The picture never disappears; the paint only chooses which way it stands out. Tape a 2 ft sample board to that wall, look at it once in daylight and once at 8pm with the downlights on, then decide. RENTAL NOTE: it is one wall of flat latex and it repaints in an afternoon. Ask first; it is still someone else's wall.`,
+    frontClearance: 0,
+    wallMounted: true,
+    walkable: true,
+    defaultZ: 0,
+    tags: ['finish', 'paint', 'screen-wall', 'projection', 'render-surface'],
+    price: 205,
   },
 ];
 

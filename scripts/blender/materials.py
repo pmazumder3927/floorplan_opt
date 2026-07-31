@@ -877,8 +877,20 @@ ANON_RULES: list[tuple[str, str]] = [
     # slots in the whole apartment. Widening the rule is a bigger lever on
     # "upholstery has no texture at room distance" than any number inside the
     # recipe.
-    (r'/(seat|cushion|back|back-cushion-\d+|return-seat|arm|arm-l|arm-r|headboard'
-     r'|pillow|duvet|mattress|fold-\d+)$', 'soft-goods'),
+    #
+    # `seat-\d+` IS THE ONE THAT WAS MISSING, and it was the most-used part name
+    # of the lot. `back-cushion-\d+` was given its numeric suffix and `seat` was
+    # not, but furniture.ts emits `${n}/seat-0` and `${n}/seat-1` for every sofa
+    # cushion it builds (buildSofa, line ~627) and only the bare `/seat` for a
+    # bench, a stool and a pouf. Anchored at `$`, the old pattern therefore
+    # matched the bench and missed every sofa in the repo: the BACK cushions
+    # rendered as cloth with a weave and a 0.5 sheen while the SEAT cushions
+    # dropped through to the plain fallback and rendered as flat vinyl beside
+    # them. On a charcoal sofa that is invisible. On any scheme whose warmth is
+    # carried by textile — oat linen, undyed wool, boucle — it is the difference
+    # between a sofa and a rendering of a sofa.
+    (r'/(seat|seat-\d+|cushion|back|back-cushion-\d+|return-seat|arm|arm-l|arm-r'
+     r'|headboard|pillow|duvet|mattress|fold-\d+)$', 'soft-goods'),
     (r'/(pile|field)$', 'pile-goods'),
     (r'/(leg|leg-\d+|plinth|return-plinth|pedestal|column)$', 'timber-goods'),
     # Projection + AV parts whose material goes anonymous the moment a catalog

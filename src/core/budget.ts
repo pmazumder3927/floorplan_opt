@@ -242,7 +242,16 @@ export const ALLOWANCES: AllowanceSpec[] = [
       'about 45 sq ft. THE PLASTERING COSTS MORE THAN THE PAINT, which is the real argument against ' +
       'the paint option — a $628 edge-free ALR frame is cheaper than the low end of this band. ' +
       'This unit\'s flat white walls are almost certainly level 4.',
-    applies: (c) => c.tags.has('paint') || c.ids.has('screen-painted-wall-118'),
+    /*
+     * 'painted' AND NOT MERELY 'paint'. The tag `paint` now appears on ordinary
+     * wall paint too — layout G catalogues 85 sq ft of Urbane Bronze on the
+     * screen partition as an object, because there it is a purchase and a
+     * decision — and that wall wants two rolled coats over the existing flat
+     * white, not a level-5 skim, a high-build primer and a flat-black border.
+     * Charging a $450-$1,200 plastering band to a $205 tin was the allowance
+     * firing on the wrong noun. This band is about a wall that IS the picture.
+     */
+    applies: (c) => c.tags.has('painted') || c.ids.has('screen-painted-wall-118'),
   },
   {
     id: 'streamer',
