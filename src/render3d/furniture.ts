@@ -1062,12 +1062,31 @@ function buildShelving(ctx: Ctx): void {
 function buildRug(ctx: Ctx): void {
   const { g, w, d, n } = ctx;
   const t = 0.02; // ~1/4" pile: thin enough to walk over, thick enough to see
-  const base = ctx.def.color ? ctx.body : MAT.rug;
+  const field = ctx.def.color ? ctx.body : MAT.rug;
+  /*
+   * COLOR IS THE FIELD, ACCENT IS THE BORDER — which is what the Ctx note above
+   * has always said, and what the catalog entries were written against.
+   *
+   * It used to be built the other way round: the pile box took `color` and then
+   * an inset panel in `accent` covered everything but an 8" margin, so what you
+   * actually READ was the accent. On rug-nordicknots-desert-8x10 (color = the
+   * faded brown of the Desert in Earth, accent = a pale wool cream) that put a
+   * cream rug in five of the six layouts, under schemes whose own colour notes
+   * call it "the warm brown of the Nordic Knots Desert rug". The rug rendered
+   * was not the rug specified. Same inversion turned the grey felt desk mat into
+   * a charcoal one.
+   *
+   * So: the pile box carries the BORDER colour and the field is laid on top of
+   * it, inset by the border width. A def whose accent equals its color - which
+   * is every plain single-colour product in the catalog, the Desert included -
+   * gets no inset panel at all and reads as one flat colour, correctly.
+   */
+  const bordered = ctx.hasAccent && ctx.accentColor.toLowerCase() !== ctx.color.toLowerCase();
   // a rug never casts (it is flat on the floor) but must receive the sun
-  addBox(g, base, [w, t, d], [0, t / 2, 0], { name: `${n}/pile`, cast: false });
-  // inset field in the accent color = a border, which is what makes it read
+  addBox(g, bordered ? ctx.accent : field, [w, t, d], [0, t / 2, 0], { name: `${n}/pile`, cast: false });
+  if (!bordered) return;
   const border = Math.min(IN(8), Math.min(w, d) * 0.12);
-  addBox(g, ctx.def.accent ? ctx.accent : MAT.linen, [w - border * 2, 0.004, d - border * 2], [0, t + 0.002, 0], {
+  addBox(g, field, [w - border * 2, 0.004, d - border * 2], [0, t + 0.002, 0], {
     name: `${n}/field`,
     cast: false,
   });

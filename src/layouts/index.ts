@@ -39,6 +39,13 @@
  *                      on the centreline, no errors and no warnings. The cost is
  *                      $2,159 of wall bed, a floor that must stay empty for it to
  *                      land on, and dining that is a drop-leaf for two.
+ *   F  f-headboard     the client's question, built: the queen TURNED 90 DEGREES so
+ *                      its head is against the notch's north wall and it can have a
+ *                      real 39" headboard, 2'-0" of floor on both long sides and a
+ *                      nightstand on each. Same picture and same desk as A. The cost
+ *                      is the sofa — a turned queen leaves 2'-1" of seating depth, so
+ *                      the congregation becomes a ROW of two armchairs and a pouf —
+ *                      and the bed stops being a seat. No errors and no warnings.
  *
  * WHY E EXISTS, AND WHAT IT SAYS ABOUT THE OTHER FOUR. The client noticed that A's
  * desk was in the way of the picture, and they were right — but nothing in this
@@ -57,6 +64,11 @@
  * every one of them: the soffit is exposed structural concrete with no power and
  * 4" of clear above the glazing head.
  *
+ * F IS THE ONE THAT ANSWERS A QUESTION RATHER THAN POSING ONE. A, B, C, D and E
+ * each move the PICTURE and let everything else fall out of that; F holds the
+ * picture still and moves the BED, which is the other half of the same problem.
+ * Read it next to A: they differ in one decision and eleven consequences.
+ *
  * The shared desk-orientation rule — top east-west on a north wall, user facing
  * north, panel facing south, glass on the user's left — is written out once in
  * faces.ts, because all four cite it and none of them owns it.
@@ -69,9 +81,10 @@ import bFoldAway from './b-fold-away';
 import cSecondRow from './c-second-row';
 import dPaintAndGo from './d-paint-and-go';
 import eClearShot from './e-clear-shot';
+import fHeadboard from './f-headboard';
 
 /** Declaration order is presentation order in the app and in every script. */
-export const layoutList: Layout[] = [aNightWall, bFoldAway, cSecondRow, dPaintAndGo, eClearShot];
+export const layoutList: Layout[] = [aNightWall, bFoldAway, cSecondRow, dPaintAndGo, eClearShot, fHeadboard];
 
 export const layouts: Record<string, Layout> = Object.fromEntries(
   layoutList.map((l) => [l.id, l]),

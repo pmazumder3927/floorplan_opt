@@ -45,7 +45,7 @@ export type BudgetGroup =
 export const GROUP_LABEL: Record<BudgetGroup, string> = {
   screening: 'Screening — projector, picture, plinth, sound',
   'light-control': 'Light control — the co-requisite, not an accessory',
-  work: 'Work — the Jarvis and everything on it',
+  work: 'Work — the desk and everything on it',
   sleep: 'Sleep',
   seating: 'Seating — the congregation area',
   tables: 'Tables',

@@ -73,6 +73,10 @@ const CONCRETE = '#8E8C88'; // exposed soffit grey; also wool-felt grey
 const PALE_STONE = '#D8D2C6'; // the kitchen counter stone, warm pale
 const STEEL = '#A8A6A2'; // brushed aluminium / stainless, warm-neutral
 const OAK = '#C0A681'; // pale greyed oak / ash, like the base cabinets
+const WHITE_OAK = '#D3C3A6'; // white oak veneer: paler and COOLER than OAK on
+// purpose - layout A stands a white-oak bed 1 1/2" from an oak-veneer
+// nightstand, and if the two render at the same value they read as a matching
+// bedroom set, which is the one thing that alcove is not meant to be.
 const BAMBOO = '#C7A468'; // natural strand bamboo (the Jarvis desktop)
 const WALNUT = '#5E4234'; // dark walnut, matched to the floor planks
 const BRASS = '#A88C5C'; // brushed brass hardware and lamp stems
@@ -1680,7 +1684,7 @@ const DEFS: FurnitureDef[] = [
     d: IN(17),
     h: IN(0.125),
     color: CONCRETE, // grey wool felt - reads like the exposed soffit
-    accent: CHARCOAL,
+    accent: CONCRETE, // one piece of felt, one colour: no border panel
     source: `Wool-felt desk pad, 36" x 17" x ~1/8" (Grovemade large / Orbitkey desk mat class, remembered spec)`,
     frontClearance: 0,
     // Carried by the desk, so both flags - see the section note. It is a rug in
@@ -2859,7 +2863,11 @@ A PRICED ALTERNATIVE, 30 Jul 2026: SmartWings sells Side Rail Tracks for blackou
     h: IN(28),
     seatHeight: IN(17),
     color: CHARCOAL,
-    accent: SLATE,
+    // The Cleon is upholstered in ONE fabric, so the cushions are the frame's
+    // colour and not a second material. accent = the same charcoal half a tone
+    // up, which is what a cushion face actually does under light; it used to be
+    // SLATE, a mid warm grey, and that rendered a two-tone sofa nobody sells.
+    accent: '#453F3B',
     source: `Blu Dot Cleon 56" Armless Sofa: 56" W x 34" D x 28" H, seat depth 26", seat height 17", 2" base, kiln-dried hardwood frame, sinuous springs, made in USA, 5-year warranty. Price $1,960 in Maharam fabric / $3,390 in leather, read off bludot.com 30 Jul 2026. THE DEPTH IS CONTESTED: Blu Dot suppresses its dimension table in plain page HTML; a listing quoting their spec gives 56 x 34 x 28 while Hive Modern's page for the same product says 56 x 36 x 28. Resolve it before drawing - 2" matters here. Best answer to "compact two-seat under 72 inches": armless, 28" tall so it clears the glazing rule, and simultaneously a sectional module, so one purchase serves the layouts that fit a sectional and the ones that do not. Its 34" depth buys back 4-5" over every 38-39" modular. DELIVERY CONSTRAINT: the 56" frame does NOT knock down and ships freight - measure the angled front door, the corridor turn and the lift car first.`,
     frontClearance: IN(16),
     tags: ['seating', 'loveseat', 'armless', 'modular', 'low-back', 'glazing-safe', 'shallow', 'premium'],
@@ -3015,8 +3023,13 @@ A PRICED ALTERNATIVE, 30 Jul 2026: SmartWings sells Side Rail Tracks for blackou
     w: FTIN(6, 7),
     d: FTIN(9, 10),
     h: IN(0.75),
-    color: RUG_ALT,
-    accent: RUG_ALT,
+    // IKEA's own colourway is "medium gray" and the swatch is a NEUTRAL mid
+    // grey, not the warm taupe RUG_ALT carries for the invented rugs - it is a
+    // dyed polypropylene pile, so it has none of the wool/jute warmth. Given its
+    // own hex rather than bent toward the palette: this is a real product with a
+    // stated colour.
+    color: '#8C8A86',
+    accent: '#8C8A86',
     source: `IKEA STOENSE rug, low pile, medium grey: 6'7" x 9'10", pile thickness 1/2", TOTAL thickness 3/4", surface density 7.98 oz/sq ft, 100% polypropylene with a synthetic rubber backing so no separate pad is needed on satin LVP. Read directly off the IKEA US page (30426836); $159.99, with 4'4"x6'5" $99.99, 5'7"x7'10" $129.99 and 7'10"x10' $229.99 on the same page. A 3/4" total build is safe under every low sofa here and will not bind flat-pack leg bolts. On an espresso floor a MID-TONE rug defines the viewing zone; an off-white rug reads as a high-contrast island and fights the minimal brief. 7.98 oz/sq ft is also dense enough to damp footfall, which matters under a bare concrete soffit that will otherwise ring.`,
     walkable: true,
     lowProfile: true,
@@ -3045,8 +3058,15 @@ A PRICED ALTERNATIVE, 30 Jul 2026: SmartWings sells Side Rail Tracks for blackou
     w: FTIN(8, 0),
     d: FTIN(10, 0),
     h: IN(0.28),
+    // "A softly faded brown with gentle warm undertones", re-read off the
+    // product page 31 Jul 2026. NO BORDER: the rug is a plain field finished
+    // with a jute fringe on the short ends, so accent = color and the renderer
+    // draws no inset panel. It carried RUG_BASE (a pale wool cream) as its
+    // accent before, which - with the field/border inversion that used to live
+    // in buildRug - is what made it render as a CREAM rug in every layout while
+    // every scheme note called it warm brown.
     color: '#9C7B5C',
-    accent: RUG_BASE,
+    accent: '#9C7B5C',
     source: `Nordic Knots "Desert" in Earth, 8x10: 50% wool / 50% jute flatweave, 7 mm (0.276") TOTAL thickness - the thinnest rug in the catalog - hand-woven in Bhadohi, GoodWeave-certified, jute fringe, free US delivery quoted at 3-6 business days. Composition, thickness and the colour description ("a softly faded brown with gentle warm undertones") were read off the Nordic Knots product page. PRICE CAVEAT: both the product page and the 8x10 filter page show only "From $395.00" and no size-specific 8x10 price could be extracted - treat $395 as a FLOOR. At 0.28" it can run under the seating AND continue under a 15 3/4"-deep credenza without shimming anything, and warm brown is the right value against espresso LVP: a half-tone lighter than the floor, which is exactly how you read a rug edge on a dark floor.`,
     walkable: true,
     lowProfile: true,
@@ -3180,6 +3200,49 @@ A PRICED ALTERNATIVE, 30 Jul 2026: SmartWings sells Side Rail Tracks for blackou
     frontClearance: IN(30),
     tags: ['wfh', 'jarvis', 'fully', 'sit-stand', 'desk', 'work', 'walnut', 'laminate'],
     price: 1325,
+  },
+  {
+    id: 'desk-standing-jarvis-laminate-48x27-black',
+    name: 'Fully Jarvis laminate standing desk, 48" x 27" — black',
+    kind: 'desk',
+    w: IN(48),
+    d: IN(27),
+    h: IN(29.5),
+    seatHeight: IN(29.5),
+    color: NEAR_BLACK,
+    accent: NEAR_BLACK,
+    source: `Fully (by MillerKnoll) Jarvis LAMINATE Standing Desk, 27" x 48", BLACK laminate on a black 3-Stage frame: travel 25.75"-51.25", 350 lb capacity, waterproof scratch-resistant laminate over a core of 84%+ pre-consumer recycled wood fibre. Same specs and the same $1,325 as the walnut entry above — the laminate colourway list read off the Herman Miller PDP is Black, White, Maple, Oak, Stone and Walnut, and the offered sizes are 27x48, 27x60 and 30x72. WHY THIS ENTRY EXISTS: it is the ONLY way to give layout D a dark work surface. That layout wants what the MAGNUS Pro gives every other scheme here — a matte dark top that neither bounces west sun at the user nor bounces projector light back at a 118" image — but it needs a 48" top to keep the chair pull-back and the projector beam out of each other, and MAGNUS Pro starts at 59.1". A 48" black laminate Jarvis is the same width as the bamboo top it replaces, the same $1,325, and dark. IT IS COST-NEUTRAL AND GEOMETRY-NEUTRAL: the only thing that changes is the colour, which is the only thing that needed to. Same caveat as every Jarvis line here — MillerKnoll's Fully pages are a JS shell, so the colourway and price are third-party reads and should be confirmed in a cart.`,
+    frontClearance: IN(30),
+    lowProfile: true,
+    tags: ['wfh', 'jarvis', 'fully', 'sit-stand', 'desk', 'work', 'black', 'dark', 'laminate'],
+    price: 1325,
+  },
+  {
+    id: 'desk-standing-magnus-pro',
+    name: 'Secretlab MAGNUS Pro metal standing desk, 59.1" x 27.6"',
+    kind: 'desk',
+    w: IN(59.1),
+    d: IN(27.6),
+    h: IN(29.5),
+    seatHeight: IN(29.5),
+    // THE TOP IS THE DARKEST LARGE HORIZONTAL SURFACE IN ANY OF THESE PLANS and
+    // that is the reason it is specified, not a side effect. See the source.
+    color: NEAR_BLACK,
+    accent: NEAR_BLACK,
+    source: `Secretlab MAGNUS Pro, standard size: 59.1" x 27.6" top (1500 x 700 mm), electric sit-stand travel 25.6"-49.2" (650-1250 mm), 260 lb capacity, three programmable height presets, powder-coated steel top with magnetic cable management, a built-in under-top cable tray and an integrated power-supply column that terminates in a mains socket inside that tray. Finishes: Black or Magnetite frame, Black Laminate or Stealth desktop. $799 for the standard size, $949 for the Pro XL. SIZES AND PRICES READ OFF REVIEW AND INDEX SOURCES (TechSpot, Tom's Guide, Standing Desk Reference), 31 Jul 2026, NOT off the Secretlab PDP — secretlab.co rate-limited every fetch on the day, so treat $799 as a planning figure and confirm in a cart. The standard-size DESK WEIGHT and carton split are also unverified; the XL is documented at 150 lb in two cartons of about 60 kg and 23 kg, so the standard size is lighter but still a two-person carry through the angled front door.
+
+WHY IT IS IN THIS CATALOG, AND WHY IT IS DARK ON PURPOSE. The client owns a black desk and asked whether that is a problem. It is not — it is better than the bamboo these layouts used to draw, and much better than white, for two reasons that are specific to this unit and independent of taste. (1) WEST SUN. Every layout here sits the user with 18'-6" of floor-to-ceiling west glazing on one side, taking direct sun from about 3pm to sunset. A matte dark top is low-reflectance and does not bounce that sun up under the monitor; a white top is a ~12 sq ft high-reflectance plane doing exactly that. (2) IN-ROOM CONTRAST. Layouts A, C, D and E all put a projected image in the same room as the desk, and layout A's own PROJECTION note concedes 1.9:1 with the shades up. Every large pale surface in a projection room bounces light back at the screen and lowers contrast; the desktop is one of the biggest. Dark helps the number, white makes the scheme's worst number worse. It also joins the palette family these layouts already have — "the darks are the equipment", i.e. the charcoal Cleon, the near-black poufs, the black screen frame and the black anodised window frames.
+
+THE CONSTRAINT THAT DECIDES WHERE IT CAN GO: MAGNUS PRO IS MADE IN TWO SIZES ONLY, 59.1" x 27.6" and 70" x 31.5". THERE IS NO 48" MAGNUS. That is not a detail — layouts B and D deliberately specify 48" tops, and layout D says in its own comment that it chose 48" over 60" because the chair's pull-back has to share floor with the projector beam. Swapping those two to a Magnus is an 11.1" widening with no smaller option to retreat to. The XL is worse again: at 70" x 31.5" it is wider than the desk in EVERY layout in this project, and in layout A it has nowhere to go — east is the UST plinth's 2'-0" push-open zone, 10 3/8" away, and west is the north-wall passage past the foot of the bed.
+
+HONEST COSTS. (1) It reads as EQUIPMENT, not as furniture, and in a studio the desk is in the sightline from the bed and the lounge. Where the desk is at the far end and next to the screen that is defensible; where it stands in the open it is a real objection, and the walnut-laminate Jarvis entry above exists for exactly that case. (2) The integrated power column is a genuine win in THIS unit — the AV allowance line complains that there is no power where it is needed and that cable concealment is a real cost — but it still has to reach a wall socket, which at a glazed wall is the same problem the Flos Bellhop was chosen to dodge. (3) It makes cable-tray-jarvis redundant: the tray and the routing are built in, so do not budget both. (4) A steel top and a clamp-on monitor arm are compatible in principle, but CONFIRM the rear-edge profile and thickness against the arm's clamp range before assuming the Jarvis arm carries over.`,
+    frontClearance: IN(30),
+    lowProfile: true,
+    tags: [
+      'wfh', 'magnus', 'secretlab', 'desk', 'work', 'standing-desk', 'sit-stand',
+      'metal', 'dark', 'cable-management', 'integrated-power',
+    ],
+    price: 799,
   },
   {
     id: 'monitor-dell-u2725qe-27',
@@ -3347,8 +3410,12 @@ A PRICED ALTERNATIVE, 30 Jul 2026: SmartWings sells Side Rail Tracks for blackou
     d: IN(31.125),
     h: IN(30.375),
     seatHeight: IN(16.875),
-    color: OATMEAL,
-    accent: CREAM,
+    // "Öreryd grey-beige" is greyer than OATMEAL's natural-linen beige - it is
+    // a recycled polyester weave, and the grey in the name is doing real work -
+    // so it gets its own hex, with the cushions half a tone up in the SAME
+    // fabric. They were CREAM, which rendered white cushions on a beige frame.
+    color: '#C6BDAF',
+    accent: '#D0C8BB',
     source: `IKEA SALTMYRAN 2-seat sofa, Öreryd grey-beige: 57 7/8" W x 31 1/8" D x 30 3/8" H, seat height 16 7/8", ARM HEIGHT 18 1/2" — i.e. 1 5/8" above the seat, which is as close to armless as anything in this price band gets. Read off the IKEA US measurements table, 30 Jul 2026; $299. THE REASON IT BEATS THE CLEON HERE IS DEPTH AND FREIGHT, not price: 31 1/8" is 2 7/8" shallower than the Blu Dot Cleon's contested 34", and in a plate where the whole west-to-partition run is 16'-3 1/4" those inches are the coffee table. It also packs the backrest INSIDE the armrests and ships in small cartons, which retires the freight risk the one-piece 56" Cleon frame carried through an angled front door. HONEST COSTS, three of them. (1) 30 3/8" overall is 3/8" OVER the project's 30" glazing rule — the structural back is only 26" and the extra is compressible cushion loft, so it may not stand within 12" of the glass without an argument. (2) "Öreryd" is 100% polyester (min. 90% recycled), not linen; a Bemz or Comfort Works cover is the route to real linen on this frame. (3) It is a 2026 introduction, so the price is young.`,
     frontClearance: IN(16),
     tags: ['seating', 'loveseat', 'low-arm', 'shallow', 'flat-pack', 'japandi', 'value', 'recommended'],
@@ -3686,8 +3753,11 @@ WHY THIS RATHER THAN A BUILT-IN. A vertical queen is the only wall bed that fits
     w: FTIN(7, 10),
     d: FTIN(9, 10),
     h: IN(0.25),
-    color: RUG_BASE,
-    accent: JUTE,
+    // Undyed jute/paper yarn, not wool: the field is a NATURAL straw, and the
+    // honest cost recorded below is that it is striped rather than plain - which
+    // is exactly what color = field + accent = a second natural tone draws.
+    color: JUTE,
+    accent: RUG_BASE,
     source: `IKEA TIOKRONA rug, flatwoven, natural: 7'10" x 9'10", 1/4" thick. Read off the IKEA US page, 30 Jul 2026; $129.99. The cheap equivalent of the Nordic Knots Desert 8x10 at $395, and at 1/4" it is even thinner than the Desert's 7 mm, so a task chair rolls over it without rucking. HONEST COST: it is jute rather than a 50/50 wool-jute, so it is scratchier underfoot and it will not take a bare foot the way the Desert does; and it is a striped field, not a plain one. Take it if $265 has to go somewhere else in the budget. Do NOT take LOHALS instead — it is dearer than this and twice as thick.`,
     frontClearance: 0,
     walkable: true,
@@ -3744,6 +3814,61 @@ WHY THIS RATHER THAN A BUILT-IN. A vertical queen is the only wall bed that fits
     frontClearance: 0,
     tags: ['bed', 'queen', 'platform', 'low', 'bamboo', 'no-headboard', 'glazing-safe', 'flat-pack', 'japandi', 'recommended'],
     price: 768,
+  },
+  {
+    id: 'bed-queen-awara-bamboo-headboard',
+    name: 'Awara Japanese Joinery bamboo platform bed, queen — natural, WITH the bamboo headboard',
+    kind: 'bed',
+    w: IN(63.9),
+    // 83.9" of frame plus the headboard panel. The 2" is INFERRED — Awara
+    // publishes the height with a headboard (39") and not the added length —
+    // so treat the foot line as +/- an inch and do not dimension millwork off it.
+    d: IN(85.9),
+    h: IN(39),
+    seatHeight: IN(22),
+    color: BAMBOO,
+    accent: OATMEAL,
+    source: `The same Awara Japanese Joinery bamboo platform bed as bed-queen-awara-bamboo (63.9" W x 83.9" L x 12" H frame, 8.3" clearance, tool-free joinery, $768, read off awarasleep.com 31 Jul 2026) with the ATTACHABLE BAMBOO HEADBOARD, $269, which takes the overall height to 39". $1,037 the pair. WHY THIS IS A SEPARATE ENTRY AND NOT A FLAG: 39" is the number that decides where this bed may stand. It FAILS this project's 2'-6" glazing rule outright, so it can never point at the west wall — a bed with this headboard has to have a solid wall behind it, and in this floor plate that means it is turned 90 degrees out of the orientation every other scheme uses, which changes the whole layout rather than just the bill. Use bed-queen-awara-bamboo where the head faces glass and this one where it faces a wall. The upholstered headboard option is $199 and reaches the same 39".`,
+    frontClearance: 0,
+    tags: ['bed', 'queen', 'platform', 'bamboo', 'headboard', 'japandi', 'flat-pack'],
+    price: 1037,
+  },
+  {
+    id: 'bed-queen-basi-white-oak',
+    name: 'Article Basi platform bed, queen — white oak, no headboard',
+    kind: 'bed',
+    w: IN(63),
+    d: IN(83),
+    // h IS THE MADE-UP BED INCLUDING THE PILLOWS, read the same way as the
+    // Awara entry above. THE DECK HEIGHT IS INFERRED, NOT PUBLISHED — see the
+    // source note — so this is an inferred ~10" deck + a 10" mattress giving a
+    // ~20" sleeping surface, and two pillows plus a turned-back duvet taking
+    // the silhouette to about 24". That is 6" under the 2'-6" glazing rule,
+    // where the Awara had 4".
+    h: IN(24),
+    seatHeight: IN(20),
+    color: WHITE_OAK,
+    accent: OATMEAL,
+    source: `Article Basi Bed Frame, Queen, White Oak: 12" H x 63" W x 83" D overall, interior (mattress) opening 60.5" W x 81" D, 6" of clearance, 111 lb, 600 lb capacity including mattress. Rubber wood, pine, MDF, white oak VENEER and metal, with solid wood legs and solid-plywood slats. Ships in two cartons, 11 x 13 x 87 and 7 x 22 x 65. Read off article.com 31 Jul 2026; $399, and the SAME $399 in Oak, White Oak, Smoked Oak and Walnut, so the finish is a free choice. WHY IT IS IN THIS CATALOG. It answers the same four bed constraints as the Awara — no headboard, warm pale wood, flat-pack, glazing-safe — and it answers two of them BETTER: at 63" x 83" it is 0.9" narrower and 0.9" shorter than the Awara, and in layout A both of those come straight back into the tightest aisle in the apartment. It is also a completely different FORM: the Awara is visible interlocking joinery (japandi), the Basi is a plain slab floating over a 6" shadow gap on inset legs, with the four corner legs and three centre legs held well in from the edges. On an espresso floor a pale slab over a dark gap is the strongest reading of "floating" available, which is why the white oak and not the walnut — walnut sits at nearly the same value as the floor planks and the gap, the slab and the floor merge into one dark mass. HONEST COSTS, and there are four. (1) THE DECK HEIGHT IS NOT PUBLISHED. Article gives 12" overall and 6" clearance and nothing in between; the assembly manual (AI1560 v1.5) draws the slats recessed inside the rail but dimensions nothing. ~10" is an INFERENCE with about +/-2" on it, and it could plausibly be as low as 7". MEASURE IT BEFORE BUYING A NIGHTSTAND, because the whole bedside relationship falls out of it. (2) IT IS VENEER OVER MDF AND RUBBER WOOD, not solid anything. Against solid bamboo at $768 that is an honesty downgrade, said plainly, and it is most of why it is $369 cheaper. (3) 6" OF CLEARANCE IS THE REAL PRICE. A 7 1/2" SKUBB does not go under it; under-bed storage drops to 4 1/2" boxes and roughly HALVES in volume. In a scheme with no dresser that is not a detail. (4) IT IS NOT TOOL-FREE. Two people, an Allen key (supplied), ~1 hour, and Article rates it 5/7 for difficulty — where the Awara is 20 minutes and no tools. It does flat-pack into two cartons, so the angled front door is still fine.`,
+    frontClearance: 0,
+    tags: ['bed', 'queen', 'platform', 'low', 'white-oak', 'floating', 'no-headboard', 'glazing-safe', 'flat-pack', 'value'],
+    price: 399,
+  },
+  {
+    id: 'storage-lowprofile-underbed-45l',
+    name: 'Low-profile under-bed case, 33 x 17 x 4 1/2',
+    kind: 'box',
+    w: IN(33),
+    d: IN(17),
+    h: IN(4.5),
+    color: CONCRETE,
+    accent: CONCRETE,
+    source: `storageLAB Low-Profile Under Bed Storage Container: 33" L x 17" W x 4 1/2" H, 45 litres, zippered fabric with rigid sidewalls and base, handles and a clear window, sold in twos. Rated by the maker for beds as low as 5" off the floor. Specs read off thestoragelab.com and the Amazon listing, 31 Jul 2026; PRICE NOT VERIFIED for the US 2-pack — the only figure the search surfaced was a UK GBP number — so $30 the pair is an ESTIMATE and should be confirmed before it goes in a budget. WHY IT EXISTS IN THIS CATALOG: it is the fallback for frames with 6" of clearance or less, where the 7 1/2" SKUBB simply does not fit. HONEST COST, STATED AS A NUMBER: a SKUBB is 90 litres and this is 45, so it is HALF the box. Four of these under a queen is about 180 litres against the SKUBB's 362 — which is the difference between "a three-drawer chest of folded clothes" and about a drawer and a half. Six would fit the bare footprint, but a frame with a centre rail and centre legs interrupts the middle run, so FOUR is the honest planning number.`,
+    frontClearance: 0,
+    walkable: true, // lives under the bed frame, inside its footprint
+    lowProfile: true,
+    tags: ['storage', 'under-bed', 'bedroom', 'low-clearance', 'value'],
+    price: 15,
   },
   {
     id: 'bedcover-linen-terracotta-queen',

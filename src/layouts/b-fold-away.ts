@@ -33,7 +33,7 @@
  * lenticular ALR screen cannot reject, so the blackout is not a nicety here, it
  * is load-bearing. See the BLACKOUT note.
  *
- * Desk orientation follows the rule set out in faces.ts: the Jarvis runs
+ * Desk orientation follows the rule set out in faces.ts: the desk runs
  * east-west on the north wall of the notch, the user faces north, the panel
  * faces south, and the glazing is on the user's LEFT.
  */
@@ -145,22 +145,35 @@ const CHANNEL_CX = W_FACE + CHANNEL_D / 2; // 0.66292
 // THE WORK WALL — north wall of the west notch, x 0.59 .. 9.93 at y 0.63
 // ---------------------------------------------------------------------------
 
-const DESK_W = 4.0; // Jarvis Bamboo Rectangle 48 x 30
-const DESK_D = 2.5;
-const DESK_X = 4.3; // top runs x 2.30 .. 6.30
-const DESK_Y = N_FACE + 0.02 + DESK_D / 2; // 1.90
+// REVISED 31 Jul 2026, AND THIS IS THE LAYOUT THE MAGNUS FITS WORST. The desk
+// here was a Jarvis 48 x 30, and 48" was comfortable on this wall: it left an
+// 8 1/2" daylight strip to the west and 11 3/8" of clear wall to the gateleg on
+// the east. MAGNUS Pro IS MADE IN 59.1" AND 70" ONLY — there is no 48" — so the
+// top grows 11.1" and there is nowhere generous to put it. The run between the
+// glazing band and the gateleg's west edge is 5'-7 15/16"; a 59.1" top spends
+// all but 8 13/16" of it. Split evenly that is 4 7/16" a side, which is what is
+// drawn: both margins survive, neither is comfortable, and the daylight strip
+// this wall was composed around is halved. It is legal and it is a downgrade.
+const DESK_W = 59.1 / 12; // 4.925 — Secretlab MAGNUS Pro
+const DESK_D = 27.6 / 12; // 2.3
+// Centred in the run so the two tight margins are equal rather than one being
+// 8 13/16" and the other zero. The gateleg's west edge lands at x 7.25032; that
+// constant is declared below, so this midpoint is written out rather than
+// derived — if the gateleg moves, move this too.
+const DESK_X = 4.42; // top runs x 1.9575 .. 6.8825
+const DESK_Y = N_FACE + 0.02 + DESK_D / 2; // 1.80
 const DESK_BACK = DESK_Y - DESK_D / 2; // 0.65
-const DESK_FRONT = DESK_Y + DESK_D / 2; // 3.15
-/** Top's west edge to the glazing band: 2.30 - 1.59 = 8 1/2" of daylight strip. */
-const DESK_OFF_BAND = DESK_X - DESK_W / 2 - GLASS_BAND_E; // 0.71
+const DESK_FRONT = DESK_Y + DESK_D / 2; // 2.95
+/** Top's west edge to the glazing band: 1.9575 - 1.59 = 4 7/16" of daylight strip. */
+const DESK_OFF_BAND = DESK_X - DESK_W / 2 - GLASS_BAND_E; // 0.3675
 
 /** Panel pushed back over the rear edge on the arm. */
 const MON_Y = DESK_BACK + 0.4; // 1.05
 const CHAIR_D = 2.0; // Branch Pro, 25" x 24"
 /** Parked INSIDE the 30" pull-back zone, 4 1/4" clear of the top. */
-const CHAIR_Y = DESK_FRONT + 0.35 + CHAIR_D / 2; // 4.50
+const CHAIR_Y = DESK_FRONT + 0.35 + CHAIR_D / 2; // 4.30
 /** Eye-to-panel distance the layout actually delivers. */
-const MON_DISTANCE = CHAIR_Y - MON_Y; // 3.45 = 3'-5 3/8"
+const MON_DISTANCE = CHAIR_Y - MON_Y; // 3.25 = 3'-3"
 
 // ---------------------------------------------------------------------------
 // THE DINING CONSOLE — same north wall, hard against the step corner
@@ -323,11 +336,11 @@ const layout: Layout = {
     // ================================================================ WORK
     {
       id: 'desk',
-      def: 'desk-standing-jarvis-48x30',
+      def: 'desk-standing-magnus-pro',
       at: [DESK_X, DESK_Y],
       rot: 0,
-      label: 'Jarvis Bamboo 48 x 30, 3-Stage 25 3/4"-51 1/4"',
-      note: `Top runs x 2.30 to 6.30 on the notch's north wall, ${(DESK_OFF_BAND * 12).toFixed(0)}" clear of the glazing band. User faces north, panel faces south, glass on the left: daylight rakes across the work surface and never down the barrel of the screen.`,
+      label: 'Secretlab MAGNUS Pro 59.1 x 27.6, sit-stand 25 5/8"-49 1/4"',
+      note: `Top runs x 1.96 to 6.88 on the notch's north wall, ${(DESK_OFF_BAND * 12).toFixed(1)}" clear of the glazing band. User faces north, panel faces south, glass on the left: daylight rakes across the work surface and never down the barrel of the screen. THIS IS THE TIGHTEST DESK FIT IN THE PROJECT and the reason is that MAGNUS Pro has no 48" size — the 48" Jarvis it replaces left 8 1/2" to the west and 11 3/8" to the gateleg, and this leaves 4 7/16" both ways. If the daylight strip on this wall matters, the 48" Jarvis is still in the catalog and still the better object here.`,
     },
     { id: 'desk-arm', def: 'monitor-arm-single-jarvis', at: [DESK_X, DESK_BACK + 0.25], rot: 0 },
     {
@@ -336,9 +349,9 @@ const layout: Layout = {
       at: [DESK_X, MON_Y],
       rot: 0,
       label: '32" 16:9, single panel on the arm',
-      note: `One screen, not two — this scheme spends its width on the picture wall instead. A 32" only works because the top is 30" deep: pushed back over the rear edge on the arm it sits ${MON_DISTANCE.toFixed(2)} ft from the parked chair, and on a 27"-deep top it would be too close.`,
+      note: `One screen, not two — this scheme spends its width on the picture wall instead. THE 31 Jul 2026 DESK SWAP PUT THIS LINE UNDER REVIEW AND THE FILE SHOULD SAY SO RATHER THAN QUIETLY KEEP IT. This note used to read "a 32\" only works because the top is 30\" deep... on a 27\"-deep top it would be too close", and the MAGNUS top is 27.6". Pushed back over the rear edge on the arm the panel now sits ${MON_DISTANCE.toFixed(2)} ft from the parked chair — 3'-3", down from 3'-5 3/8". That is at the near end of comfortable for a 32" 4K rather than over the line, so the 32" is KEPT; but if it reads as too close in use, the answer is the 27" panel that layouts C and E already use for exactly this reason, not a different desk.`,
     },
-    { id: 'desk-tray', def: 'cable-tray-jarvis', at: [DESK_X, DESK_BACK + 0.5], rot: 0 },
+    // No separate tray line: the MAGNUS has its own tray and power column.
     {
       id: 'desk-surge',
       def: 'desk-acc-surge-clamp-fully',
@@ -462,7 +475,7 @@ const layout: Layout = {
     'BED. A queen Murphy, cabinet 5\'-6" x 1\'-4" x 7\'-0", on the wide leg\'s north wall flush to the bathroom box (x 13\'-4" to 18\'-10"). Open, the mattress swings south to y 10\'-4 7/8" over the same 5\'-6" of width. NOTHING IS DRAWN INSIDE THAT RECTANGLE and nothing has to move to drop the bed: the sofa\'s east face stops 3 7/8" short of the mattress edge, the north EKENASET stops 7 1/8" short, the back-row EKENASET stops 9 1/2" short of the foot, and the rug stops 11 1/4" short. The bed comes down without anybody lifting anything, every night, and that is the single claim this whole scheme is built to make.',
     'BED ACCESS — THE HONEST VERSION, AND IT IS THE WORST THING IN THIS LAYOUT. Open, the mattress is a ONE-ENDED bed: its east long side is the bathroom partition, its west long side has the sofa 3 7/8" away, and you get in and out over the FOOT, where there is 3\'-1" of clear band. For one sleeper that is unremarkable. For two it means the far person crawls, every night. And the geometry says it cannot be fixed by rearranging: the near bound puts the sofa\'s front face at x 10\'-2 1/4" and the mattress edge is at 13\'-4", so the widest west aisle physically available between them is 4 7/8". If two people share this bed nightly, the trade on offer is to slide the sofa 1\'-8" west — that buys a 1\'-8" aisle and costs you 44 deg of subtended angle instead of 38, which is legal but is the widest front row anyone recommends. Take the aisle or take the picture; there is no arrangement that gives both.',
     'BED — NO NIGHTSTAND, AND NO WARDROBE. The only wall beside the open mattress is the cabinet itself and the bathroom partition, and a floating shelf on the partition would hang out over the mattress at 22". Use the Murphy\'s own fold-out shelf, or drag the small VITTSJO over. Clothes live entirely in the 8\'-0" run of reach-in closets on the south wall, because the Murphy has taken the last spare wall and there is no floor for a PAX. Both are real costs of a wall bed and neither is solvable by buying more furniture.',
-    'DESK ORIENTATION. Jarvis Bamboo 48 x 30 on the notch\'s north wall, top running east-west from x 2\'-3 5/8" to 6\'-3 5/8", user facing north, the 31.5" panel facing SOUTH, the glazing on the user\'s LEFT. The west glass takes direct sun from about 3pm to sunset; a panel facing into it or away from it is unreadable every afternoon, and only north or south puts the light across the work surface instead of down the barrel. The top\'s west edge is 8 1/2" clear of the 1\'-0" glazing band and 1\'-8 1/2" off the glass face.',
+    'DESK ORIENTATION. Secretlab MAGNUS Pro 59.1 x 27.6 on the notch\'s north wall, top running east-west from x 1\'-11 1/2" to 6\'-10 5/8", user facing north, the 31.5" panel facing SOUTH, the glazing on the user\'s LEFT. The west glass takes direct sun from about 3pm to sunset; a panel facing into it or away from it is unreadable every afternoon, and only north or south puts the light across the work surface instead of down the barrel. The top\'s west edge is 4 7/16" clear of the 1\'-0" glazing band and 1\'-4 3/8" off the glass face — HALVED by the 31 Jul 2026 swap, because MAGNUS Pro has no 48" size and the 59.1" top spends all but 8 13/16" of the run between the glazing band and the gateleg. Both remaining margins are 4 7/16". This wall used to have room on it and now it does not.',
     'DESK PULL-BACK. The full 2\'-6" of CLEARANCE.deskChair is reserved in front of the top (y 3.15 to 5.65) and the Branch Pro — 24" deep — is drawn PARKED inside it, 4 1/4" clear of the top edge, not tucked under it. The sourced real-world minimum for a task chair to roll back and stand is nearer 3\'-0", and THIS LAYOUT ACHIEVES IT AND MORE: the first solid object south of the top at the user\'s centreline is the 40" plant, 8\'-8" away, so the chair can roll back as far as anyone wants. Nothing else stands in the zone; the TOPO mat is inside it and is drawn walkable, which is what it is.',
     'WHAT THE RAISED SCREEN DOES TO THE DESK. Honestly: it takes most of the desk\'s daylight. The cabinet runs y 4\'-4 3/4" to 12\'-7 1/4", so with the screen UP it covers the south 1\'-1" of bay 1, all of bay 2 and all of bay 3, leaving bay 1\'s north 1\'-7" and the whole of bay 4 clear. And with the blackout closed for a film, the desk has no daylight at all. That is not a flaw to be argued away — it is the scheme: you do not work while the picture is on. Stowed, the assembly is 2\'-2" tall, so the desk gets everything above 2\'-2" of the glass wall back — 6\'-6" of the 8\'-8" head, over the same three bays. That is less than the 8 1/4" curb an earlier draft of this file promised and it is still more than any wall-mounted screen in this unit can offer, because a wall-mounted screen returns none of the window at any time.',
     'GLAZING RULE, AND THE THREE WARNINGS IT PRODUCES. The project rule is nothing over 2\'-6" within 1\'-0" of the glass. Stowed, the sill plinth plus the cabinet lid measure 2\'-2" — 4" under the rule, which is the whole margin this scheme has and is inside the traced plan\'s own +/-3 5/8" tolerance, so somebody puts a laser on the west reveal before that plinth is cut. DRAWN RAISED — which is the state the throw and seating geometry have to be checked in — the screen is 6\'-3 1/8" tall in the band, so the checker reports blocks-window against bays 1, 2 and 3. Those three warnings are the scheme, stated by the analyzer: a raised screen covers the window it is raised in front of. Judge the layout in both states. The sill plinth would raise the same three findings on the same three bays at 2\'-2", which is why it is drawn with ignoreAnalysis and argued here instead — its footprint is identical to the screen\'s and it can tell you nothing the screen has not. Everything else in the room clears the band: the desk top is 8 1/2" outside it, the projector plinth 1 3/8" outside it, the plant 2\'-8" back and the folding chairs 5\'-5" back.',
@@ -470,7 +483,7 @@ const layout: Layout = {
     'CIRCULATION. With the bed CLOSED the walk past the row is the 2\'-8 7/8" band between the sofa and the kitchen aisle line, plus the kitchen aisle itself, which is walkable floor even though no furniture may stand in it. Every required route measures a full 3\'-0" usable or better — front door to bathroom 3\'-6", to the sink 3\'-0", to the west windows 3\'-0", bathroom to bed 3\'-0", sink to fridge 4\'-4" — and 3\'-0" is CLEARANCE.walkway itself, not a squeeze. The band NORTH of the sofa is not a route: the north EKENASET closes it to 9 3/4", deliberately, because a chair in a 3\'-3" strip either faces the picture or acts as a corridor and this one faces the picture. With the bed DOWN, the 3\'-1" band south of the mattress is the route from the bed to the bathroom door, 2\'-11 1/4" of it clear east of the back-row chair; getting from the bed to the DESK, though, means going east, south into the kitchen aisle, west along it and back north into the west bay — about eight extra paces. Say that to the client before they sign off on a wall bed.',
     'BUILT-INS. The 3\'-6" kitchen work aisle, the 3\'-0" fridge and laundry zones, the 2\'-6" strip in front of the reach-in closets, the bathroom door swing and the 3\'-2" front door arc are all held clear, so every appliance door, both bifolds and all four closet doors open on to empty floor. The only thing in the entry nook is a wall-hung TRONES stack at 7 1/8" deep, because an angled front door in a 3\'-5" nook has room for nothing with real depth.',
     'DENSITY. The checker reports 83% free floor (371 of 448 sq ft) and calls the room under-furnished. That is an artefact of drawing the bed CLOSED: the Murphy contributes 7.3 sq ft as a cabinet and 39.4 sq ft as a bed, so with the mattress down the same layout is nearer 76%, which is ordinary for a studio. It is also the measurable form of the scheme\'s whole argument — 32 sq ft of floor bought back for sixteen hours a day. Judge it from both states, as with the glazing warnings.',
-    'BUDGET — $16,848 of catalogue lines, and the shape of it is the point. The cinema is $6,061 (screen $1,962 + PX3-PRO $2,799 + projector plinth $650 + sill plinth $650), the blackout is $1,320 (four rollers plus four sets of side channels), the bed is $2,400, and the desk kit is $3,236 (Jarvis Bamboo 48 x 30 $1,325, single Jarvis arm $175, 32" panel $799, clamp surge $85, CPU sling $99, TERTIAL $15, TOPO mat $139, Branch Pro $599, cable tray included with the desk). Soft furniture, rug, tables, plant and dining together are only $3,831 — a quarter of the total. Two thirds of this layout is a bed that folds and a picture that hides, which is exactly what the client is buying. If the number has to come down, the honest cuts are the 32" panel for a 27" (saves $350), the Branch Pro for a MARKUS (saves $299) and the Nordic Knots for a STOENSE (saves $235) — not the blackout, which the projector does not work without.',
+    'BUDGET — $16,070 of catalogue lines, and the shape of it is the point. The cinema is $6,061 (screen $1,962 + PX3-PRO $2,799 + projector plinth $650 + sill plinth $650), the blackout is $1,320 (four rollers plus four sets of side channels), the bed is $2,400, and the desk kit is $2,710 (MAGNUS Pro $799, single Jarvis arm $175, 32" panel $799, clamp surge $85, CPU sling $99, TERTIAL $15, TOPO mat $139, Branch Pro $599, cable tray built into the desk). THE DESK KIT FELL $526 ON 31 Jul 2026 and it is the only layout here where that saving came with a real cost in the plan rather than just in the palette — see DESK ORIENTATION for the halved daylight strip. Soft furniture, rug, tables, plant and dining together are only $3,831 — a quarter of the total. Two thirds of this layout is a bed that folds and a picture that hides, which is exactly what the client is buying. If the number has to come down, the honest cuts are the 32" panel for a 27" (saves $350), the Branch Pro for a MARKUS (saves $299) and the Nordic Knots for a STOENSE (saves $235) — not the blackout, which the projector does not work without.',
     'BUDGET CAVEAT. These are catalogue prices for furniture only and three of the big ones are soft. The $2,400 Murphy is the cabinet and mechanism: ADD $700-1,200 for a queen mattress, which is not drawn because it lives inside the cabinet. Vividstorm sells this exact SKU at $1,962 direct and $1,649 through ProjectorScreen.com — a 19% channel spread, so the screen line could be $300 lighter. BOTH plinths are joinery ALLOWANCES of $650 and neither is a quotation — and the sill plinth is the softer of the two, because it is 8\'-2 1/2" long rather than 5\'-6" and it has to hold an 8\'-2" cabinet dead level and dead parallel to the glass; a UST turns a millimetre of yaw into visible trapezoid. Price it as a run of casework, not as a box. The $210 shade is an estimate for a configured 36" x 106" blackout and bay 4 is 3\'-6" wide, so that line is higher; the $120 channel price is an estimate too, from a vendor who publishes neither lengths nor prices. Bedding, cookware, the TRONES stack, electrical work for a floor outlet at the screen and the kitchen itself are all outside the number.',
     'WHAT THIS SCHEME CANNOT DO — AND THE ONE THAT WAS FOUND IN REVIEW. It does not give the window back completely: the sill plinth the vertical geometry demands is a 2\'-2" x 9 1/2" x 8\'-2 1/2" bench standing permanently in front of bays 1 to 3, and the earlier claim that this screen stows "lower than a shoe rack" was simply wrong — it stows lower than a kitchen counter. It cannot show a picture in daylight — no scheme in this unit can, but this one puts the audience facing the glass, so it is the least forgiving of a half-closed shade. It cannot seat more than three people properly: the fourth and fifth guests get folding chairs. It has no sofa long enough to lie on and no second row. It has no nightstand and no wardrobe. It cannot run the dining table open and the picture at the same time. And it asks the client to trust a motorised screen mechanism as the thing that stands between them and the view: if it fails stowed you have no cinema, and if it fails raised you have no window until someone comes to fix it.',
   ],

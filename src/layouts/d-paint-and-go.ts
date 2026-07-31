@@ -135,6 +135,25 @@ const BED_S_FACE = BED_CY + BED_W / 2; // 5.7333 — the only side you get out o
 // Jarvis 48 x 27 on the north wall of the WIDE LEG — the only north wall left
 // once the bed owns the notch. 48" rather than 60" because the 30" chair
 // pull-back in front of it has to live in the same floor the beam crosses.
+//
+// THIS IS THE ONE LAYOUT IN THE PROJECT THAT DID NOT TAKE THE SECRETLAB MAGNUS
+// PRO ON 31 Jul 2026, AND THE REASON IS ARITHMETIC RATHER THAN TASTE. Every
+// other scheme here swapped its Jarvis for a MAGNUS: dark matte metal, no west
+// sun bounced off the work surface, no pale plane bouncing projector light back
+// at the picture, and $526 cheaper. MAGNUS Pro IS MADE IN 59.1" AND 70" ONLY —
+// there is no 48" — so the swap here is an 11.1" widening, and this wall has no
+// 11.1" to give. Worked through: the desk cannot move west past the re-entrant
+// corner at STEP_X = 9.93, so the furthest a 59.1" top can retreat puts its east
+// end at x 14.855, giving up the 6 13/16" of corner gap this layout currently
+// keeps. At that x the projector cone's north edge has fallen to y 5.5157 and
+// the 27.6"-deep top's front edge is at y 5.54 — SO THE DESK'S SOUTH-EAST
+// CORNER IS 9/32" INSIDE THE BEAM IN PLAN. It is not a near miss that rounding
+// saves: the cone's lower edge is 26.5" AFF there and the top is 29 1/2" seated,
+// so the corner stands 3" up into the light and throws a wedge on the picture.
+// The 48" Jarvis clears the same cone by 4 15/16" and keeps its corner gap.
+// If this layout must have a MAGNUS, the projector geometry has to move first —
+// and since the lens is fixed at 1.20:1, moving it moves the image size too, so
+// that is a redesign of the 118" picture rather than a desk swap.
 const DESK_D = 2.25; // 27" deep top; the 48" width runs east-west along x
 const DESK_BACK = N_FACE_WIDE + 0.02; // 3.24
 const DESK_CY = DESK_BACK + DESK_D / 2; // 4.365 — top runs y 3.24..5.49
@@ -263,11 +282,11 @@ const layout: Layout = {
     // ================================================================== WORK
     {
       id: 'desk',
-      def: 'desk-standing-jarvis-48x27',
+      def: 'desk-standing-jarvis-laminate-48x27-black',
       at: [DESK_CX, DESK_CY],
       rot: 0,
-      label: 'Fully Jarvis 48 x 27 bamboo, 3-stage 25 3/4"-51 1/4"',
-      note: 'Back to the wide leg\'s north wall, panel facing SOUTH, glazing on the user\'s left. 48" rather than 60" so the 2\'-6" pull-back and the projector beam can share the same 10\'-4" of depth.',
+      label: 'Fully Jarvis 48 x 27 BLACK laminate, 3-stage 25 3/4"-51 1/4"',
+      note: 'Back to the wide leg\'s north wall, panel facing SOUTH, glazing on the user\'s left. 48" rather than 60" so the 2\'-6" pull-back and the projector beam can share the same 10\'-4" of depth — and that 48" is why this is a Jarvis and not the MAGNUS Pro every other layout here took on 31 Jul 2026. SAME DESK, DARK TOP: the frame, the width, the depth and the $1,325 are identical to the bamboo top this replaces, and only the colour changed. That colour is the whole point — a matte dark surface does not bounce west sun up under the monitor and does not bounce projector light back at a 118" image painted 10 ft away, which is exactly what the MAGNUS was chosen for elsewhere. This layout gets the benefit without the 11.1" of extra width it cannot afford.',
     },
     { id: 'desk-arm', def: 'monitor-arm-single-jarvis', at: [DESK_CX, DESK_BACK + 0.21], rot: 0 },
     {
@@ -370,6 +389,7 @@ const layout: Layout = {
     'WHY ROLLERS AND NOT CELLULAR: the glazing head is 8\'-8" and SelectBlinds\' per-lift maximums are 84" cordless, 96" motorised and 120" only on a CONTINUOUS CORD LOOP — so a cellular shade tall enough for these bays cannot be cordless, and four cord loops hanging down a black-anodised glass wall is a real cost in a minimal scheme. Blinds.com\'s Classic Roller runs to 144" of height cordless at 8"-118" wide, which covers all four bays. A roller stack also reads as far less mass under a 9\'-0" exposed concrete soffit that has only 4" of clear above the glass.',
     'DESK ORIENTATION: the Jarvis top runs east-west (x 10\'-6" to 14\'-6") against the north wall of the WIDE LEG, the user sits south of it facing north, the 27" panel faces SOUTH, and the west glazing is on the user\'s LEFT. Daylight rakes across the work surface and never down the barrel of the screen. A panel facing the glass is unreadable from about 3pm daily; a panel facing away from it puts a 9-ft-tall bright hole behind the work all afternoon. Layout A\'s desk wall — the notch\'s north wall — is not available here, because the bed is on it.',
     'DESK PULL-BACK, AND WHERE IT FALLS SHORT: the full 2\'-6" (CLEARANCE.deskChair) is reserved clear in front of the top, y 5\'-5 7/8" to 7\'-11 7/8", and the Branch Ergonomic Pro is drawn PARKED inside that zone at y 5\'-6 1/4" to 7\'-6 1/4" rather than tucked under it — the desks in this model are solid boxes with no legroom void, so a tucked chair would read as a collision. It does NOT reach the sourced real-world minimum: rolling a task chair back far enough to stand up cleanly wants nearer 36", and this layout gives 30". The reason is the projector. The same 10\'-4" of depth between the wide leg\'s north wall and the kitchen aisle has to carry the desk, its chair and the film beam, and the pull-back is the thing that gives. Also why the top is 48" x 27" and not 60" x 30".',
+    'WHY THIS LAYOUT KEEPS A JARVIS WHEN EVERY OTHER ONE TOOK A MAGNUS. On 31 Jul 2026 the project moved its desks to a Secretlab MAGNUS Pro — matte dark metal, which stops the work surface bouncing west sun at the user and stops a pale plane bouncing projector light back at the screen, and $526 cheaper than the Jarvis. Layouts A, B, C, E and F all took it. D cannot, and the reason is that MAGNUS Pro is made in 59.1" and 70" only: THERE IS NO 48". This desk is 48" on purpose — its own comment says so — because the chair pull-back and the projector beam share the same 10\'-4" of depth. Pushed as far west as the re-entrant corner allows, a 59.1" top puts its east end at x 14\'-10 1/4" and its front edge 9/32" INSIDE the beam in plan, with the cone\'s lower edge at 26 1/2" AFF and the top at 29 1/2" seated — a 3" intrusion throwing a wedge on the picture — and it would also spend the 6 13/16" of corner gap this layout keeps. The 48" Jarvis clears the same cone by 4 15/16". The trade is therefore real and it is stated rather than split: this layout keeps a pale bamboo top, and with it the small contrast penalty a pale surface costs a projected image, because the alternative is a desk standing in the beam. SO THE FIX WAS A 48" TOP IN A DARK FINISH RATHER THAN A WIDER DESK: the Jarvis laminate range includes BLACK at 27x48 for the same $1,325 as the bamboo, so this layout now runs desk-standing-jarvis-laminate-48x27-black and gets the dark surface with no change to width, depth, price or geometry. It is the one place in the project where the right answer to "go dark" was a colourway rather than a different desk.',
     'THE DESK CHAIR STANDS IN THE BEAM, and no arrangement fixes it. The beam\'s lower edge climbs only from 24" at the lens to 28" at the wall, so anything taller than about 26" inside the throw cone clips the picture — and the cone\'s north edge has reached y 5\'-8" by the desk\'s east end. The 41"-tall chair back is in it. The answer is that the chair is on castors and rolls three feet west in two seconds, which is the kind of answer a scheme built on nothing-being-fixed is allowed to give. The Jarvis top itself (29 1/2" seated) clears the cone\'s north edge by 1 7/8" at its east end and does not clip; the folded gateleg (29 1/8" high, 8 1/4" deep) clears it by 4 7/8".',
     'BED AND AISLES — THE ONE WARNING THIS LAYOUT ACCEPTS: GRIMSBU queen (61" x 80 3/8", 21 5/8" headboard), head to the glazing, north long side hard against the notch\'s north wall. The analyzer raises bed-access, and it is right: the mattress is 5\'-1" wide, so it sleeps two, and the north side has 0" of aisle. You get in and out on the SOUTH, where the aisle is the full 3\'-0" probe and the walk to the sofa back is 2\'-11 1/4". THE TRADE, argued rather than hidden: keeping both long sides usable needs a 2\'-0" strip on the north, which puts the mattress at y 5\'-3" and pushes the sofa across the kitchen-aisle line — and then there is nowhere in this plan that is both 10\'-4" back from a 118" picture and big enough for four people. One person gets out of this bed on one side. Four people watch films in front of it. The floor went to the films, and that is the whole scheme.',
     'BED HEAD OFF THE GLASS: the headboard stands 1\'-0 3/8" back from the inner glazing face — deliberately outside the 1\'-0" band — so the blackout roller and its side channels drop past the head of the bed instead of landing on it. Pushing the last four inches to the glass gains nothing but a fouled shade and a blocks-window warning. The Cleon\'s back is set on the same line for the same reason.',

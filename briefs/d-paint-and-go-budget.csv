@@ -5,12 +5,12 @@ section,item,catalog_id,qty,unit_usd,total_usd,low_usd,high_usd,tier,price_verif
 "Light control — the co-requisite, not an accessory","Blackout roller shade, per glazing bay","shade-blackout-roller-bay",4,182,728,,,value,yes,""
 "Light control — the co-requisite, not an accessory","Blackout side channels, per glazing bay (pair)","shade-side-channels-bay",4,85,340,,,unspecified,no,"catalog source flags this price as unverified"
 "Light control — the co-requisite, not an accessory — SUBTOTAL",,,,,1068,,,,,
-"Work — the Jarvis and everything on it","Fully Jarvis bamboo standing desk, 48"" x 27""","desk-standing-jarvis-48x27",1,1325,1325,,,unspecified,yes,""
-"Work — the Jarvis and everything on it","Branch Ergonomic Chair Pro","chair-branch-ergonomic-pro",1,599,599,,,recommended,yes,""
-"Work — the Jarvis and everything on it","Monitor, 27"" 16:9","monitor-27",1,449,449,,,unspecified,yes,""
-"Work — the Jarvis and everything on it","Fully Jarvis single monitor arm","monitor-arm-single-jarvis",1,175,175,,,unspecified,no,"catalog source flags this price as unverified"
-"Work — the Jarvis and everything on it","Fully Jarvis cable management tray","cable-tray-jarvis",1,0,0,,,unspecified,yes,""
-"Work — the Jarvis and everything on it — SUBTOTAL",,,,,2548,,,,,
+"Work — the desk and everything on it","Fully Jarvis laminate standing desk, 48"" x 27"" — black","desk-standing-jarvis-laminate-48x27-black",1,1325,1325,,,unspecified,yes,""
+"Work — the desk and everything on it","Branch Ergonomic Chair Pro","chair-branch-ergonomic-pro",1,599,599,,,recommended,yes,""
+"Work — the desk and everything on it","Monitor, 27"" 16:9","monitor-27",1,449,449,,,unspecified,yes,""
+"Work — the desk and everything on it","Fully Jarvis single monitor arm","monitor-arm-single-jarvis",1,175,175,,,unspecified,no,"catalog source flags this price as unverified"
+"Work — the desk and everything on it","Fully Jarvis cable management tray","cable-tray-jarvis",1,0,0,,,unspecified,yes,""
+"Work — the desk and everything on it — SUBTOTAL",,,,,2548,,,,,
 "Sleep","GRIMSBU queen bed frame (with Luröy base)","bed-queen-grimsbu",1,79,79,,,value,no,"catalog source flags this price as unverified"
 "Sleep — SUBTOTAL",,,,,79,,,,,
 "Seating — the congregation area","Blu Dot Cleon 56"" armless sofa","sofa-cleon-56-armless",1,1960,1960,,,premium,yes,""

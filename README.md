@@ -9,11 +9,12 @@ plan, the clearance analysis, the WebGL preview, the path-traced hero frames, th
 furniture schedule and the client brief — is **generated from that one model**, so
 no drawing can quietly disagree with the layout it describes.
 
-Four schemes are designed against the same brief. All four carry the same four
+Six schemes are designed against the same brief. All six carry the same four
 hard requirements — a real queen bed, modern/minimal decor, a real Fully Jarvis
 sit-stand desk, and a congregation area for watching things on a projector with
-the throw geometry and the seating distances both actually correct. What differs
-is **where the picture goes**; every other decision falls out of that.
+the throw geometry and the seating distances both actually correct. In five of
+them what differs is **where the picture goes**, and every other decision falls
+out of that; the sixth (F) holds the picture still and turns the **bed** instead.
 
 ---
 
@@ -92,6 +93,29 @@ that is a drop-leaf for two.
 
 ![Layout E, the low queen head-to-the-north-wall with the desk nook at the left and the screen at the right](docs/renders/e-clear-shot-sleeping.jpg)
 
+### F — Headboard
+
+The five schemes above all move the **picture** and let everything else fall out
+of that. F holds the picture still and moves the **bed**: the queen is turned 90°
+so its head is against the notch's north wall, which is the only way this
+apartment can have a real headboard — 39" of bamboo, nine inches over the glazing
+rule, legal only because the surface behind it is plaster. It buys 2'-0" of clear
+floor on **both** long sides, a nightstand and a lamp on each of them, and the
+disappearance of the bed-access warning layout A accepts on purpose.
+
+It costs the sofa. A turned queen spends 7'-1⅞" of the 12'-11¼" between the notch
+wall and the kitchen aisle, and after the 3'-1" east-west route the bed's own
+geometry demands there is 2'-1" of depth left for seating — a Cleon is 4'-8" wide.
+So the congregation stops being a sofa and becomes a **row**: two armchairs and a
+pouf strung along the room's length at 39.6° / 29.6° / 25.8°. Three seats where A
+has four, and the bed is no longer one of them — it faces south now and sees none
+of the picture. In exchange F returns **no errors and no warnings**, a 2'-9"
+narrowest route against A's 2'-6", and a worst seat at 89.2% against A's 81.9%.
+
+![Layout F, the sleeping alcove: bamboo queen with a real headboard, a matching nightstand and lamp on each side](docs/renders/f-headboard-sleeping.jpg)
+
+![Layout F, lid off: the turned bed in the notch, the row of two armchairs facing the screen, the desk on the north wall](docs/renders/f-headboard-dollhouse.jpg)
+
 ### The 2D side of the same model
 
 Same layout, same numbers, drawn to scale with dimensions, door swings, a
@@ -124,7 +148,7 @@ against, so the renders' finishes are matched to the unit rather than invented.
 
 ---
 
-## The five schemes
+## The six schemes
 
 | | Layout | Where the picture goes | The cost |
 |---|---|---|---|
@@ -133,8 +157,9 @@ against, so the renders' finishes are matched to the unit rather than invented.
 | **C** | `c-second-row` | bathroom partition, with the bed as the back row | the bed is public |
 | **D** | `d-paint-and-go` | 118" of screen paint, portable projector | 550 lumens and a lens in front of the audience |
 | **E** | `e-clear-shot` | bathroom partition again, but planned around the SIGHTLINE | a wall bed and a floor that must stay empty for it |
+| **F** | `f-headboard` | same as A — F moves the BED, not the picture | the sofa, and the bed stops being a seat |
 
-**E is the one to read first if you only read one.** The other four were drawn
+**E is the one to read first if you only read one.** The first four were drawn
 around where the picture goes; E was drawn around what you can actually see of
 it. `scripts/sightline.ts` casts a grid of rays — five eye positions per seat
 against 169 points on the image — instead of the single seat-centre-to-screen-centre
@@ -146,6 +171,7 @@ ray `analysis.ts` uses, and it turns out every earlier scheme is obstructed:
   c-second-row   worst seat 89.0%
   d-paint-and-go worst seat 91.8%
   e-clear-shot   every seat 100.0%
+  f-headboard    row 97.2% / 91.6% / 89.2%
 ```
 
 In A, B, C and D the main culprit is the parked desk chair. A's bed used to read
@@ -171,9 +197,10 @@ impassable). Sample output:
   c-second-row       28   79.5%    356 ft²       3'6"    0     2  $11,573
   d-paint-and-go     26   83.6%    375 ft²       2'6"    0     1   $7,357
   e-clear-shot       37   85.0%    381 ft²      2'10"    0     0  $12,733
+  f-headboard        40   80.3%    360 ft²       2'9"    0     0  $16,089
 
-  5 layouts · 448 ft² interior · walkway min 3' (tight 2'6")
-  no errors, 7 warnings, 3 info
+  6 layouts · 448 ft² interior · walkway min 3' (tight 2'6")
+  no errors, 7 warnings, 4 info
 ```
 
 `BUDGET` is the catalogue total only. `src/core/budget.ts` additionally produces
@@ -187,7 +214,7 @@ flags which prices in the schedule are unverified rather than quoted.
 
 ```bash
 pnpm install
-pnpm check          # analyze all five layouts; exits 1 on an error-severity issue
+pnpm check          # analyze all six layouts; exits 1 on an error-severity issue
 pnpm sightline      # how much of the projected image each seat can actually see
 pnpm dev            # the interactive lab at http://localhost:4317
 ```
@@ -203,7 +230,7 @@ where the twelve `PLAN_NOTES` substitutions get made.
   (the apartment)           (169 furniture defs)
           └───────────────┬───────────────┘
                           ▼
-                  src/layouts/*.ts                  the five schemes
+                  src/layouts/*.ts                  the six schemes
                           │
     ┌─────────────────────┼─────────────────────┐
     ▼                     ▼                     ▼
@@ -238,6 +265,7 @@ Reproducing the frames on this page:
 ```bash
 npx tsx scripts/raytrace.ts --layout a-night-wall   --camera eye-window --res 1600x1000 --samples 200 --exposure 2.2
 npx tsx scripts/raytrace.ts --layout a-night-wall   --shots  sleeping   --res 1280x800  --samples 220
+npx tsx scripts/raytrace.ts --layout f-headboard    --shots  all        --res 1280x800  --samples 200
 npx tsx scripts/raytrace.ts --layout b-fold-away    --camera eye-living --res 1600x1000 --samples 200 --exposure 2.2
 npx tsx scripts/raytrace.ts --layout c-second-row   --camera eye-hero   --res 1600x1000 --samples 256 --exposure 2.9
 npx tsx scripts/raytrace.ts --layout d-paint-and-go --camera eye-window --res 1600x1000 --samples 200 --exposure 2.2
@@ -253,7 +281,7 @@ drives Chromium with software WebGL, so `pnpm render` works in a container.
 
 ```
 src/core/        the apartment, the catalog, the units, the analyzer, the money
-src/layouts/     the five schemes — one file each, plus faces.ts for shared datums
+src/layouts/     the six schemes — one file each, plus faces.ts for shared datums
 src/render2d/    to-scale plan: SVG writer + React view
 src/render3d/    three.js scene builder, materials, camera presets, city backdrop
 src/app/         the interactive lab, and the chrome-less capture mode scripts drive

@@ -37,7 +37,7 @@
  *
  * DESK ORIENTATION — the shared rule, and this layout obeys it. The glazing
  * faces WEST and takes direct sun from about 3pm to sunset, so a screen may face
- * NORTH or SOUTH but never into or away from that sun. The Jarvis top therefore
+ * NORTH or SOUTH but never into or away from that sun. The desk top therefore
  * runs east-west against the north wall of the WIDE LEG (the notch's north wall
  * is behind the bed and could never take a chair), the user sits south of it
  * facing north, the monitor faces SOUTH, and the glass is on the user's LEFT.
@@ -191,30 +191,42 @@ const RUG_CX = PLINTH_W_FACE - 10.0 / 2; // 11.845 -> x 6.845 .. 16.845
 const RUG_CY = ROW_MID; // 9.5187 -> y 5.5187 .. 13.5187
 
 // ---- the work wall --------------------------------------------------------
-// Jarvis 60" x 27" in WALNUT LAMINATE, not bamboo: this desk is visible from
-// every seat in the room, and walnut laminate reads as furniture rather than as
-// office equipment. The cost is 3" of top depth, which is why the monitor is a
-// 27" and not a 32".
-const DESK_W = 60 / 12; // 5.0
-const DESK_D = 27 / 12; // 2.25
-const DESK_Y = N_FACE_WIDE + 0.02 + DESK_D / 2; // 4.365
+// Secretlab MAGNUS Pro 59.1" x 27.6" in matte dark metal. It replaces a Jarvis
+// 60" x 27" in WALNUT LAMINATE, which was itself chosen over bamboo because this
+// desk is visible from every seat in the room and walnut read as furniture
+// rather than as office equipment. The top is still shallow — 27.6" — which is
+// why the monitor here is a 27" and not a 32".
+// REVISED 31 Jul 2026 — AND THIS SWAP COSTS THIS LAYOUT SOMETHING THE OTHERS DO
+// NOT PAY. The walnut laminate top above was chosen so that it and the walnut
+// plinth would read as ONE L-shaped millwork run wrapping the north-east corner,
+// which is a real idea and the reason this layout looked the way it did. A dark
+// metal MAGNUS Pro cannot do that: the run becomes a dark desk butted to a
+// walnut plinth, i.e. two objects instead of one. What it buys in exchange is
+// what it buys everywhere — a top that does not bounce west sun at the user or
+// projector light at the screen — plus 0.9" of wall back at the corner and $526.
+// If the L-shaped run matters more than those, this is the one layout in the
+// project where the walnut Jarvis is the better answer, and it is still in the
+// catalog as desk-standing-jarvis-laminate-60x27-walnut.
+const DESK_W = 59.1 / 12; // 4.925
+const DESK_D = 27.6 / 12; // 2.3
+const DESK_Y = N_FACE_WIDE + 0.02 + DESK_D / 2; // 4.39
 const DESK_BACK = DESK_Y - DESK_D / 2; // 3.24
-const DESK_FRONT = DESK_Y + DESK_D / 2; // 5.49
+const DESK_FRONT = DESK_Y + DESK_D / 2; // 5.54
 // East end butted to the plinth's front face, so the 5'-0" top and the 5'-6"
 // plinth read as ONE L-shaped millwork run wrapping the north-east corner. It
 // cannot go further east than this: the plinth would then eat the desk's own
 // 2'-6" pull-back. And it must not come further west than this, because the
 // clear floor between the front row and the desk's west end is the ONLY way
 // into the bed's north aisle.
-const DESK_CX = PLINTH_W_FACE - DESK_W / 2; // 14.345 -> top x 11.845 .. 16.845
-const DESK_GATE = DESK_CX - DESK_W / 2 - STEP_X; // 1.915 = 1'-11" of wall left at the corner
+const DESK_CX = PLINTH_W_FACE - DESK_W / 2; // 14.3825 -> top x 11.92 .. 16.845
+const DESK_GATE = DESK_CX - DESK_W / 2 - STEP_X; // 1.99 = 1'-11 7/8" of wall left at the corner
 const WORK_X = DESK_CX; // the work position is centred on the top
 
 // Branch Ergonomic Pro, 25" x 24", PARKED in the pull-back zone rather than
 // tucked under the top (the desks in this model are solid boxes with no legroom
 // void, so a tucked chair reads as a collision).
 const CHAIR_D = 24 / 12; // 2.0
-const CHAIR_Y = DESK_FRONT + 0.03 + CHAIR_D / 2; // 6.52 -> chair y 5.52 .. 7.52
+const CHAIR_Y = DESK_FRONT + 0.03 + CHAIR_D / 2; // 6.57 -> chair y 5.57 .. 7.57
 
 // ---- the notch, behind the bed --------------------------------------------
 const DRESSER_D = 18.875 / 12; // 1.5729
@@ -336,11 +348,11 @@ const layout: Layout = {
     // ================================================================= WORK
     {
       id: 'desk',
-      def: 'desk-standing-jarvis-laminate-60x27-walnut',
+      def: 'desk-standing-magnus-pro',
       at: [DESK_CX, DESK_Y],
       rot: 0,
-      label: 'Jarvis laminate 60 x 27, walnut — 3-Stage, 25 3/4"-51 1/4"',
-      note: 'Back to the wide leg\'s north wall, monitor facing SOUTH, glazing on the user\'s left. x 11\'-10 1/8" to 16\'-10 1/8": the east end butts the face of the plinth, so the 5\'-0" top and the 5\'-6" plinth read as one L-shaped walnut run wrapping the north-east corner, and 1\'-11" of clear wall is left between the top and the re-entrant corner. It cannot go east of here (the plinth would eat its own pull-back) and it must not come west of here (that 1\'-11" is part of the route into the notch).',
+      label: 'Secretlab MAGNUS Pro 59.1 x 27.6, sit-stand 25 5/8"-49 1/4"',
+      note: 'Back to the wide leg\'s north wall, monitor facing SOUTH, glazing on the user\'s left. x 11\'-11" to 16\'-10 1/8": the east end still butts the face of the plinth, and 1\'-11 7/8" of clear wall is left between the top and the re-entrant corner — 7/8" more than the 60" top left. It cannot go east of here (the plinth would eat its own pull-back) and it must not come west of here (that clear wall is part of the route into the notch). WHAT THIS SWAP GAVE UP, SAID PLAINLY: the 60" walnut laminate top that used to stand here was chosen so that it and the walnut plinth read as ONE L-shaped millwork run wrapping the corner. A dark metal top cannot do that, so the corner is now a dark desk butted to a walnut plinth — two objects where there was one. It is bought back in kind rather than in kindness: a matte dark top is the only large horizontal surface here that is not bouncing west sun at the user or projector light at the screen, and this layout has a projected image like the others. If the millwork reading matters more, desk-standing-jarvis-laminate-60x27-walnut is still in the catalog and still fits.',
     },
     {
       id: 'desk-arm',
@@ -362,7 +374,7 @@ const layout: Layout = {
       def: 'desk-acc-surge-clamp-fully',
       at: [WORK_X + 1.6, DESK_BACK + 0.5],
       rot: 0,
-      note: 'The only cable accessory MillerKnoll still sells for the Jarvis. It matters because every cable has to survive 25 1/2" of vertical travel a day; a strip on the floor eventually pulls something off the top.',
+      note: 'ITS JOB CHANGED WITH THE DESK, AND THE DISTINCTION IS WORTH KEEPING STRAIGHT. On the Jarvis this line solved REACH — every cable has to survive 25 1/2" of vertical travel a day and a strip on the floor eventually pulls something off the top. The MAGNUS Pro already solves reach: it has an integrated power-supply column ending in a mains socket inside its own cable tray. So this line is now buying SURGE PROTECTION and nothing else, which is a smaller thing than it was. TWO THINGS TO CONFIRM BEFORE ORDERING IT: that a Fully clamp designed for a Jarvis edge actually fits the MAGNUS\'s rear edge, and whether you would rather spend the $85 on a surge strip that lives in the MAGNUS tray instead of clamping to it.',
     },
     {
       id: 'desk-chair',
@@ -486,7 +498,7 @@ const layout: Layout = {
     'SIGHTLINES — nothing that matters is taller than a seated eye. Seated eye is 46". The bed deck is 17 1/2" made up, the poufs 16 1/2", the cushions 6 3/4", the plinth 14", the bedside table 14 1/8", the rug 0.28". The three objects over the line are the desk chair (41 1/4" overall, a clear 4 3/4" UNDER it — which is exactly why the Branch is specified WITHOUT its headrest), the Dell panel (top 50 9/16") and the floor lamp (5\'-11 1/4"). The panel stands at y 3\'-6 1/2" and the lamp at y 2\'-0 1/4" to 3\'-2 1/4", while every seat-to-screen line in the layout runs at y 5\'-9" or further south — so neither is ever between a viewer and the picture. The tightest case in the plan is not a seat at all, it is the desk: the ray from the north JÄRRESTAD to the image\'s bottom-north corner passes about 1 1/8" above the east end of the Jarvis top at sitting height. Checked, not assumed — and it is one more reason the desk cannot creep east.',
     'BLACKOUT IS A CO-REQUISITE, NOT AN ACCESSORY, and it is physics rather than taste. At 100" on a 0.6-gain screen a 2,700-lumen projector makes 54 fL of peak white; a screen face taking only 500 lux of ambient — conservative for a wall 18 ft from an uncurtained full-height WEST glass wall at midday — sits at 28 fL of BLACK. That is 1.9:1 in-room contrast, a grey rectangle, and even a 5,000-lumen unit only reaches 3.6:1. There is no projector purchasable in 2026 that fixes it. So all four bays carry a blackout roller drawn to the floor, plus a pair of blackout side channels each. The ALR screen does NOT substitute: this wall faces due WEST, straight down the sightline at the glazing, which is the one direction a lenticular screen cannot reject. DAYLIGHT VIEWING IN THIS UNIT IS NOT POSSIBLE WITHOUT THEM — say so to the client before the projector is ordered, not after.',
     'WHY ROLLERS AND NOT CELLULAR, which is a specification consequence rather than a preference. This unit\'s glazing head is 104". SelectBlinds\' per-lift maximum drops on the blackout cellular are 84" cordless, 84" no-drill and 96" motorised — only the CONTINUOUS CORD LOOP reaches 120". A cellular shade tall enough for these bays can therefore only be ordered on a cord loop, i.e. four cords hanging down a floor-to-ceiling glass wall in a scheme whose brief is "quiet, few materials, no visible hardware". The Blinds.com Classic Roller runs 12"-144" on every lift type, so it is cordless at this height and its stack is far less present 4" below an exposed concrete soffit. Shade widths are set per bay from WINDOW_BAYS (2\'-8 3/4", 2\'-8 1/4", 2\'-9 1/4", 3\'-6"), not left at the catalog\'s nominal 36".',
-    'DESK ORIENTATION AND PULL-BACK. The Jarvis top runs east-west on the WIDE LEG\'s north wall, x 11\'-10 1/8" to 16\'-10 1/8", back 1/4" off the wall face at y 3\'-2 7/8". The user sits south of it facing north, the monitor faces SOUTH, and the west glazing is on the user\'s LEFT. That is the only correct answer in this unit — a panel facing the glass is unreadable from about 3pm, and a panel facing away from it puts a bright hole behind the user\'s screen all afternoon. It is on the wide leg and not in the notch because the bed lies across the notch: a desk on the notch\'s north wall would put its chair in the bed\'s north aisle and cut the aisle to 9". The layout reserves the full 2\'-6" (CLEARANCE.deskChair) in front of the top and the Branch is drawn PARKED inside it at y 5\'-6 1/4" to 7\'-6 1/4", not tucked under a top that this model treats as a solid box. THE SOURCED REAL-WORLD MINIMUM FOR A TASK CHAIR TO ROLL BACK AND STAND IS NEARER 36", AND THIS LAYOUT ACHIEVES IT: the clear floor south of the top runs 8\'-1" to the kitchen aisle line, and the nearest object in front of the desk is the front row 3\'-6 5/16" to the west, not to the south.',
+    'DESK ORIENTATION AND PULL-BACK. The MAGNUS Pro top runs east-west on the WIDE LEG\'s north wall, x 11\'-11" to 16\'-10 1/8", back 1/4" off the wall face at y 3\'-2 7/8". The user sits south of it facing north, the monitor faces SOUTH, and the west glazing is on the user\'s LEFT. That is the only correct answer in this unit — a panel facing the glass is unreadable from about 3pm, and a panel facing away from it puts a bright hole behind the user\'s screen all afternoon. It is on the wide leg and not in the notch because the bed lies across the notch: a desk on the notch\'s north wall would put its chair in the bed\'s north aisle and cut the aisle to 9". The layout reserves the full 2\'-6" (CLEARANCE.deskChair) in front of the top and the Branch is drawn PARKED inside it at y 5\'-6 1/4" to 7\'-6 1/4", not tucked under a top that this model treats as a solid box. THE SOURCED REAL-WORLD MINIMUM FOR A TASK CHAIR TO ROLL BACK AND STAND IS NEARER 36", AND THIS LAYOUT ACHIEVES IT: the clear floor south of the top runs 8\'-1" to the kitchen aisle line, and the nearest object in front of the desk is the front row 3\'-6 5/16" to the west, not to the south.',
     'THE BED AND ITS AISLES. Floyd Bed (Original) queen, 67" x 86", 17 1/2" made up, specified WITHOUT the headboard — the headboard add-on takes it to 31 1/2" and fails the 30" glazing rule, and Floyd\'s own page is what that number comes from. It lies x 7 5/16" to 7\'-9 5/16", y 6\'-0 1/8" to 11\'-7 1/8". North side: 3\'-9 7/16" of clear floor to the face of the dresser, with the bedside table taking 1\'-6 1/2" of it at the head. South side: 1\'-11 3/4" to the kitchen aisle line and 5\'-5 3/4" of genuinely empty floor to the counter face. The analyzer measures its 3\'-0" probe cap on both long sides against a 2\'-0" requirement, so a two-sleeper bed is properly served. A GRIMSBU at 61" wide would have bought another 6" of aisle; it is not specified because it is 4 1/8" taller and this whole scheme is built on having the lowest queen there is.',
     'THE TWO REMAINING WARNINGS ARE BOTH THE SAME ONE, AND THEY ARE A MODELLING ARTIFACT — stated plainly rather than buried. blocks-window fires on the bed at glazing bays 2 and 3 (2.5 and 1.6 sq ft of the 1\'-0" strip). The rule this project actually holds itself to is the brief\'s: nothing over 2\'-6" tall within 1\'-0" of the glass. The bed is 1\'-5 1/2" tall with no headboard, i.e. 1\'-0 1/2" UNDER that limit, and from any seat in the room you look straight over it at the full height of the glazing. The check fires anyway because plan.ts models this glazing as floor-to-ceiling with its sill at 0\'-0", so the test degenerates to "anything taller than 5/8" in the band" — a rug would trip it if rugs were not exempt. THE TRADE IS DELIBERATE AND IT IS THE CORE OF THE SCHEME: the head has to be hard to the glass, because every inch it comes east moves the foot east, and the foot is what pinches the only route into the bed\'s north side. Held 1\'-0" back to satisfy the check, the gate closes to 1\'-6" and the analyzer reports a tight path to the bed instead. One 17 1/2" bed deck inside a 1\'-0" band is a better outcome than a 1\'-6" route.',
     'CIRCULATION, WHICH IS WHAT THIS PLAN IS REALLY ABOUT. Every required route measures 3\'-6" usable with all six seats deployed: front door to bathroom, to the kitchen sink, to the west windows, and bathroom to the bed; sink to refrigerator is 4\'-0". Two dimensions carry all of it. First, the 2\'-6 7/16" gate between the JÄRRESTAD poufs\' east edge (x 9\'-3 11/16") and the desk\'s west end (x 11\'-10 1/8"), which is the only way from the screen end of the room to the notch. Second, the 2\'-6 3/8" lane between the wide leg\'s north wall (y 3\'-2 5/8") and the north edge of the front row (y 5\'-9"), which is why the whole rank sits 9" south of the screen axis instead of centred on it. Both are at CLEARANCE.walkwayTight, not at the 3\'-0" comfortable figure, and both are genuinely tight with four floor seats out.',
