@@ -27,7 +27,7 @@ section,item,catalog_id,qty,unit_usd,total_usd,low_usd,high_usd,tier,price_verif
 "Storage","TRONES shoe cabinet, wall-mounted","entry-trones-shoe",2,40,80,,,value,no,"catalog source flags this price as unverified"
 "Storage","Low-profile under-bed case, 33 x 17 x 4 1/2","storage-lowprofile-underbed-45l",4,15,60,,,value,no,"catalog source flags this price as unverified"
 "Storage — SUBTOTAL",,,,,270,,,,,
-"Soft goods","Nordic Knots Desert flatweave rug, 8x10 — Earth","rug-nordicknots-desert-8x10",1,395,395,,,recommended,yes,""
+"Soft goods","Nordic Knots Zero flatweave rug, 8x10 — Warm Gray","rug-nordicknots-zero-warmgray-8x10",1,395,395,,,recommended,yes,""
 "Soft goods — SUBTOTAL",,,,,395,,,,,
 "Light and greenery","Flos Bellhop Unplugged rechargeable table lamp","lamp-bellhop-portable",1,370,370,,,premium,yes,""
 "Light and greenery","Full-length mirror, wall-hung","mirror-full-length-wall",1,179,179,,,unspecified,yes,""

@@ -2075,8 +2075,15 @@ const DEFS: FurnitureDef[] = [
     d: IN(18),
     h: IN(40),
     color: LEAF,
-    accent: TERRACOTTA,
-    source: `Medium floor plant archetype: 40" overall in a 10" pot, 18" spread`,
+    // AN UNGLAZED CONCRETE POT, NOT A TERRACOTTA ONE. This is the plant that
+    // stands beside the screen in every layout that uses it, i.e. the most
+    // visible pot in the scheme, and terracotta there scattered the one accent
+    // across two zones. Grey keeps the viewing zone strictly neutral, leaves
+    // the accent concentrated in the sleeping alcove (bed cover + the
+    // SANSEVIERIA's pot, which stays terracotta), and echoes the exposed
+    // soffit - it is the same grey.
+    accent: CONCRETE,
+    source: `Medium floor plant archetype: 40" overall in a 10" unglazed concrete pot, 18" spread`,
     frontClearance: 0,
     tags: ['greenery', 'plant', 'small-space'],
     price: 79,
@@ -3073,6 +3080,29 @@ A PRICED ALTERNATIVE, 30 Jul 2026: SmartWings sells Side Rail Tracks for blackou
     tags: ['rug', 'flatweave', 'wool', 'jute', 'thin', 'viewing-zone', 'recommended'],
     price: 395,
   },
+  {
+    id: 'rug-nordicknots-zero-warmgray-8x10',
+    name: 'Nordic Knots Zero flatweave rug, 8x10 — Warm Gray',
+    kind: 'rug',
+    w: FTIN(8, 0),
+    d: FTIN(10, 0),
+    h: IN(0.276),
+    // UNDYED wool, so the colour is the sheep's and it varies across the piece.
+    // 31% LRV, which is the number that earns it a place: the floor measures
+    // 10-14% (finishes.ts), the soffit 26%, the nightstand 40%. It is the only
+    // soft surface in the scheme between 4% and 56% - see the layout A COLOUR
+    // note, which used to have a hole exactly there. Warm grey, NOT blue-grey:
+    // R-B is +18, which is the whole difference between bridging a warm floor
+    // and fighting it, and the reason the palette banned #55677A in the first
+    // place. Solid field, no border, so accent = color.
+    color: '#9E978C',
+    accent: '#9E978C',
+    source: `Nordic Knots "Zero" in Warm Gray, 8x10: 100% UNDYED wool flatweave, 7 mm total thickness, hand-woven, a plain solid field with no border and no pattern - the collection exists to show "the natural quality and characteristics of wool in its purest form", and the shade is the natural colour of the fleece rather than a dye lot, so it varies within the piece and between production runs. From $395.00 with free standard US delivery quoted at 3-6 business days. Composition, the 7 mm build, the undyed/solid-field description and the delivery window were read off nordicknots.com 31 Jul 2026; the same "From" price caveat as the Desert applies - no size-specific 8x10 figure could be extracted, so treat $395 as a FLOOR. SPECIFIED OVER THE DESERT IN LAYOUT A ON AESTHETIC GROUNDS, and the geometry is identical so nothing in that plan moves: 7 mm is the same build, which is what lets it run under a parked task chair without rucking and under the plinth without shimming. What changes is that the viewing floor stops being brown-on-brown - the Desert is the floor's own hue one value up - and becomes a neutral the espresso planks read against. It also gives the exposed concrete soffit a partner at eye level, which nothing else in the scheme did, and it is MATERIAL rather than COLOUR, which is the register the rest of this apartment is already in. HONEST COST: at 31% against the Desert's 22% it returns roughly 1.6x as much projector light to the screen - see the layout A PROJECTION note, where the walls are a bigger term than every furnishing combined.`,
+    walkable: true,
+    lowProfile: true,
+    tags: ['rug', 'flatweave', 'wool', 'undyed', 'thin', 'viewing-zone', 'neutral', 'recommended'],
+    price: 395,
+  },
 
   // ---- dining and guest seating that stows ------------------------------
   {
@@ -3356,9 +3386,17 @@ HONEST COSTS. (1) It reads as EQUIPMENT, not as furniture, and in a studio the d
     w: IN(66),
     d: IN(24),
     h: IN(14),
-    color: WALNUT,
+    // THE DARK STAINED ASH, NOT THE WALNUT - which the source below always
+    // offered as the alternative, and which is the better of the two. A UST
+    // plinth is a projector cabinet: it belongs to the EQUIPMENT family with the
+    // screen frame, the MAGNUS top, the poufs and the anodised glazing, not to
+    // the wood family. As walnut it was a fourth wood value in a 448 sq ft
+    // apartment that already carries an espresso floor, a white-oak bed and a
+    // brushed-oak nightstand. At 2.5% LRV it sits under the floor's 10-14% and
+    // beside the sofa's 3.7%, so the dark end reads as one mass, on purpose.
+    color: '#302B27',
     accent: NEAR_BLACK,
-    source: `BESPOKE MILLWORK, not a product. 66" W x 24" D x 14" H slab plinth with two push-open bays, walnut veneer or a dark stained ash to match the floor, sitting flush to the wall. Dimensions are DERIVED, and each one from a real constraint: 14" of height because image bottom = plinth top + ~14 1/2" for a 100" 16:9 UST image (Formovie's published install table for the 0.23:1 Theater, the only manufacturer table found that gives the vertical relationship) and a 45-55" image centre is what suits a 16-18" seat; 24" of depth because a UST's cabinet front lands 20-26" from the wall for a 100" image (PX3-PRO 20.2", Formovie Theater Premium 20.0", Hisense L9Q ~20.9", Epson LS650 26.2") and the whole body must be supported; 66" of width so it reads as a base under the picture. PRICE $650 IS A JOINERY ALLOWANCE for a simple veneered slab carcass with two push-open doors, not a quotation - get a real number from a cabinetmaker. WHY IT IS NOT A PRODUCT: every off-the-shelf media console sourced is 21-36" tall (BDI Corridor 8173 21", BESTA 25 1/4", Burrow Carta 26 1/4", BDI 8179 28 1/4", Blu Dot Shale 36"), and a 21" top already puts the image centre at 60" AFF. This unit's ABSENCE OF BASEBOARD is what makes a flush plinth possible at all: a standard 3/4" base would push the cabinet 3/4" further out, which on a 0.21:1 lens costs about 3 1/2" of image width.`,
+    source: `BESPOKE MILLWORK, not a product. 66" W x 24" D x 14" H slab plinth with two push-open bays, DARK STAINED ASH (the walnut veneer this entry used to specify is the alternative, not the default - see the colour note above), sitting flush to the wall. Dimensions are DERIVED, and each one from a real constraint: 14" of height because image bottom = plinth top + ~14 1/2" for a 100" 16:9 UST image (Formovie's published install table for the 0.23:1 Theater, the only manufacturer table found that gives the vertical relationship) and a 45-55" image centre is what suits a 16-18" seat; 24" of depth because a UST's cabinet front lands 20-26" from the wall for a 100" image (PX3-PRO 20.2", Formovie Theater Premium 20.0", Hisense L9Q ~20.9", Epson LS650 26.2") and the whole body must be supported; 66" of width so it reads as a base under the picture. PRICE $650 IS A JOINERY ALLOWANCE for a simple veneered slab carcass with two push-open doors, not a quotation - get a real number from a cabinetmaker. WHY IT IS NOT A PRODUCT: every off-the-shelf media console sourced is 21-36" tall (BDI Corridor 8173 21", BESTA 25 1/4", Burrow Carta 26 1/4", BDI 8179 28 1/4", Blu Dot Shale 36"), and a 21" top already puts the image centre at 60" AFF. This unit's ABSENCE OF BASEBOARD is what makes a flush plinth possible at all: a standard 3/4" base would push the cabinet 3/4" further out, which on a 0.21:1 lens costs about 3 1/2" of image width.`,
     frontClearance: IN(24),
     tags: ['credenza', 'media', 'ust-plinth', 'projection', 'millwork', 'bespoke', 'low', 'recommended'],
     price: 650,
