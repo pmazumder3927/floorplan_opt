@@ -207,17 +207,46 @@ G is **$834 cheaper** than A, because the catalog's own blackout entry has been
 recommending rollers over cellular since 30 Jul on a $1,248 saving and no layout
 had spent it. Take the rollers out and the bench and the lantern cost $414.
 
-**One thing is drawn as an option rather than a decision**: painting the screen
-partition in Sherwin-Williams Urbane Bronze (LRV 8). It makes a visibly better
-picture — a 100" image is judged against its surround, and in A that surround is
-55 sq ft of 88%-LRV white half an inch from the picture's edge — and it makes the
-room measurably darker: 50.8% falls to **46.3%**, below layout A. Handing that to
-someone who said "too dark" is a decision they should make with their own eyes,
-so here it is both ways, and the scheme defaults to the left-hand one:
+**The screen wall is not painted.** Darkening the partition behind the picture
+is the classic way to make a projector look better — a 100" image is judged
+against its surround, and in A that surround is 55 sq ft of 88%-LRV white half an
+inch from the picture's edge. It was drawn, measured and dropped: it takes the
+room from 50.8% to 46.3%, i.e. *below* layout A, which is the wrong direction for
+a brief that started with "too dark", and the client does not want to paint a
+rented apartment. Recorded in the catalog so nobody re-derives it.
 
-![Layout G looking east with the partition left white: the screen as a white rectangle, the desk, chair and plinth reading as separate dark objects](docs/renders/g-west-light.jpg)
+**The one decision left open is the sofa**, and it is a real one. Same frame,
+same place, same 56" — only the cloth. The rug is 31% LRV, and that turns out to
+set the terms: a sofa between about 25% and 38% merges into it, so the two good
+answers are clearly darker or clearly lighter, not in between.
 
-![The same frame with the partition painted Urbane Bronze: the screen sits in a dark field and the plinth and projector read as one dark end of a warm room](docs/renders/g-west-light-painted-option.jpg)
+| Cleon in… | LRV | perceived lightness L* | living-end LRV | black level | price |
+|---|---|---|---|---|---|
+| Tait Charcoal *(layout A)* | 3.7 | 23 | 19.3 | — | $1,740 (seen at $870) |
+| a warm slate | ~14 | 45 | 20.5 | +1.4% | — |
+| **Maharam Mode / Clavicle** | ~50 | 76 | **24.6** | +6.2% | $1,960 |
+
+Optically it is noise either way: +6.2% of a black floor that already sits 30×
+above what the projector itself can do, i.e. 131:1 becomes about 123:1. The trade
+is practical — one room, a range twelve feet away, no second room to eat in —
+against the fact that the sofa is 30.7 sq ft of face at eye level and the single
+biggest tonal object in the flat. Note also that the sofa carries only 5.3 of the
+scheme's 11.6-point living-end gain: **a slate Cleon still gets most of G.**
+
+There is also a **product** answer rather than a colour one, and it is priced very
+differently: the **Article Ceni 61" loveseat in Chalk Gray at $899**. Built into
+the plan and run through the same scripts, it comes back with the same worst seat
+(87.2%), the same 3'-0" narrowest path, a living end of 24.0 against Clavicle's
+24.6 — and **$1,061 off the total**. What it spends instead is geometry: 31" tall
+against the 30" house rule, and 61" of overall width for about 51" of usable seat,
+which takes the bed aisle from 2'-8⅜" to 2'-7" and the sink-to-fridge route from
+4'-0" to 3'-6". Both still legal, both real.
+
+![Layout G with the sofa in a warm slate: the same room, the sofa reading as the anchor of the west half](docs/renders/g-west-light-slate-option.jpg)
+
+![Layout G with the Article Ceni 61" in Chalk Gray: light, but 3" taller and with arms, so it reads as a bigger object](docs/renders/g-west-light-ceni-option.jpg)
+
+![Layout G with the Cleon in Maharam Mode / Clavicle, which is the drawn scheme](docs/renders/g-west-light-lounge.jpg)
 
 ### The 2D side of the same model
 
